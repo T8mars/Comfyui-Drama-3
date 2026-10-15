@@ -28,6 +28,25 @@ python install.py
 
 请使用 **ComfyUI 自己的 Python** 执行，然后重启。导入 `workflows/` 中的示例，选择本地模型与参考音频。要求 ComfyUI 0.40.0+、Python 3.10+。`install.py` 下载并校验单独分发的 Windows x64 / CUDA 12.8 R2T2 原生运行库，不下载模型。设置 `DRAMA_SKIP_R2T2_INSTALL=1` 可跳过；已有运行库可设置 `DRAMA_R2T2_NATIVE_DIR`。Qwen 转写独立可用。
 
+## Transformers 兼容性
+
+支持 **Transformers 4.57.1**，已有兼容的 4.x 环境可继续使用。节点依赖范围为 `transformers>=4.57.1,<6`、`tokenizers>=0.22,<0.24`。
+
+| 已验证的 Transformers | Tokenizers | Hugging Face Hub |
+|---|---|---|
+| **4.57.1** | **0.22.2** | **0.36.2** |
+| 5.19.0 | 0.23.2 | 1.33.0 |
+
+整合包的 `requirements.txt` 默认安装 4.57.1 这组依赖；已有 5.19 环境也可继续使用。两组均通过完整 CPU 回归，包含真实 Qwen 模型前向与缓存续算；4.57.1 另经过浏览器画布生成、转写和词级对齐实测。允许范围内的其他版本尚未逐版验证。
+
+需要切换到已测 4.57.1 组合时，使用 ComfyUI 或工作台自己的 Python 执行：
+
+```sh
+python -m pip install "transformers==4.57.1" "tokenizers==0.22.2" "huggingface-hub==0.36.2"
+```
+
+程序自动更新会保留已安装的 Python 包，不运行 pip，也不自动切换 Transformers 版本；本次兼容更新无需重新下载模型。
+
 ## 画布工作流
 
 `workflows/` 提供 15 张画布：普通生成、参考音色、导演修改、局部编辑、长文、流式文本、场景、SRT、Codec、Qwen 转写、R2T2、对齐、实时试听、工程保存与加载。将 JSON 导入 ComfyUI，点击 **运行**。示例均经过浏览器画布实跑，核对了文字显示和音频播放。
@@ -56,7 +75,7 @@ python install.py
 
 完整 Windows 运行环境由作者单独提供。GitHub Release **只发布程序文件及原生运行库，不含模型和 Python 运行环境**；工作台源码位于 [portable/](https://github.com/T8mars/Comfyui-Drama-3/tree/main/portable)。
 
-已有基于 0.1.3 或后续版本的完整包：先关闭工作台，将 `Drama3-T8-Portable-0.1.10-code.zip` 解压到包含 `Start-Drama3.cmd` 的目录，再双击启动。此后启动时自动检查 GitHub 正式版并安装兼容的程序更新；关闭工作台后也可双击 `Update-Drama3.cmd` 手动检查。更新核对文件大小与 SHA-256，备份旧文件，失败时回滚。模型、Python、自定义路径、工程、音色库和输出均保留。断网仍可正常启动；依赖或运行库变更需使用作者提供的新完整环境。
+已有基于 0.1.3 或后续版本的完整包：先关闭工作台，将 `Drama3-T8-Portable-0.1.11-code.zip` 解压到包含 `Start-Drama3.cmd` 的目录，再双击启动。此后启动时自动检查 GitHub 正式版并安装兼容的程序更新；关闭工作台后也可双击 `Update-Drama3.cmd` 手动检查。更新核对文件大小与 SHA-256，备份旧文件，失败时回滚。模型、Python、自定义路径、工程、音色库和输出均保留。断网仍可正常启动；依赖或运行库变更需使用作者提供的新完整环境。
 
 ## 硬件与加速
 

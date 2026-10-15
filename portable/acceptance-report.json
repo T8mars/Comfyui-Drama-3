@@ -1,11 +1,11 @@
 {
-  "version": "0.1.10",
+  "version": "0.1.11",
   "machine": "RTX5090 Laptop 24GB VRAM / 64GB RAM",
   "tests": {
-    "passed": 472,
+    "passed": 479,
     "skipped": 1,
     "skip_reason": "Windows symlink creation privilege unavailable",
-    "report": "validation/scene-fix-source-tests-final.log"
+    "report": "validation/tf4-tests-4571-final.log"
   },
   "original_tts": {
     "text": "你好，这是本地语音测试。",
@@ -2066,5 +2066,126 @@
       "validation/scene-fix-agent-production-v3.json",
       "validation/scene-fix-agent-cast-review.md"
     ]
+  },
+  "transformers_compat_0111": {
+    "requested_target": "4.57.1",
+    "portable_defaults": {
+      "transformers": "4.57.1",
+      "tokenizers": "0.22.2",
+      "huggingface_hub": "0.36.2"
+    },
+    "retained_environment": {
+      "transformers": "5.19.0",
+      "tokenizers": "0.23.2",
+      "huggingface_hub": "1.33.0"
+    },
+    "reproduced_failure": "Real Qwen text-model forward raised TypeError: create_causal_mask() got an unexpected keyword argument inputs_embeds",
+    "fix": "Local mask-call adaptation: 4.57.1 receives input_embeds and cache_position; 5.19 retains inputs_embeds. Installed Transformers functions are not patched.",
+    "cpu_regression": {
+      "transformers_4571": {
+        "passed": 479,
+        "skipped": 1
+      },
+      "transformers_519": {
+        "passed": 479,
+        "skipped": 1
+      },
+      "added_real_tensor_cases": 7,
+      "coverage": [
+        "eager and SDPA prefill/cached/full equivalence",
+        "future-token isolation",
+        "left padding",
+        "Qwen audio tokenizer IDs and multilingual round trips"
+      ]
+    },
+    "actual_canvas": {
+      "method": "Browser workflow import and visible Run clicks; no direct API prompt submission",
+      "passed": 10,
+      "unexpected_failures": 0,
+      "reports": [
+        "validation/scene-fix-tf4-4571-browser-asr-align-r2t2.json",
+        "validation/scene-fix-tf4-4571-browser-basic-reference-revision-infill-stream-scene_revision-codec.json"
+      ],
+      "cases": [
+        {
+          "name": "asr",
+          "prompt_id": "3c7cf883-d693-4a1c-a80e-33284de95b56",
+          "seconds": 23.633,
+          "passed": true
+        },
+        {
+          "name": "align",
+          "prompt_id": "4a3c80e3-2c27-40d2-b0d2-140b74b0cd17",
+          "seconds": 8.846,
+          "passed": true
+        },
+        {
+          "name": "r2t2",
+          "prompt_id": "d80f09c7-828d-4923-bef7-3e87e11f312f",
+          "seconds": 5.174,
+          "passed": true
+        },
+        {
+          "name": "basic",
+          "prompt_id": "1976db59-f3b1-45a3-94a4-865e9a54cb3d",
+          "seconds": 60.981,
+          "passed": true
+        },
+        {
+          "name": "reference",
+          "prompt_id": "b61e5593-6ff4-4dc0-b889-ad8bfbac3e9a",
+          "seconds": 20.528,
+          "passed": true
+        },
+        {
+          "name": "revision",
+          "prompt_id": "4671a119-b3a9-4a0f-9491-3071ab717cf4",
+          "seconds": 38.812,
+          "passed": true
+        },
+        {
+          "name": "infill",
+          "prompt_id": "a05a3950-b6a5-4932-b0e2-0a3244060871",
+          "seconds": 11.416,
+          "passed": true
+        },
+        {
+          "name": "stream",
+          "prompt_id": "8cebc55c-4c45-4670-8a28-7b0983c82d26",
+          "seconds": 19.402,
+          "passed": true
+        },
+        {
+          "name": "scene_revision",
+          "prompt_id": "5a70c371-1bb8-45e4-83b2-c952b323660e",
+          "seconds": 16.428,
+          "passed": true
+        },
+        {
+          "name": "codec",
+          "prompt_id": "7474c5e8-a2fb-44d9-bc3a-683c07b912f7",
+          "seconds": 1.175,
+          "passed": true
+        }
+      ]
+    },
+    "content": {
+      "asr_exact": true,
+      "r2t2_exact": true,
+      "alignment_items": 11,
+      "alignment_seconds": [
+        0.0,
+        1.76
+      ],
+      "scene_segments_matched": 2,
+      "original_scene_history_preserved": true,
+      "report": "validation/tf4-canvas-content-qa.json"
+    },
+    "dependency_resolution": "pip dry-run with real portable and node requirements selects exactly the tested Transformers/tokenizers/hub triple",
+    "update_policy": "Code-only update; installed Python packages are preserved and pip is not run automatically",
+    "independent_report": "validation/tf4-agent-review.md",
+    "weights_changed": false,
+    "workflow_changes": false,
+    "validation_scope": "4.57.1 is the requested target. 5.19 full CPU regression retained for existing bundles. Other permitted versions are not all tested."
   }
 }

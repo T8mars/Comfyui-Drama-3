@@ -14,6 +14,7 @@
 # limitations under the License.
 import math
 from dataclasses import dataclass
+from inspect import signature
 from typing import Callable, Optional, Union
 
 import numpy as np
@@ -45,6 +46,25 @@ from .configuration_qwen3_asr import (
     Qwen3ASRConfig,
     Qwen3ASRThinkerConfig,
 )
+
+
+_CAUSAL_MASK_PARAMETERS = signature(create_causal_mask).parameters
+
+
+def _create_causal_mask_compat(*, config, inputs_embeds, attention_mask,
+                             past_key_values, position_ids, cache_position):
+    """Keep the installed Transformers implementation and its cache semantics.
+
+    Transformers 4.57 uses input_embeds and requires cache_position; 5.19 uses
+    inputs_embeds and derives positions internally. Adapt only this call site.
+    """
+    kwargs = dict(config=config, attention_mask=attention_mask,
+                  past_key_values=past_key_values, position_ids=position_ids)
+    if "input_embeds" in _CAUSAL_MASK_PARAMETERS:
+        kwargs.update(input_embeds=inputs_embeds, cache_position=cache_position)
+    else:
+        kwargs["inputs_embeds"] = inputs_embeds
+    return create_causal_mask(**kwargs)
 
 
 @use_kernel_forward_from_hub("RMSNorm")
@@ -1033,12 +1053,13 @@ class Qwen3ASRThinkerTextModel(Qwen3ASRPreTrainedModel):
         else:
             text_position_ids = position_ids[0]
 
-        attention_mask = create_causal_mask(
+        attention_mask = _create_causal_mask_compat(
             config=self.config,
             inputs_embeds=inputs_embeds,
             attention_mask=attention_mask,
             past_key_values=past_key_values,
             position_ids=text_position_ids,
+            cache_position=cache_position,
         )
 
         hidden_states = inputs_embeds
