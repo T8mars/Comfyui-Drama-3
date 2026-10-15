@@ -248,10 +248,11 @@ class Studio:
 
     def register_session(self, session):
         target = self.data / "sessions" / f"{session.session_id}.safetensors"
-        save_session(session, target)
         summary = session.takes[-1].transcript[:100] if session.takes else "导入的音色 / 空会话"
-        with self.connect() as db:
-            db.execute("INSERT OR REPLACE INTO sessions VALUES(?,?,?,?)", (session.session_id, target.relative_to(self.data).as_posix(), summary, time.time()))
+        with result_files(target):
+            save_session(session, target)
+            with self.connect() as db:
+                db.execute("INSERT INTO sessions VALUES(?,?,?,?)", (session.session_id, target.relative_to(self.data).as_posix(), summary, time.time()))
         return session.session_id
 
     def session_for(self, payload):
@@ -489,12 +490,14 @@ class Studio:
             result = self.engine.speak(payload["text"], session, sampling, on_codes, progress)
         elif mode == "dialogue":
             result = self.engine.scene([s for s in payload["text"].splitlines() if s.strip()],
-                                      references=session.references, sampling=sampling, progress=progress,on_codes=on_codes)
+                                      references=session.references, sampling=sampling, progress=progress,
+                                      session=session, on_codes=on_codes)
         elif mode == "revise":
             result = self.engine.revise(session, payload["note"], sampling, on_codes, progress)
         elif mode == "scene":
             result = self.engine.scene([s for s in payload["text"].splitlines() if s.strip()], payload.get("scene", ""),
-                                       payload.get("characters", ""), session.references, sampling, progress,on_codes=on_codes)
+                                       payload.get("characters", ""), session.references, sampling, progress,
+                                       session=session, on_codes=on_codes)
         elif mode == "long":
             result = self.engine.long_form(payload["text"], session, sampling, progress, on_codes,
                                            payload.get("chunk_bytes",300))

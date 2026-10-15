@@ -153,8 +153,12 @@ def create_app(root=ROOT):
     async def reference(file: UploadFile, transcript: str = Form(""), name: str = Form("")):
         path = await store_upload(file, AUDIO_SUFFIXES)
         input_id = path.name
-        return {"job_id": app.state.studio.submit({"mode": "reference", "input_id": input_id,
-                                        "transcript": transcript, "name": name})}
+        try:
+            return {"job_id": app.state.studio.submit({"mode": "reference", "input_id": input_id,
+                                            "transcript": transcript, "name": name})}
+        except BaseException:
+            path.unlink(missing_ok=True)
+            raise
 
 
     @app.post("/api/transcribe")
@@ -162,8 +166,12 @@ def create_app(root=ROOT):
                               context: str = Form(""), hotwords: str = Form("")):
         path = await store_upload(file, AUDIO_SUFFIXES)
         input_id = path.name
-        return {"job_id": app.state.studio.submit({"mode": "transcribe", "input_id": input_id,
-            "language": language, "context": context, "hotwords": hotwords, "name": Path(file.filename or "audio.wav").name})}
+        try:
+            return {"job_id": app.state.studio.submit({"mode": "transcribe", "input_id": input_id,
+                "language": language, "context": context, "hotwords": hotwords, "name": Path(file.filename or "audio.wav").name})}
+        except BaseException:
+            path.unlink(missing_ok=True)
+            raise
 
 
     @app.get("/api/files/{kind}/{name}")

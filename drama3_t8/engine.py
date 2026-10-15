@@ -224,15 +224,22 @@ class DramaEngine:
         take = replace(revised, transcript=original)
         return replace(result, takes=(*result.takes[:-1], take))
 
-    def scene(self, lines, scene="", characters="", references=(), sampling=None, progress=None, session=None, note="",on_codes=None):
+    def scene(self, lines, scene="", characters="", references=None, sampling=None, progress=None, session=None, note="",on_codes=None):
         drama = self.load_model()
         controls = {drama.tokenizer.token_to_id(SEPARATOR)}
         if not controls.issubset(drama.config.output_token_ids):
             raise ValueError("This checkpoint lacks scene control weights; use the T8 format-v2 converter")
-        session=session or Session(tuple(references))
+        if references is not None:
+            references = tuple(references)
+        session=session or Session(references or ())
+        if references is None:
+            references = session.references
+        else:
+            session = replace(session, references=references)
         script=("\n" + SEPARATOR + "\n").join(lines)
         request=(f"[{note}] " if note else "")+script
-        prompt = scene_prompt(drama.tokenizer, drama.config, lines, scene, characters, references,session.takes,note)
+        prompt = scene_prompt(drama.tokenizer, drama.config, lines, scene, characters, references,
+                              session.takes, note, session.direction)
         take = self._take(prompt, request, spoken_text("\n".join(lines),scene=True), sampling or Sampling(), on_codes=on_codes,progress=progress,
                           full_head=True)
         take.metadata["expected_segments"] = len(lines)

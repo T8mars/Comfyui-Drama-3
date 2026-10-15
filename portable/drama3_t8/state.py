@@ -45,6 +45,15 @@ class Reference:
     codec_revision: str = "fish-s2-codec-v1"
 
 
+def validate_reference(reference):
+    if not all(isinstance(value, str) for value in
+               (reference.transcript, reference.name, reference.codec_revision)):
+        raise ValueError("Reference transcript, name and codec revision must be text")
+    validate_codes(reference.codes)
+    if reference.codes.shape[-1] == 0:
+        raise ValueError("Reference audio must contain at least one codec frame")
+
+
 @dataclass(frozen=True)
 class Take:
     prompt_text: str
@@ -80,6 +89,8 @@ class Session:
         return replace(self, takes=(*self.takes, take), session_id=uuid.uuid4().hex)
 
     def branch(self, take_count):
+        if type(take_count) is not int:
+            raise ValueError("The branch point must be an integer take count")
         if not 0 <= take_count <= len(self.takes):
             raise ValueError("The branch point is outside this session")
         return replace(self, takes=self.takes[:take_count], session_id=uuid.uuid4().hex)
@@ -131,9 +142,7 @@ def validate_session(session):
     if not isinstance(session.direction, str):
         raise ValueError("Session direction must be text")
     for ref in session.references:
-        if not all(isinstance(value, str) for value in (ref.transcript, ref.name, ref.codec_revision)):
-            raise ValueError("Reference transcript, name and codec revision must be text")
-        validate_codes(ref.codes)
+        validate_reference(ref)
     for take in session.takes:
         if not all(isinstance(value, str) for value in (take.prompt_text, take.transcript, take.take_id)):
             raise ValueError("Take transcript, prompt and identifier must be text")

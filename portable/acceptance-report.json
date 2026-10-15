@@ -1,11 +1,11 @@
 {
-  "version": "0.1.8",
+  "version": "0.1.9",
   "machine": "RTX5090 Laptop 24GB VRAM / 64GB RAM",
   "tests": {
-    "passed": 346,
+    "passed": 378,
     "skipped": 1,
     "skip_reason": "Windows symlink creation privilege unavailable",
-    "report": "validation/canvas20-tests-final.log"
+    "report": "validation/audit7-tests-final.log"
   },
   "original_tts": {
     "text": "你好，这是本地语音测试。",
@@ -770,7 +770,8 @@
   "limitations": [
     "24GB RAM-expert offload is slower than audio realtime",
     "FA2 model dispatch not enabled",
-    "CUDA Graph not enabled"
+    "CUDA Graph not enabled",
+    "A reference-conditioned scene revision omitted the required separator at seeds 47 and 73. The node rejected it. No confirmed prompt-layout fault or cause; failed take/audio was not saved, so neither transcript loss nor termination reason is known."
   ],
   "r2t2_and_custom_paths": {
     "external_files_and_restart_persistence": "passed",
@@ -1899,5 +1900,28 @@
       "Fixture inputs and model paths configured before Run; connected session-save outputs added for code inspection."
     ],
     "inference_math_changed": false
+  },
+  "audit_019": {
+    "independent_review_topics": 20,
+    "new_core_cpu_cases": 25,
+    "new_workspace_cpu_cases": 7,
+    "changes": [
+      "Scene session direction/references/history reach actual prompts; explicit references match archived references",
+      "Reject empty voice references while keeping empty infill boundaries",
+      "Branch take_count rejects bool/noninteger direct calls",
+      "Generation/preview/align observers ignore stale POSTs and manual selection changes",
+      "Failed project registration or upload submission removes only its new unregistered files"
+    ],
+    "browser_new_assertions": 15,
+    "browser_prior_edge_assertions": 10,
+    "browser_page_errors": [],
+    "actual_canvas_runs": 5,
+    "canvas_passed": 3,
+    "canvas_failed_combinations": 2,
+    "all_tested_combinations_passed": false,
+    "canvas_report": "validation/audit7-canvas-acceptance.json",
+    "known_limit": "A reference-conditioned scene revision omitted the required separator at seeds 47 and 73. The node rejected it. No confirmed prompt-layout fault or cause; failed take/audio was not saved, so neither transcript loss nor termination reason is known.",
+    "core_report": "validation/audit7-20-agent.md",
+    "inference_math_or_models_changed": false
   }
 }

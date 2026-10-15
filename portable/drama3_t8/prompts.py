@@ -7,7 +7,7 @@ from .native.prompt import (
     GENERATION_START, MESSAGE_END, REFERENCE_INSTRUCTION, TTS_INSTRUCTION,
     SPEAKER_TAG, WHITE_SPACE, check_text, with_speaker_tag,
 )
-from .state import validate_codes, validate_frames
+from .state import validate_codes, validate_frames, validate_reference
 
 SEPARATOR = "<|audio_separator|>"
 END_OF_TURN = "<|endofturn|>"
@@ -68,6 +68,7 @@ def rows_from_segments(tokenizer, config, segments):
 def system_segments(references, instruction=TTS_INSTRUCTION, direction=""):
     segments = ["<|im_start|>system\n", REFERENCE_INSTRUCTION if references else instruction]
     for i, reference in enumerate(references, 1):
+        validate_reference(reference)
         check_text(reference.transcript, f"reference {i}")
         transcript = with_speaker_tag(reference.transcript)
         body = transcript.lstrip(WHITE_SPACE)
@@ -110,7 +111,7 @@ def tts_prompt(tokenizer, config, text, references=(), takes=(), direction=""):
     return rows_from_segments(tokenizer, config, segments)
 
 
-def scene_prompt(tokenizer, config, lines, scene="", characters="", references=(), takes=(), note=""):
+def scene_prompt(tokenizer, config, lines, scene="", characters="", references=(), takes=(), note="", direction=""):
     if not lines:
         raise ValueError("The scene contains no lines")
     for line in lines:
@@ -118,14 +119,19 @@ def scene_prompt(tokenizer, config, lines, scene="", characters="", references=(
     for description, location in ((scene, "scene description"), (characters, "characters")):
         if description.strip():
             check_text(description, location)
+    if direction:
+        check_text(direction, "direction")
     description = "\n".join(p for p in (f"Scene: {scene}" if scene else "",
                            f"Characters:\n{characters}" if characters else "") if p)
     if characters and not references:
         # The report's scene task uses character descriptions before its explicit line-output instruction.
         instruction = description + "\nVoice every line of the script in order, with <|audio_separator|> between consecutive lines."
+        if direction:
+            instruction += "\n\n" + direction
         segments = ["<|im_start|>system\n", instruction, MESSAGE_END]
     else:
-        segments = system_segments(references, LINE_INSTRUCTION, description)
+        segments = system_segments(references, LINE_INSTRUCTION,
+                                   "\n\n".join(part for part in (description, direction) if part))
     segments.extend(history_segments(takes))
     if note:
         check_text(note,"director note")

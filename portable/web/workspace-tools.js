@@ -25,7 +25,7 @@ settingsForm.innerHTML=`<p class="hint full-width">可填写任意磁盘的绝�
   <label>专家显存缓存（GiB，0 为自动）<input id="runtime-cache" type="number" min="0" max="128" step="0.5" value="12"></label>
   <button class="primary">保存并应用运行设置</button><p id="acceleration-detail" class="hint"></p>`;
 $('environment-panel').append(settingsForm);
-let optionsLoaded=false, observedAlignment=null, loadedSession='',takeSession='', waveBuffer=null, dragStart=null;
+let optionsLoaded=false, observedAlignment=null, alignmentGeneration=0, loadedSession='',takeSession='', waveBuffer=null, dragStart=null;
 function loadReferenceSpeakers(){try{const saved=JSON.parse(localStorage.getItem('drama-reference-speakers')||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))return Object.fromEntries(Object.entries(saved).filter(([id,value])=>/^[0-9a-f]{32}$/.test(id)&&Number.isInteger(value)&&value>=0&&value<16));}catch{}return {};}
 let referenceSpeakers=loadReferenceSpeakers();
 window.getReferenceSpeakers=()=>referenceSpeakers;
@@ -43,10 +43,24 @@ for(const id of ['start-seconds','end-seconds'])$(id).addEventListener('input',d
 async function selectedSession(){if(!$('session').value)throw Error('请先选择会话');return $('session').value;}
 function clearEditorPreview(){window.dismissAudioPreview?.();window.stopLivePreview?.();$('output-links').hidden=true;waveBuffer=null;$('audio').pause();$('audio').removeAttribute('src');$('word-timeline').replaceChildren();drawWave();}
 window.clearEditorPreview=clearEditorPreview;
-async function submitTool(mode){try{const id=await selectedSession(),index=Number($('take-index').value);const submitted=await api('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,session_id:id,take_index:index,language:$('align-language').value})});if(mode==='preview'&&$('session').value===id&&Number($('take-index').value)===index)window.watchAudioJob(submitted.job_id,{sessionId:id,takeIndex:index});if(mode==='align')observedAlignment={jobId:submitted.job_id,sessionId:id,takeIndex:index};notice(mode==='align'?'词级对齐已加入任务队列。':'试听解码已加入任务队列。');}catch(e){notice(e.message)}}
+async function submitTool(mode){
+ let generation;
+ const current=()=>generation===undefined||generation===(mode==='align'?alignmentGeneration:audioSelectionGeneration);
+ try{
+  const id=await selectedSession(),index=Number($('take-index').value);
+  if(mode==='align'){generation=++alignmentGeneration;observedAlignment=null;}
+  else{window.watchAudioJob(null);generation=audioSelectionGeneration;}
+  const submitted=await api('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,session_id:id,take_index:index,language:$('align-language').value})});
+  if(!current())return;
+  if(mode==='preview'&&$('session').value===id&&Number($('take-index').value)===index)window.watchAudioJob(submitted.job_id,{sessionId:id,takeIndex:index});
+  if(mode==='align')observedAlignment={jobId:submitted.job_id,sessionId:id,takeIndex:index};
+  notice(mode==='align'?'词级对齐已加入任务队列。':'试听解码已加入任务队列。');
+ }catch(e){if(current())notice(e.message)}
+}
+function invalidateAlignment(){alignmentGeneration++;observedAlignment=null;}
 $('align-take').onclick=()=>submitTool('align');$('preview-take').onclick=()=>submitTool('preview');
-$('session').addEventListener('change',async()=>{clearEditorPreview();loadedSession='';await updateTools()});
-$('take-index').addEventListener('change',clearEditorPreview);
+$('session').addEventListener('change',async()=>{invalidateAlignment();clearEditorPreview();loadedSession='';await updateTools()});
+$('take-index').addEventListener('change',()=>{invalidateAlignment();clearEditorPreview();});
 
 let importGeneration=0,settingsGeneration=0,settingsJob=null;
 importForm.onsubmit=async e=>{e.preventDefault();const generation=++importGeneration;try{const r=await api('/api/projects/import',{method:'POST',body:new FormData(importForm)});if(generation!==importGeneration)return;await refreshStatus();if(generation!==importGeneration)return;clearEditorPreview();$('session').value=r.session_id;showPage('infill');loadedSession='';await updateTools();if(generation===importGeneration)notice('工程已导入，参考与演出历史已恢复。');}catch(err){if(generation===importGeneration)notice(err.message)}};
