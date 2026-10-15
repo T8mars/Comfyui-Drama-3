@@ -1,0 +1,40 @@
+ComfyUI-Drama3
+Copyright (C) 2026 PedroMarinhoDev
+Licensed under the GNU General Public License v3.0 (see LICENSE), except for the parts listed below, which keep
+their own licenses.
+
+1. Fish Audio Drama 3 (Fish Audio Materials)
+   https://huggingface.co/fishaudio/drama-3 · https://github.com/fishaudio/fish-speech
+
+   These Fish Audio Materials are licensed under the Fish Audio Community License, Version 1.0.
+   Copyright © 39 AI, INC. All Rights Reserved.
+   (see LICENSE-FISH-AUDIO)
+
+   - drama3/fish/tokenizer.json and drama3/fish/config.json are Fish Audio's files from fishaudio/drama-3,
+     unmodified.
+   - drama3/model.py, drama3/codec.py, drama3/prompt.py, drama3/chunking.py and the sampling rules in
+     drama3/generate.py are ported from Fish Audio's reference code (fish-speech, fish_omni and the codec) and
+     remain subject to that license. Changes: rewritten for ComfyUI's operations, model patcher, attention and
+     memory management; the backbone reuses ComfyUI's Qwen3.5 layers; the routed experts can stay in system
+     memory and run from a GPU cache; the codec's weight norm is folded in.
+   - tools/convert.py turns the Drama 3 checkpoint into files these nodes load: the FP8 experts copied as they
+     are, or requantized to int8, W6A8 or W4A8; gate and up projections fused; the LM head cut to the end of
+     speech and semantic rows.
+
+   Built with Fish Audio. This project is not affiliated with, sponsored or endorsed by Fish Audio.
+
+2. Qwen3-ASR
+   https://huggingface.co/Qwen/Qwen3-ASR-1.7B · https://github.com/QwenLM/Qwen3-ASR
+
+   Apache License 2.0 (see LICENSE-APACHE). Copyright 2026 The Alibaba Qwen team.
+   qwen3_asr/asr.py adapts the output parsing, repetition fix and long-audio split of the qwen-asr package
+   (qwen_asr/inference/utils.py); qwen3_asr/added_tokens.json is the added-token list of the model's
+   tokenizer_config.json. Changes: rewritten for ComfyUI, with the audio encoder run in ComfyUI's operations
+   and the decoder on ComfyUI's Qwen3.
+
+3. SGLang-Omni
+   https://github.com/sgl-project/sglang-omni · Apache License 2.0 (see LICENSE-APACHE)
+   The Drama 3 prompt layout and sampling defaults follow its fishaudio_drama3 code.
+
+The model weights are not part of this repository: Drama 3's are under the Fish Audio Community License,
+Qwen3-ASR's under the Apache License 2.0.

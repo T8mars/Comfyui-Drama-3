@@ -1,0 +1,184 @@
+{
+  "last_node_id": 4,
+  "last_link_id": 3,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "T8DramaLoader",
+      "pos": [
+        50,
+        50
+      ],
+      "size": [
+        330,
+        150
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_ENGINE",
+          "type": "DRAMA3_T8_ENGINE",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {},
+      "widgets_values": [
+        "drama3-t8-fp8.safetensors",
+        "drama3-codec.safetensors",
+        12,
+        "torch"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "T8DramaSession",
+      "pos": [
+        50,
+        280
+      ],
+      "size": [
+        330,
+        120
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "references",
+          "type": "DRAMA3_T8_REFERENCES",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_SESSION",
+          "type": "DRAMA3_T8_SESSION",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {},
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 3,
+      "type": "T8DramaLive",
+      "pos": [
+        470,
+        50
+      ],
+      "size": [
+        420,
+        430
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "engine",
+          "type": "DRAMA3_T8_ENGINE",
+          "link": 1
+        },
+        {
+          "name": "session",
+          "type": "DRAMA3_T8_SESSION",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_SESSION",
+          "type": "DRAMA3_T8_SESSION",
+          "links": []
+        },
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            3
+          ]
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {},
+      "widgets_values": [
+        "你好，现在是浏览器实时试听测试。",
+        false,
+        67,
+        "fixed",
+        180
+      ]
+    },
+    {
+      "id": 4,
+      "type": "SaveAudio",
+      "pos": [
+        980,
+        280
+      ],
+      "size": [
+        320,
+        160
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 3
+        }
+      ],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "Drama3_T8/output"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      3,
+      0,
+      "DRAMA3_T8_ENGINE"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      1,
+      "DRAMA3_T8_SESSION"
+    ],
+    [
+      3,
+      3,
+      1,
+      4,
+      0,
+      "AUDIO"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}

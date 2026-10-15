@@ -1,0 +1,5 @@
+# Install into the same interpreter as the application / target ComfyUI.
+triton-windows==3.4.0.post21; sys_platform == "win32"
+flash-linear-attention==0.5.2
+# flash-attn 2.8.3 must match Torch 2.8.0+cu128 and the CPython tag.
+# GitHub wheel source and SHA256 are recorded in acceleration-manifest.json.

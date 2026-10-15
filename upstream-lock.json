@@ -1,0 +1,21 @@
+{
+  "fish_speech": "541566932abbaebcb0a40e562a1f846738383f38",
+  "comfyui_drama3": "0465897ec86c0f655af12bf8ae698afd89a58723",
+  "comfyui": "e0a32bce84f4603f2b61b16b50f8958e68fd6171",
+  "model_repo": "fishaudio/drama-3",
+  "asr_repo": "Qwen/Qwen3-ASR-0.6B",
+  "asr_revision": "5eb144179a02acc5e5ba31e748d22b0cf3e303b0",
+  "aligner_repo": "Qwen/Qwen3-ForcedAligner-0.6B",
+  "aligner_revision": "c7cbfc2048c462b0d63a45797104fc9db3ad62b7",
+  "model_revision": "e0a9218aa48888270f06ef1ed9ea67622c0e17d2",
+  "runtime": {
+    "python": "3.10.20",
+    "torch": "2.8.0+cu128"
+  },
+  "confucius_t8_repo": "https://github.com/T8mars/comfyui-confucius-r2t2-t8",
+  "confucius_t8_commit": "b317076ac8f8aee3e5ecb253b94fa389fed2d346",
+  "confucius_native_upstream": "26d55a54ce5670cff9947a167d8ed95d569fd4d9",
+  "llama_cpp_r2t2": "ad6c66839af3c5646fba8c6c2e2087a1e4e38948",
+  "r2t2_model_repo": "t8star/Confucius-R2t2-Comfy",
+  "r2t2_model_revision": "2223a55593a85bbaf2b12d58c410da67a8822608"
+}

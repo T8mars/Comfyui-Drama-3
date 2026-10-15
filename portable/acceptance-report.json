@@ -1,0 +1,1834 @@
+{
+  "version": "0.1.7",
+  "machine": "RTX5090 Laptop 24GB VRAM / 64GB RAM",
+  "tests": {
+    "passed": 328,
+    "skipped": 1,
+    "skip_reason": "Windows symlink creation privilege unavailable",
+    "report": "validation/publish-tests-final.log"
+  },
+  "original_tts": {
+    "text": "你好，这是本地语音测试。",
+    "language": "Chinese",
+    "elapsed_seconds": 24.398630799994862
+  },
+  "voice_clone": {
+    "text": "Good morning. Let us give this story a voice.",
+    "language": "English",
+    "elapsed_seconds": 22.918195999998716
+  },
+  "features": {
+    "revision-1": {
+      "status": "passed",
+      "metadata": {
+        "seed": 41,
+        "sampling": {
+          "seed": 41,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 160
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 81.50742739999987,
+        "first_frame_seconds": 47.89880410000478,
+        "duration_seconds": 3.7151927437641725,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 2430
+      },
+      "frames": 80
+    },
+    "revision-2": {
+      "status": "passed",
+      "metadata": {
+        "seed": 42,
+        "sampling": {
+          "seed": 42,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 160
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 40.99340700000175,
+        "first_frame_seconds": 14.835108999999647,
+        "duration_seconds": 3.4829931972789114,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 4710
+      },
+      "frames": 75
+    },
+    "revision-3": {
+      "status": "passed",
+      "metadata": {
+        "seed": 43,
+        "sampling": {
+          "seed": 43,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 160
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 41.23152480000135,
+        "first_frame_seconds": 14.264750800000911,
+        "duration_seconds": 4.2260317460317465,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 7470
+      },
+      "frames": 91
+    },
+    "infill-replace": {
+      "status": "passed",
+      "metadata": {
+        "seed": 45,
+        "sampling": {
+          "seed": 45,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 100
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 60.80481179999333,
+        "first_frame_seconds": 50.13193179999507,
+        "duration_seconds": 0.6965986394557823,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 480,
+        "source_take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
+        "edit_start_frame": 24,
+        "edit_end_frame": 47,
+        "original_frames": 77,
+        "inserted_frames": 15,
+        "preserved_prefix_suffix_codes": true
+      },
+      "frames": 69
+    },
+    "text-stream-1": {
+      "status": "passed",
+      "metadata": {
+        "seed": 46,
+        "sampling": {
+          "seed": 46,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 120
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 57.90454200000386,
+        "first_frame_seconds": 35.4538429000022,
+        "duration_seconds": 1.4396371882086167,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 960,
+        "task": "text_stream",
+        "lookahead": "The story begins here."
+      },
+      "frames": 31
+    },
+    "text-stream-2": {
+      "status": "passed",
+      "metadata": {
+        "seed": 47,
+        "sampling": {
+          "seed": 47,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 160
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 33.29378870000073,
+        "first_frame_seconds": 13.30205389999901,
+        "duration_seconds": 1.7182766439909296,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 1140,
+        "task": "text_stream",
+        "lookahead": ""
+      },
+      "frames": 37
+    },
+    "scene": {
+      "status": "passed",
+      "metadata": {
+        "seed": 44,
+        "sampling": {
+          "seed": 44,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 180
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 68.5706438000052,
+        "first_frame_seconds": 39.362108200002695,
+        "duration_seconds": 2.414875283446712,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 1680,
+        "expected_segments": 2,
+        "actual_segments": 2,
+        "task": "scene",
+        "output_controls": [
+          "Ċ",
+          "<|audio_separator|>",
+          "Ċ"
+        ]
+      },
+      "frames": 55
+    },
+    "aligned-replace": {
+      "status": "passed",
+      "metadata": {
+        "seed": 45,
+        "sampling": {
+          "seed": 45,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 120
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 54.01583830000163,
+        "first_frame_seconds": 48.997701399996004,
+        "duration_seconds": 0.46439909297052157,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 330,
+        "source_take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
+        "edit_start_frame": 41,
+        "edit_end_frame": 52,
+        "original_frames": 77,
+        "inserted_frames": 10,
+        "preserved_prefix_suffix_codes": true
+      },
+      "frames": 76
+    },
+    "aligned-insert": {
+      "status": "passed",
+      "metadata": {
+        "seed": 49,
+        "sampling": {
+          "seed": 49,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 120
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 19.517392100002326,
+        "first_frame_seconds": 13.754539300003671,
+        "duration_seconds": 0.603718820861678,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 750,
+        "source_take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
+        "edit_start_frame": 41,
+        "edit_end_frame": 41,
+        "original_frames": 77,
+        "inserted_frames": 13,
+        "preserved_prefix_suffix_codes": true
+      },
+      "frames": 90
+    },
+    "aligned-delete": {
+      "status": "passed",
+      "metadata": {
+        "seed": 50,
+        "sampling": {
+          "seed": 50,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 120
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 13.022705399998813,
+        "first_frame_seconds": 12.214297999998962,
+        "duration_seconds": 0.09287981859410431,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 840,
+        "source_take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
+        "edit_start_frame": 41,
+        "edit_end_frame": 52,
+        "original_frames": 77,
+        "inserted_frames": 2,
+        "preserved_prefix_suffix_codes": true
+      },
+      "frames": 68
+    }
+  },
+  "audio_content": [
+    {
+      "name": "live_recovery",
+      "expected": "你好，这是实时试听测试。",
+      "recognized": "你好。这是实时试听测试。",
+      "match": true
+    },
+    {
+      "name": "srt",
+      "expected": "Hello. Goodbye.",
+      "recognized": "Hello. Goodbye.",
+      "match": true
+    },
+    {
+      "name": "long_context",
+      "expected": "Good morning. The story begins here.",
+      "recognized": "Good morning. The story begins here.",
+      "match": true
+    },
+    {
+      "name": "two_reference_direction",
+      "expected": "Come closer. This is our little secret.",
+      "recognized": "Come closer. This is our little secret.",
+      "match": true
+    },
+    {
+      "name": "infill",
+      "expected": "你好，这是新的语音测试。",
+      "recognized": "你好，这是新的语音测试。",
+      "match": true
+    },
+    {
+      "name": "stream_context",
+      "expected": "Good morning. The story begins here.",
+      "recognized": "Good morning. The story begins here.",
+      "match": true
+    },
+    {
+      "name": "benchmark_fla",
+      "expected": "你好，这是本地语音测试。",
+      "recognized": "你好，这是本地语音测试。",
+      "match": true
+    },
+    {
+      "name": "scene_revision",
+      "expected": "Ready? Always.",
+      "recognized": "Ready. Always.",
+      "match": true
+    }
+  ],
+  "portable_workflows": {
+    "settings": {
+      "message": "运行设置已保存",
+      "settings": {
+        "model": "drama3-t8-fp8.safetensors",
+        "codec": "drama3-codec.safetensors",
+        "expert_cache_gb": 12,
+        "gdn_backend": "fla"
+      }
+    },
+    "project_import_preview": {
+      "audio": "/api/sessions/cc628a2367e3407f9cc835bada6aac6d/takes/0.wav",
+      "session_id": "cc628a2367e3407f9cc835bada6aac6d",
+      "transcript": "你好，这是本地语音测试。",
+      "metrics": {
+        "seed": 42,
+        "sampling": {
+          "seed": 42,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 140
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 104.9513111999986,
+        "first_frame_seconds": 77.72243100000196,
+        "duration_seconds": 3.575873015873016,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "torch",
+        "gdn_calls": 2340
+      },
+      "project": "/api/files/session/cc628a2367e3407f9cc835bada6aac6d.safetensors"
+    },
+    "alignment": {
+      "alignment": [
+        {
+          "text": "你",
+          "start": 0.0,
+          "end": 0.16
+        },
+        {
+          "text": "好",
+          "start": 0.16,
+          "end": 0.56
+        },
+        {
+          "text": "这",
+          "start": 1.6,
+          "end": 1.76
+        },
+        {
+          "text": "是",
+          "start": 1.76,
+          "end": 1.92
+        },
+        {
+          "text": "本",
+          "start": 1.92,
+          "end": 2.16
+        },
+        {
+          "text": "地",
+          "start": 2.16,
+          "end": 2.4
+        },
+        {
+          "text": "语",
+          "start": 2.4,
+          "end": 2.56
+        },
+        {
+          "text": "音",
+          "start": 2.56,
+          "end": 2.72
+        },
+        {
+          "text": "测",
+          "start": 2.72,
+          "end": 2.96
+        },
+        {
+          "text": "试",
+          "start": 2.96,
+          "end": 3.44
+        }
+      ],
+      "session_id": "cc628a2367e3407f9cc835bada6aac6d",
+      "take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
+      "metadata": "/api/files/output/c9515e4d6a304a7bb94b74c1bc12ec8a.alignment.json"
+    },
+    "queued_cancel": {
+      "status": "cancelled"
+    },
+    "running_cancel": {
+      "status": "cancelled"
+    },
+    "live_recovery": {
+      "first_packet": {
+        "seconds": 117.1685748000018,
+        "job_status": "running"
+      },
+      "chunks": 3,
+      "result": {
+        "audio": "/api/files/output/8e690578928e4a26b8baaeb7a44d864e.wav",
+        "metadata": "/api/files/output/8e690578928e4a26b8baaeb7a44d864e.json",
+        "session_id": "31aace49c87c4f11b85b297be37bcc75",
+        "take_id": "0135a50b3e7e4c15830be233c8f34f91",
+        "transcript": "你好，这是实时试听测试。",
+        "metrics": {
+          "seed": 62,
+          "sampling": {
+            "seed": 62,
+            "temperature": 0.7,
+            "top_k": 30,
+            "top_p": 0.7,
+            "max_frames": 160
+          },
+          "model": "drama3-t8-fp8.safetensors",
+          "elapsed_seconds": 156.4282877000005,
+          "first_frame_seconds": 87.08991439999954,
+          "duration_seconds": 4.31891156462585,
+          "length_limit_reached": false,
+          "finish_reason": "eos",
+          "gdn_backend": "fla",
+          "gdn_calls": 2820,
+          "output_duration_seconds": 4.31891156462585
+        },
+        "subtitle": null,
+        "project": "/api/files/session/31aace49c87c4f11b85b297be37bcc75.safetensors"
+      }
+    },
+    "srt": {
+      "actual_srt": "1\r\n00:00:00,000 --> 00:00:00,650\r\nHello.\r\n\r\n2\r\n00:00:03,000 --> 00:00:03,743\r\nGoodbye.\r\n",
+      "result": {
+        "audio": "/api/files/output/8a02060e7a534286afaadd0adf5e8ac9.wav",
+        "metadata": "/api/files/output/8a02060e7a534286afaadd0adf5e8ac9.json",
+        "session_id": "000d16158eb3451b8c845c9594221708",
+        "take_id": "2761fbf681fe477299dc803d49a181b5",
+        "transcript": "1\n00:00:00,000 --> 00:00:02,000\nHello.\n\n2\n00:00:03,000 --> 00:00:05,000\nGoodbye.\n",
+        "metrics": {
+          "seed": 56,
+          "sampling": {
+            "seed": 56,
+            "temperature": 0.7,
+            "top_k": 30,
+            "top_p": 0.7,
+            "max_frames": 160
+          },
+          "model": "drama3-t8-fp8.safetensors",
+          "elapsed_seconds": 33.04120569999941,
+          "first_frame_seconds": 9.008134199997585,
+          "duration_seconds": 3.7430385487528346,
+          "length_limit_reached": false,
+          "finish_reason": "eos",
+          "gdn_backend": "fla",
+          "gdn_calls": 510,
+          "output_duration_seconds": 3.7430385487528346,
+          "chunk_count": 2,
+          "chunks": [
+            {
+              "seed": 55,
+              "sampling": {
+                "seed": 55,
+                "temperature": 0.7,
+                "top_k": 30,
+                "top_p": 0.7,
+                "max_frames": 160
+              },
+              "model": "drama3-t8-fp8.safetensors",
+              "elapsed_seconds": 15.967177600003197,
+              "first_frame_seconds": 7.048141400002351,
+              "duration_seconds": 0.6501587301587302,
+              "length_limit_reached": false,
+              "finish_reason": "eos",
+              "gdn_backend": "fla",
+              "gdn_calls": 450
+            },
+            {
+              "seed": 56,
+              "sampling": {
+                "seed": 56,
+                "temperature": 0.7,
+                "top_k": 30,
+                "top_p": 0.7,
+                "max_frames": 160
+              },
+              "model": "drama3-t8-fp8.safetensors",
+              "elapsed_seconds": 17.074028099996212,
+              "first_frame_seconds": 9.008134199997585,
+              "duration_seconds": 0.7430385487528345,
+              "length_limit_reached": false,
+              "finish_reason": "eos",
+              "gdn_backend": "fla",
+              "gdn_calls": 510
+            }
+          ]
+        },
+        "subtitle": "/api/files/output/8a02060e7a534286afaadd0adf5e8ac9.srt",
+        "project": "/api/files/session/000d16158eb3451b8c845c9594221708.safetensors"
+      }
+    },
+    "long_context": {
+      "audio": "/api/files/output/455d4b93ace14a47af13e2df64e145f1.wav",
+      "metadata": "/api/files/output/455d4b93ace14a47af13e2df64e145f1.json",
+      "session_id": "f3c87ab488bd4a079b02d2580d97cad8",
+      "take_id": "025efc7e2e3d4ce5addbba66aba60af5",
+      "transcript": "Good morning. The story begins here.",
+      "metrics": {
+        "seed": 65,
+        "sampling": {
+          "seed": 65,
+          "temperature": 0.7,
+          "top_k": 30,
+          "top_p": 0.7,
+          "max_frames": 160
+        },
+        "model": "drama3-t8-fp8.safetensors",
+        "elapsed_seconds": 43.38112479999836,
+        "first_frame_seconds": 10.691127300000517,
+        "duration_seconds": 2.693514739229025,
+        "length_limit_reached": false,
+        "finish_reason": "eos",
+        "gdn_backend": "fla",
+        "gdn_calls": 1170,
+        "output_duration_seconds": 2.693514739229025,
+        "chunk_count": 2,
+        "chunks": [
+          {
+            "seed": 64,
+            "sampling": {
+              "seed": 64,
+              "temperature": 0.7,
+              "top_k": 30,
+              "top_p": 0.7,
+              "max_frames": 160
+            },
+            "model": "drama3-t8-fp8.safetensors",
+            "elapsed_seconds": 17.384967300000426,
+            "first_frame_seconds": 5.983812099999341,
+            "duration_seconds": 0.9287981859410431,
+            "length_limit_reached": false,
+            "finish_reason": "eos",
+            "gdn_backend": "fla",
+            "gdn_calls": 630
+          },
+          {
+            "seed": 65,
+            "sampling": {
+              "seed": 65,
+              "temperature": 0.7,
+              "top_k": 30,
+              "top_p": 0.7,
+              "max_frames": 160
+            },
+            "model": "drama3-t8-fp8.safetensors",
+            "elapsed_seconds": 25.996157499997935,
+            "first_frame_seconds": 10.691127300000517,
+            "duration_seconds": 1.7647165532879818,
+            "length_limit_reached": false,
+            "finish_reason": "eos",
+            "gdn_backend": "fla",
+            "gdn_calls": 1170
+          }
+        ]
+      },
+      "subtitle": null,
+      "project": "/api/files/session/f3c87ab488bd4a079b02d2580d97cad8.safetensors"
+    }
+  },
+  "benchmark": [
+    {
+      "backend": "torch",
+      "run": 0,
+      "method": "one warmup, ordered Torch/FLA/Torch, codec resident",
+      "total_seconds": 29.81903980000061,
+      "peak_vram_bytes": 21118642688,
+      "frames": 77,
+      "seed": 42,
+      "sampling": {
+        "seed": 42,
+        "temperature": 0.7,
+        "top_k": 30,
+        "top_p": 0.7,
+        "max_frames": 160
+      },
+      "model": "drama3-t8-fp8.safetensors",
+      "elapsed_seconds": 29.72122649999801,
+      "first_frame_seconds": 6.308827400003793,
+      "duration_seconds": 3.575873015873016,
+      "length_limit_reached": false,
+      "finish_reason": "eos",
+      "gdn_backend": "torch",
+      "gdn_calls": 2340,
+      "decode_frames_per_second": 3.246143194270884
+    },
+    {
+      "backend": "fla",
+      "run": 1,
+      "method": "one warmup, ordered Torch/FLA/Torch, codec resident",
+      "total_seconds": 23.278005899999698,
+      "peak_vram_bytes": 21112349696,
+      "frames": 54,
+      "seed": 42,
+      "sampling": {
+        "seed": 42,
+        "temperature": 0.7,
+        "top_k": 30,
+        "top_p": 0.7,
+        "max_frames": 160
+      },
+      "model": "drama3-t8-fp8.safetensors",
+      "elapsed_seconds": 23.04447490000166,
+      "first_frame_seconds": 6.292443500002264,
+      "duration_seconds": 2.507755102040816,
+      "length_limit_reached": false,
+      "finish_reason": "eos",
+      "gdn_backend": "fla",
+      "gdn_calls": 1650,
+      "decode_frames_per_second": 3.1637954069261065
+    },
+    {
+      "backend": "torch",
+      "run": 2,
+      "method": "one warmup, ordered Torch/FLA/Torch, codec resident",
+      "total_seconds": 28.282654900001944,
+      "peak_vram_bytes": 21118642688,
+      "frames": 77,
+      "seed": 42,
+      "sampling": {
+        "seed": 42,
+        "temperature": 0.7,
+        "top_k": 30,
+        "top_p": 0.7,
+        "max_frames": 160
+      },
+      "model": "drama3-t8-fp8.safetensors",
+      "elapsed_seconds": 28.16860330000054,
+      "first_frame_seconds": 6.166616999995313,
+      "duration_seconds": 3.575873015873016,
+      "length_limit_reached": false,
+      "finish_reason": "eos",
+      "gdn_backend": "torch",
+      "gdn_calls": 2340,
+      "decode_frames_per_second": 3.4542335843551517
+    }
+  ],
+  "native_workflows": {
+    "asr": {
+      "prompt_id": "ecbe4dd6-63a3-4d3f-ad47-28787039e1c7",
+      "seconds": 18.419223500000953,
+      "status": "success",
+      "first_packet_seconds": null,
+      "packet_count": null
+    },
+    "align": {
+      "prompt_id": "f5a67090-8e18-4baa-9a85-b3b84610707c",
+      "seconds": 20.734758200000215,
+      "status": "success",
+      "first_packet_seconds": null,
+      "packet_count": null
+    },
+    "scene": {
+      "prompt_id": "994187fd-720f-4c78-bdc6-6ee44ba6e1e8",
+      "seconds": 111.35362170000008,
+      "status": "success",
+      "first_packet_seconds": null,
+      "packet_count": null
+    },
+    "srt": {
+      "prompt_id": "f51eb659-8c79-4fb7-9d27-b142af48363a",
+      "seconds": 53.116173100002925,
+      "status": "success",
+      "first_packet_seconds": null,
+      "packet_count": null
+    },
+    "live": {
+      "prompt_id": "ca428f57-83d0-4171-a274-631918ecc2fa",
+      "seconds": 41.93256810000457,
+      "status": "success",
+      "first_packet_seconds": 29.322570800002723,
+      "packet_count": 2
+    }
+  },
+  "native_extended": {
+    "codec": "success",
+    "two_reference_direction": "success",
+    "infill": "success",
+    "stream_context": "success",
+    "branch_restore": "success"
+  },
+  "native_browser_live": {
+    "errors": [],
+    "events": [
+      {
+        "time": 118128.09999999404,
+        "data": {
+          "node_id": "3",
+          "filename": "00000.wav",
+          "subfolder": "drama3_live/a3503ad592f646a693ebd401cc7dd62f",
+          "type": "output",
+          "preview": true
+        }
+      },
+      {
+        "time": 130837.79999999702,
+        "data": {
+          "node_id": "3",
+          "filename": "00001.wav",
+          "subfolder": "drama3_live/a3503ad592f646a693ebd401cc7dd62f",
+          "type": "output",
+          "preview": true
+        }
+      },
+      {
+        "time": 136907.09999999404,
+        "data": {
+          "node_id": "3",
+          "filename": "00002.wav",
+          "subfolder": "drama3_live/a3503ad592f646a693ebd401cc7dd62f",
+          "type": "output",
+          "preview": true
+        }
+      }
+    ],
+    "plays": [
+      {
+        "time": 118180.69999999553,
+        "duration": 1.4860625
+      },
+      {
+        "time": 130858.39999999851,
+        "duration": 1.4860625
+      },
+      {
+        "time": 136922,
+        "duration": 0.5572708333333334
+      }
+    ],
+    "start": 8249.59999999404
+  },
+  "scene_revision": "success",
+  "limitations": [
+    "24GB RAM-expert offload is slower than audio realtime",
+    "FA2 model dispatch not enabled",
+    "CUDA Graph not enabled"
+  ],
+  "r2t2_and_custom_paths": {
+    "external_files_and_restart_persistence": "passed",
+    "native_comfyui": "passed",
+    "long_audio_seconds": 38.3221875,
+    "long_transcription_seconds": 7.729011099996569,
+    "utterances_recognized": 12,
+    "segments": 13,
+    "short_warm_seconds": 1.8254120999990846,
+    "reference_auto_transcribe": "passed",
+    "real_external_model_codec_generation": "passed",
+    "external_scene_text_head": "passed",
+    "optional_qwen_external_file": "passed",
+    "cancel_and_queue_recovery": "passed",
+    "invalid_path_preserves_settings": true,
+    "browser": {
+      "errors": [],
+      "path_fields": 8,
+      "reference_transfer": true,
+      "overflow": false
+    },
+    "execution": "in_process_native_no_worker",
+    "native_asr_to_reference": "passed",
+    "python312_no_torch_native": "passed",
+    "native_canvas": "passed",
+    "gpu_memory": {
+      "baseline_gpu_MiB": 1374.4140625,
+      "peak_gpu_MiB": 4760.4140625,
+      "peak_increment_MiB": 3386.0,
+      "after_gpu_MiB": 1374.4140625,
+      "method": "NVML whole GPU sampling every 20ms; other apps included in baseline",
+      "elapsed_seconds": 1.9119763999988209,
+      "text": "这是移动目录后的整合包测试。"
+    }
+  },
+  "prior_release_feature_evidence": "Existing feature, acceleration, and long-audio results below are retained from 0.1.0/0.1.1; current audit checks are recorded separately.",
+  "audit_012": {
+    "date": "2026-10-15",
+    "independent_agent_rounds": 20,
+    "agent_report": "validation/audit-20-agent.md",
+    "regressions": 61,
+    "browser": {
+      "pending_asr_audio_binding": true,
+      "history_asr_audio_binding": true,
+      "preview_without_metadata": true,
+      "new_job_shows_its_own_result": true,
+      "late_result_status_response_discarded": true,
+      "stale_alignment_not_applied": true,
+      "preview_keeps_selected_take": true,
+      "one_settings_poll_loop": true,
+      "last_stream_chunk_not_lost": true,
+      "transient_chunk_failure_retries": true,
+      "stale_stream_request_discarded": true,
+      "settings_poll_preserves_edit": true,
+      "mobile_no_overflow": true,
+      "page_errors": []
+    },
+    "browser_method": "Real Edge frontend with mocked API timing and AudioContext; no claim of real audible playback from these regression checks.",
+    "real_tts_asr_session": {
+      "tts": {
+        "audio": "/api/files/output/12d56108076e4aa4ac20208eed24bb15.wav",
+        "metadata": "/api/files/output/12d56108076e4aa4ac20208eed24bb15.json",
+        "session_id": "7b93e96e307646b780e68da484844b01",
+        "take_id": "a9c83e99d7454379a39c607c9c52cd01",
+        "transcript": "交叉检查后的本地语音测试。",
+        "metrics": {
+          "seed": 271,
+          "sampling": {
+            "seed": 271,
+            "temperature": 0.7,
+            "top_k": 30,
+            "top_p": 0.7,
+            "max_frames": 180
+          },
+          "model": "drama3-t8-fp8.safetensors",
+          "elapsed_seconds": 56.67254099999991,
+          "first_frame_seconds": 30.24707800000033,
+          "duration_seconds": 2.507755102040816,
+          "length_limit_reached": false,
+          "finish_reason": "eos",
+          "gdn_backend": "torch",
+          "requested_gdn_backend": "torch",
+          "actual_gdn_backends": [
+            "torch"
+          ],
+          "acceleration_fallback": null,
+          "gdn_calls_by_backend": {
+            "torch": 1650,
+            "fla": 0
+          },
+          "gdn_calls": 1650,
+          "output_duration_seconds": 2.507755102040816
+        },
+        "subtitle": null,
+        "project": "/api/files/session/7b93e96e307646b780e68da484844b01.safetensors"
+      },
+      "asr": {
+        "text": "交叉检查后的本地语音测试",
+        "language": "Chinese",
+        "truncated": false,
+        "finish_reason": "stop",
+        "model": "Confucius4-R2T2-Q8_0.gguf",
+        "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "mode_executed": "offline",
+        "segments": [],
+        "backend": "r2t2",
+        "duration_seconds": 2.50775,
+        "elapsed_seconds": 15.859006800004863,
+        "input_gain": 1.0,
+        "timing_method": "segment_estimate",
+        "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
+        "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
+        "execution": "in_process_native",
+        "model_released": true,
+        "transcript": "交叉检查后的本地语音测试",
+        "source_audio": "/api/files/input/7b4a272a52d2438ab1dd883190e31faa.wav",
+        "source_name": "cross-check.wav",
+        "text_file": "/api/files/output/bd96b54ce87a403aacc5fb597db738cb.txt",
+        "metadata": "/api/files/output/bd96b54ce87a403aacc5fb597db738cb.asr.json"
+      },
+      "session_reload": true
+    },
+    "process_startup": [
+      {
+        "port": 7864,
+        "exit": 0,
+        "probe_status": "running",
+        "already_running_message": true,
+        "busy_lock_message": false
+      },
+      {
+        "port": 7867,
+        "exit": 3,
+        "probe_status": "running",
+        "already_running_message": false,
+        "busy_lock_message": true
+      }
+    ],
+    "native_short_gpu": "validation/audit-agent-gpu.json",
+    "scope": "Bug fixes for ownership, queue cancellation, relocation, input validation, frontend async state, native ASR parsing/backends/segmentation, and shared ComfyUI ASR registry caches. No new all-feature or cross-platform benchmark claimed.",
+    "comfyui": {
+      "node_count": 17,
+      "canvas_workflows": [
+        "basic",
+        "live",
+        "r2t2"
+      ],
+      "real_native_asr_graph": "passed",
+      "reports": [
+        "validation/audit-comfy-canvas.json",
+        "validation/audit-comfy-native.json"
+      ]
+    },
+    "runtime_dependencies": {
+      "compatible": 139,
+      "report": "validation/audit-dependencies.log"
+    }
+  },
+  "audit_013": {
+    "date": "2026-10-15",
+    "independent_agent_rounds": 20,
+    "agent_report": "validation/audit2-20-agent.md",
+    "regressions": 114,
+    "new_browser_checks": {
+      "preview_completion_keeps_new_selection": true,
+      "preview_submission_keeps_new_selection": true,
+      "audio_result_outside_history": true,
+      "asr_result_outside_history": true,
+      "alignment_outside_history": true,
+      "settings_result_outside_history": true,
+      "live_completion_outside_history": true,
+      "selection_stops_old_live_audio": true,
+      "uint64_seed_preserves_decimal": true,
+      "import_discards_old_preview": true,
+      "page_errors": []
+    },
+    "previous_browser_regressions": "23 total behavior assertions including 10 new scenarios; no page errors. Real Edge with mocked API timing/AudioContext, not a real audio fidelity test.",
+    "fixed": "Project import identity; jobs beyond recent history; preview selection lifetimes; uint64 seeds; session integer/metadata validation; atomic save cleanup; audio batch/numeric contracts; infill timing; reserved prompt control fields.",
+    "real_pipeline": {
+      "tts": {
+        "audio": "/api/files/output/acb2fe9d80824a12ba9b5991efd3af35.wav",
+        "metadata": "/api/files/output/acb2fe9d80824a12ba9b5991efd3af35.json",
+        "session_id": "f34ae60845d84664b4c221c303dbbe92",
+        "take_id": "57c536dc15944c0b96bc40d12848c5f0",
+        "transcript": "这是第二轮本地语音测试。",
+        "metrics": {
+          "seed": 18446744073709551615,
+          "sampling": {
+            "seed": 18446744073709551615,
+            "temperature": 0.7,
+            "top_k": 30,
+            "top_p": 0.7,
+            "max_frames": 220
+          },
+          "model": "drama3-t8-fp8.safetensors",
+          "elapsed_seconds": 54.66052640000271,
+          "first_frame_seconds": 28.520477900005062,
+          "duration_seconds": 1.8575963718820863,
+          "length_limit_reached": false,
+          "finish_reason": "eos",
+          "gdn_backend": "torch",
+          "requested_gdn_backend": "torch",
+          "actual_gdn_backends": [
+            "torch"
+          ],
+          "acceleration_fallback": null,
+          "gdn_calls_by_backend": {
+            "torch": 1230,
+            "fla": 0
+          },
+          "gdn_calls": 1230,
+          "output_duration_seconds": 1.8575963718820863
+        },
+        "subtitle": null,
+        "project": "/api/files/session/f34ae60845d84664b4c221c303dbbe92.safetensors"
+      },
+      "project_copy_preserves_original": true,
+      "r2t2": {
+        "text": "这是第二轮本地语音测试。",
+        "language": "Chinese",
+        "truncated": false,
+        "finish_reason": "stop",
+        "model": "Confucius4-R2T2-Q8_0.gguf",
+        "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "mode_executed": "offline",
+        "segments": [],
+        "backend": "r2t2",
+        "duration_seconds": 1.857625,
+        "elapsed_seconds": 5.446365899995726,
+        "input_gain": 1.0,
+        "timing_method": "segment_estimate",
+        "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
+        "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
+        "execution": "in_process_native",
+        "model_released": true,
+        "transcript": "这是第二轮本地语音测试。",
+        "source_audio": "/api/files/input/cac9f331d5084793854b9e948b1176df.wav",
+        "source_name": "audit2-real.wav",
+        "text_file": "/api/files/output/5138b3b88920424d8a68c2535538e02f.txt",
+        "metadata": "/api/files/output/5138b3b88920424d8a68c2535538e02f.asr.json"
+      },
+      "qwen": {
+        "text": "这是第二轮本地语音测试。",
+        "language": "Chinese",
+        "backend": "qwen",
+        "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
+        "duration_seconds": 1.8575963718820863,
+        "elapsed_seconds": 5.399885799997719,
+        "transcript": "这是第二轮本地语音测试。",
+        "source_audio": "/api/files/input/4c0e047ff5ab4daeb721a7ff21db1990.wav",
+        "source_name": "audit2-qwen.wav",
+        "text_file": "/api/files/output/0dc5fe86857a45eba835ec524960602a.txt",
+        "metadata": "/api/files/output/0dc5fe86857a45eba835ec524960602a.asr.json"
+      },
+      "alignment": {
+        "alignment": [
+          {
+            "text": "这",
+            "start": 0.0,
+            "end": 0.08
+          },
+          {
+            "text": "是",
+            "start": 0.08,
+            "end": 0.24
+          },
+          {
+            "text": "第",
+            "start": 0.24,
+            "end": 0.32
+          },
+          {
+            "text": "二",
+            "start": 0.32,
+            "end": 0.48
+          },
+          {
+            "text": "轮",
+            "start": 0.48,
+            "end": 0.64
+          },
+          {
+            "text": "本",
+            "start": 0.64,
+            "end": 0.8
+          },
+          {
+            "text": "地",
+            "start": 0.8,
+            "end": 1.04
+          },
+          {
+            "text": "语",
+            "start": 1.04,
+            "end": 1.12
+          },
+          {
+            "text": "音",
+            "start": 1.12,
+            "end": 1.28
+          },
+          {
+            "text": "测",
+            "start": 1.28,
+            "end": 1.52
+          },
+          {
+            "text": "试",
+            "start": 1.52,
+            "end": 1.76
+          }
+        ],
+        "session_id": "a0040d6aaa534ea4bc0d3a3602ce2ccc",
+        "take_id": "57c536dc15944c0b96bc40d12848c5f0",
+        "metadata": "/api/files/output/b24d397517a441aebf0da3d552a5f266.alignment.json"
+      },
+      "preview_same_length": true,
+      "reference": {
+        "reference_id": "82a2643135be484587224bef2b74ec23",
+        "name": "Audit2 codec validation",
+        "frames": 40
+      }
+    },
+    "runtime_dependencies": {
+      "compatible": 139,
+      "report": "validation/audit2-dependencies.log"
+    },
+    "real_comfyui_graph": {
+      "nodes": 17,
+      "qwen_asr": "passed",
+      "forced_alignment": "passed",
+      "r2t2": "passed",
+      "report": "validation/audit2-comfy-native.json"
+    }
+  },
+  "audit_014": {
+    "date": "2026-10-15",
+    "independent_agent_rounds": 20,
+    "agent_report": "validation/audit3-20-agent.md",
+    "regressions": 187,
+    "new_browser_checks": {
+      "committing_job_has_no_cancel_button": true,
+      "committing_job_is_labeled": true,
+      "queued_job_remains_cancelable": true,
+      "page_errors": []
+    },
+    "scope": "Saving commit boundary, accurate cancellation status, configuration failure rollback, queue survival after decoder/log/JSON faults; history controls, stream resource cleanup, multilingual chunks, short ASR and fractional segmentation.",
+    "artifact_format": "Source overlay for unchanged 0.1.3 full portable package; full independent node ZIP. Models/runtime/native DLLs unchanged.",
+    "real_pipeline": {
+      "real_live_cancel_without_project": true,
+      "tts": {
+        "audio": "/api/files/output/ae88f576900644bf8d78f26a76e0c8df.wav",
+        "metadata": "/api/files/output/ae88f576900644bf8d78f26a76e0c8df.json",
+        "session_id": "5812c2bc6ae74bd1919317172dd0a03b",
+        "take_id": "f8409367cb6d4e7db19edde4b83702e0",
+        "transcript": "这是第三轮本地语音测试。",
+        "metrics": {
+          "seed": 18446744073709551615,
+          "sampling": {
+            "seed": 18446744073709551615,
+            "temperature": 0.7,
+            "top_k": 30,
+            "top_p": 0.7,
+            "max_frames": 220
+          },
+          "model": "drama3-t8-fp8.safetensors",
+          "elapsed_seconds": 20.673142200001166,
+          "first_frame_seconds": 5.839329099995666,
+          "duration_seconds": 1.9969160997732427,
+          "length_limit_reached": false,
+          "finish_reason": "eos",
+          "gdn_backend": "torch",
+          "requested_gdn_backend": "torch",
+          "actual_gdn_backends": [
+            "torch"
+          ],
+          "acceleration_fallback": null,
+          "gdn_calls_by_backend": {
+            "torch": 1320,
+            "fla": 0
+          },
+          "gdn_calls": 1320,
+          "output_duration_seconds": 1.9969160997732427
+        },
+        "subtitle": null,
+        "project": "/api/files/session/5812c2bc6ae74bd1919317172dd0a03b.safetensors"
+      },
+      "streaming_chunks": {
+        "count": 2,
+        "frames": 88064,
+        "final_length_matches": true
+      },
+      "project_copy_preserves_original": true,
+      "r2t2": {
+        "text": "这是第三轮本地语音",
+        "language": "Chinese",
+        "truncated": false,
+        "finish_reason": "stop",
+        "model": "Confucius4-R2T2-Q8_0.gguf",
+        "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "mode_executed": "offline",
+        "segments": [],
+        "backend": "r2t2",
+        "duration_seconds": 1.9969375,
+        "elapsed_seconds": 4.079312299989397,
+        "input_gain": 1.0,
+        "timing_method": "segment_estimate",
+        "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
+        "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
+        "execution": "in_process_native",
+        "model_released": true,
+        "transcript": "这是第三轮本地语音",
+        "source_audio": "/api/files/input/5a338b95ad354e24b5bd9fafb9ece7c1.wav",
+        "source_name": "audit3-real-fixed.wav",
+        "text_file": "/api/files/output/2795ec2237354bf0b71716523635aed5.txt",
+        "metadata": "/api/files/output/2795ec2237354bf0b71716523635aed5.asr.json"
+      },
+      "r2t2_sample_exact_match": false,
+      "r2t2_previous_sample": {
+        "text": "这是第二轮本地语音测试。",
+        "language": "Chinese",
+        "truncated": false,
+        "finish_reason": "stop",
+        "model": "Confucius4-R2T2-Q8_0.gguf",
+        "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "mode_executed": "offline",
+        "segments": [],
+        "backend": "r2t2",
+        "duration_seconds": 1.857625,
+        "elapsed_seconds": 1.7282204999937676,
+        "input_gain": 1.0,
+        "timing_method": "segment_estimate",
+        "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
+        "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
+        "execution": "in_process_native",
+        "model_released": true,
+        "transcript": "这是第二轮本地语音测试。",
+        "source_audio": "/api/files/input/bef3e21d614d4368be78e04fbf983a49.wav",
+        "source_name": "audit3-r2t2-known.wav",
+        "text_file": "/api/files/output/9fbb5aac1de94065ad59a19ae1bee18e.txt",
+        "metadata": "/api/files/output/9fbb5aac1de94065ad59a19ae1bee18e.asr.json"
+      },
+      "qwen": {
+        "text": "这是第三轮本地语音测试。",
+        "language": "Chinese",
+        "backend": "qwen",
+        "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
+        "duration_seconds": 1.9969160997732427,
+        "elapsed_seconds": 15.068264999994426,
+        "transcript": "这是第三轮本地语音测试。",
+        "source_audio": "/api/files/input/7137c68395e14e5eaaf12d34a44bbfa5.wav",
+        "source_name": "audit3-qwen.wav",
+        "text_file": "/api/files/output/4e6526dd68aa4284a533edba64bb6c52.txt",
+        "metadata": "/api/files/output/4e6526dd68aa4284a533edba64bb6c52.asr.json"
+      },
+      "qwen_five_ms_input": {
+        "text": "嗯。",
+        "language": "Chinese",
+        "backend": "qwen",
+        "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
+        "duration_seconds": 0.004988662131519274,
+        "elapsed_seconds": 0.5163973000016995,
+        "transcript": "嗯。",
+        "source_audio": "/api/files/input/e295359f69e94aa590514976794289d8.wav",
+        "source_name": "audit3-five-ms.wav",
+        "text_file": "/api/files/output/b86eb0761d5e46109c25976210ad80d3.txt",
+        "metadata": "/api/files/output/b86eb0761d5e46109c25976210ad80d3.asr.json"
+      },
+      "alignment": {
+        "alignment": [
+          {
+            "text": "这",
+            "start": 0.0,
+            "end": 0.08
+          },
+          {
+            "text": "是",
+            "start": 0.08,
+            "end": 0.24
+          },
+          {
+            "text": "第",
+            "start": 0.24,
+            "end": 0.4
+          },
+          {
+            "text": "三",
+            "start": 0.4,
+            "end": 0.64
+          },
+          {
+            "text": "轮",
+            "start": 0.64,
+            "end": 0.8
+          },
+          {
+            "text": "本",
+            "start": 0.8,
+            "end": 0.96
+          },
+          {
+            "text": "地",
+            "start": 0.96,
+            "end": 1.2
+          },
+          {
+            "text": "语",
+            "start": 1.2,
+            "end": 1.28
+          },
+          {
+            "text": "音",
+            "start": 1.28,
+            "end": 1.44
+          },
+          {
+            "text": "测",
+            "start": 1.44,
+            "end": 1.68
+          },
+          {
+            "text": "试",
+            "start": 1.68,
+            "end": 1.92
+          }
+        ],
+        "session_id": "c05a438509894b54b3450bf1dc7153e7",
+        "take_id": "f8409367cb6d4e7db19edde4b83702e0",
+        "metadata": "/api/files/output/984f74d025064e39acae2857637c1585.alignment.json"
+      },
+      "preview_same_length": true,
+      "reference": {
+        "reference_id": "3e27c0a5069644e387f6c9828afa656d",
+        "name": "Audit3 codec validation",
+        "frames": 43
+      }
+    },
+    "asr_accuracy_limitation": {
+      "input": "这是第三轮本地语音测试。",
+      "r2t2": "这是第三轮本地语音",
+      "qwen": "这是第三轮本地语音测试。",
+      "raw_report": "validation/audit3-asr-diagnose.json",
+      "note": "Terminal protocol pipe cleaned. R2T2 omitted final words and auto-detected English; no words or language fabricated. Previous second-round sample still recognized exactly by both backends."
+    },
+    "browser": {
+      "previous_13": {
+        "pending_asr_audio_binding": true,
+        "history_asr_audio_binding": true,
+        "preview_without_metadata": true,
+        "new_job_shows_its_own_result": true,
+        "late_result_status_response_discarded": true,
+        "stale_alignment_not_applied": true,
+        "preview_keeps_selected_take": true,
+        "one_settings_poll_loop": true,
+        "last_stream_chunk_not_lost": true,
+        "transient_chunk_failure_retries": true,
+        "stale_stream_request_discarded": true,
+        "settings_poll_preserves_edit": true,
+        "mobile_no_overflow": true,
+        "page_errors": []
+      },
+      "boundary_10": {
+        "preview_completion_keeps_new_selection": true,
+        "preview_submission_keeps_new_selection": true,
+        "audio_result_outside_history": true,
+        "asr_result_outside_history": true,
+        "alignment_outside_history": true,
+        "settings_result_outside_history": true,
+        "live_completion_outside_history": true,
+        "selection_stops_old_live_audio": true,
+        "uint64_seed_preserves_decimal": true,
+        "import_discards_old_preview": true,
+        "page_errors": []
+      },
+      "new_3": {
+        "committing_job_has_no_cancel_button": true,
+        "committing_job_is_labeled": true,
+        "queued_job_remains_cancelable": true,
+        "page_errors": []
+      },
+      "scope": "Real Edge with controlled API/AudioContext; not audible playback proof."
+    },
+    "runtime_dependencies": {
+      "compatible": 139,
+      "report": "validation/audit3-dependencies.log"
+    },
+    "real_comfyui_graph": {
+      "nodes": 17,
+      "qwen_asr": "passed",
+      "forced_alignment": "passed",
+      "r2t2": "passed",
+      "sample": "Unmodified second-round known Chinese clip",
+      "report": "validation/audit3-comfy-native.json"
+    }
+  },
+  "audit_015": {
+    "date": "2026-10-15",
+    "independent_agent_rounds": 20,
+    "agent_report": "validation/audit4-20-agent.md",
+    "new_core_cases": 30,
+    "new_workspace_cases": 19,
+    "browser_behavior_checks": 32,
+    "browser_reports": [
+      "validation/audit4-browser.json",
+      "validation/audit4-browser-previous.json",
+      "validation/audit4-browser-edges.json",
+      "validation/audit4-browser-saving.json"
+    ],
+    "regressions": 236,
+    "real_pipeline": {
+      "real_live_cancel_without_project": true,
+      "tts": {
+        "audio": "/api/files/output/f5ea68d503604f118901bcd4ce8f5ff7.wav",
+        "metadata": "/api/files/output/f5ea68d503604f118901bcd4ce8f5ff7.json",
+        "session_id": "1b945929dfc44f4583d08d86e8cd8411",
+        "take_id": "7cc444d5d2d54b9a9871e261a6cee1b3",
+        "transcript": "这是第二轮本地语音测试。",
+        "metrics": {
+          "seed": 18446744073709551615,
+          "sampling": {
+            "seed": 18446744073709551615,
+            "temperature": 0.7,
+            "top_k": 30,
+            "top_p": 0.7,
+            "max_frames": 220
+          },
+          "model": "drama3-t8-fp8.safetensors",
+          "elapsed_seconds": 19.98408959999506,
+          "first_frame_seconds": 5.2230981000029715,
+          "duration_seconds": 1.8575963718820863,
+          "length_limit_reached": false,
+          "finish_reason": "eos",
+          "gdn_backend": "torch",
+          "requested_gdn_backend": "torch",
+          "actual_gdn_backends": [
+            "torch"
+          ],
+          "acceleration_fallback": null,
+          "gdn_calls_by_backend": {
+            "torch": 1230,
+            "fla": 0
+          },
+          "gdn_calls": 1230,
+          "output_duration_seconds": 1.8575963718820863
+        },
+        "subtitle": null,
+        "project": "/api/files/session/1b945929dfc44f4583d08d86e8cd8411.safetensors"
+      },
+      "streaming_chunks": {
+        "count": 2,
+        "frames": 81920,
+        "final_length_matches": true
+      },
+      "project_copy_preserves_original": true,
+      "r2t2": {
+        "text": "这是第二轮本地语音测试。",
+        "language": "Chinese",
+        "truncated": false,
+        "finish_reason": "stop",
+        "model": "Confucius4-R2T2-Q8_0.gguf",
+        "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "mode_executed": "offline",
+        "segments": [],
+        "backend": "r2t2",
+        "duration_seconds": 1.857625,
+        "elapsed_seconds": 5.003938499998185,
+        "input_gain": 1.0,
+        "timing_method": "segment_estimate",
+        "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
+        "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
+        "execution": "in_process_native",
+        "model_released": true,
+        "transcript": "这是第二轮本地语音测试。",
+        "source_audio": "/api/files/input/8a49264a0e17453fbd12111ecc3fc10b.wav",
+        "source_name": "audit4-real.wav",
+        "text_file": "/api/files/output/e7706180e2bd4824b182af1fd318932f.txt",
+        "metadata": "/api/files/output/e7706180e2bd4824b182af1fd318932f.asr.json"
+      },
+      "qwen": {
+        "text": "这是第二轮本地语音测试。",
+        "language": "Chinese",
+        "backend": "qwen",
+        "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
+        "duration_seconds": 1.8575963718820863,
+        "elapsed_seconds": 3.396101999998791,
+        "transcript": "这是第二轮本地语音测试。",
+        "source_audio": "/api/files/input/d822d53c75814aa98729c57ebe3cbef6.wav",
+        "source_name": "audit4-qwen.wav",
+        "text_file": "/api/files/output/cfb1dcb31cc54e0b9e82a8b832d6a1eb.txt",
+        "metadata": "/api/files/output/cfb1dcb31cc54e0b9e82a8b832d6a1eb.asr.json"
+      },
+      "qwen_five_ms_input": {
+        "text": "嗯。",
+        "language": "Chinese",
+        "backend": "qwen",
+        "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
+        "duration_seconds": 0.004988662131519274,
+        "elapsed_seconds": 0.16683449999254663,
+        "transcript": "嗯。",
+        "source_audio": "/api/files/input/1d81e2a48f1a4af49fc7d9f610325028.wav",
+        "source_name": "audit4-five-ms.wav",
+        "text_file": "/api/files/output/804239e08841461a9b94b9ecfb12d987.txt",
+        "metadata": "/api/files/output/804239e08841461a9b94b9ecfb12d987.asr.json"
+      },
+      "alignment": {
+        "alignment": [
+          {
+            "text": "这",
+            "start": 0.0,
+            "end": 0.08
+          },
+          {
+            "text": "是",
+            "start": 0.08,
+            "end": 0.24
+          },
+          {
+            "text": "第",
+            "start": 0.24,
+            "end": 0.32
+          },
+          {
+            "text": "二",
+            "start": 0.32,
+            "end": 0.48
+          },
+          {
+            "text": "轮",
+            "start": 0.48,
+            "end": 0.64
+          },
+          {
+            "text": "本",
+            "start": 0.64,
+            "end": 0.8
+          },
+          {
+            "text": "地",
+            "start": 0.8,
+            "end": 1.04
+          },
+          {
+            "text": "语",
+            "start": 1.04,
+            "end": 1.12
+          },
+          {
+            "text": "音",
+            "start": 1.12,
+            "end": 1.28
+          },
+          {
+            "text": "测",
+            "start": 1.28,
+            "end": 1.52
+          },
+          {
+            "text": "试",
+            "start": 1.52,
+            "end": 1.76
+          }
+        ],
+        "session_id": "c997f8f9c9b84d1798c3ea6f00e72cd6",
+        "take_id": "7cc444d5d2d54b9a9871e261a6cee1b3",
+        "metadata": "/api/files/output/c1f9c17cd3ff401998337bf79f3154b7.alignment.json"
+      },
+      "preview_same_length": true,
+      "reference": {
+        "reference_id": "664c0171be59400e800c5caf1c3e7f69",
+        "name": "Audit4 codec validation",
+        "frames": 40
+      }
+    },
+    "runtime_dependencies": {
+      "compatible": 139,
+      "report": "validation/audit4-dependencies.log"
+    },
+    "artifact_format": "Cumulative source overlay for unchanged 0.1.3 full portable base, also applicable to its 0.1.4 upgraded directory; full independent node ZIP. Models/runtime/native DLLs unchanged.",
+    "real_comfyui_graph": {
+      "nodes": 17,
+      "qwen_asr": "passed",
+      "forced_alignment": "passed",
+      "r2t2": "passed",
+      "report": "validation/audit4-comfy-native.json"
+    },
+    "real_comfyui_live": {
+      "history_status": "success",
+      "packets": 2,
+      "actual_browser_audio_starts": 2,
+      "frames": 110592,
+      "sample_rate": 44100,
+      "saved_audio": "D:\\drama-3\\vendor\\ComfyUI\\output\\Drama3_T8\\output_00002.flac",
+      "chunk_and_complete_length_match": true,
+      "report": "validation/audit4-comfy-live-browser.json"
+    }
+  },
+  "audit_016": {
+    "date": "2026-10-15",
+    "independent_agent_rounds": 20,
+    "agent_report": "validation/audit5-20-agent.md",
+    "new_core_cases": 24,
+    "new_workspace_cases": 10,
+    "independent_cross_cases": 3,
+    "browser_behavior_checks": 37,
+    "browser_reports": [
+      "validation/audit5-browser.json",
+      "validation/audit5-agent-asr-post.json",
+      "validation/audit5-browser-previous.json",
+      "validation/audit5-browser-edges.json",
+      "validation/audit5-browser-saving.json",
+      "validation/audit5-browser-storage.json"
+    ],
+    "regressions": 273,
+    "real_pipeline": {
+      "real_live_cancel_without_project": true,
+      "tts": {
+        "audio": "/api/files/output/983ff5e55b944aef86513caa1a263714.wav",
+        "metadata": "/api/files/output/983ff5e55b944aef86513caa1a263714.json",
+        "session_id": "3de71e65f4164ad68448e4468668f6e3",
+        "take_id": "2e8e7f2c9d334df4acdaf41d8a2c8a1d",
+        "transcript": "这是第二轮本地语音测试。",
+        "metrics": {
+          "seed": 18446744073709551615,
+          "sampling": {
+            "seed": 18446744073709551615,
+            "temperature": 0.7,
+            "top_k": 30,
+            "top_p": 0.7,
+            "max_frames": 220
+          },
+          "model": "drama3-t8-fp8.safetensors",
+          "elapsed_seconds": 21.738820400001714,
+          "first_frame_seconds": 5.9528135000000475,
+          "duration_seconds": 1.8575963718820863,
+          "length_limit_reached": false,
+          "finish_reason": "eos",
+          "gdn_backend": "torch",
+          "requested_gdn_backend": "torch",
+          "actual_gdn_backends": [
+            "torch"
+          ],
+          "acceleration_fallback": null,
+          "gdn_calls_by_backend": {
+            "torch": 1230,
+            "fla": 0
+          },
+          "gdn_calls": 1230,
+          "output_duration_seconds": 1.8575963718820863
+        },
+        "subtitle": null,
+        "project": "/api/files/session/3de71e65f4164ad68448e4468668f6e3.safetensors"
+      },
+      "streaming_chunks": {
+        "count": 2,
+        "frames": 81920,
+        "final_length_matches": true
+      },
+      "directed_text_stream": {
+        "audio": "/api/files/output/d6e9bc1a14784b8097732ce6821398b5.wav",
+        "metadata": "/api/files/output/d6e9bc1a14784b8097732ce6821398b5.json",
+        "session_id": "d2c9c3ce9a2a4410a0cca1c9c0ee7f16",
+        "take_id": "d68e4c7fa2504e418b6d3ce2afc65fdc",
+        "transcript": "你好，我们开始吧。",
+        "metrics": {
+          "seed": 46,
+          "sampling": {
+            "seed": 46,
+            "temperature": 0.7,
+            "top_k": 30,
+            "top_p": 0.7,
+            "max_frames": 160
+          },
+          "model": "drama3-t8-fp8.safetensors",
+          "elapsed_seconds": 21.628927300000214,
+          "first_frame_seconds": 8.608531100006076,
+          "duration_seconds": 2.5541950113378684,
+          "length_limit_reached": false,
+          "finish_reason": "eos",
+          "gdn_backend": "torch",
+          "requested_gdn_backend": "torch",
+          "actual_gdn_backends": [
+            "torch"
+          ],
+          "acceleration_fallback": null,
+          "gdn_calls_by_backend": {
+            "torch": 1680,
+            "fla": 0
+          },
+          "gdn_calls": 1680,
+          "task": "text_stream",
+          "lookahead": "故事从这里开始。",
+          "output_duration_seconds": 2.5541950113378684
+        },
+        "subtitle": null,
+        "project": "/api/files/session/d2c9c3ce9a2a4410a0cca1c9c0ee7f16.safetensors"
+      },
+      "project_copy_preserves_original": true,
+      "r2t2": {
+        "text": "这是第二轮本地语音测试。",
+        "language": "Chinese",
+        "truncated": false,
+        "finish_reason": "stop",
+        "model": "Confucius4-R2T2-Q8_0.gguf",
+        "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "mode_executed": "offline",
+        "segments": [],
+        "backend": "r2t2",
+        "duration_seconds": 1.857625,
+        "elapsed_seconds": 5.242564200001652,
+        "input_gain": 1.0,
+        "timing_method": "segment_estimate",
+        "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
+        "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
+        "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
+        "execution": "in_process_native",
+        "model_released": true,
+        "transcript": "这是第二轮本地语音测试。",
+        "source_audio": "/api/files/input/157e9ad8538e4df7bf40e23ee44e009e.wav",
+        "source_name": "audit5-real.wav",
+        "text_file": "/api/files/output/2ac380ac5eb44f9593574d7ac639a6c2.txt",
+        "metadata": "/api/files/output/2ac380ac5eb44f9593574d7ac639a6c2.asr.json"
+      },
+      "qwen": {
+        "text": "这是第二轮本地语音测试。",
+        "language": "Chinese",
+        "backend": "qwen",
+        "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
+        "duration_seconds": 1.8575963718820863,
+        "elapsed_seconds": 5.762114999990445,
+        "transcript": "这是第二轮本地语音测试。",
+        "source_audio": "/api/files/input/23337fd967e84073abb5f6abbb4ed8a3.wav",
+        "source_name": "audit5-qwen.wav",
+        "text_file": "/api/files/output/03590d9e9a234bbbaf05a72ae3683f8d.txt",
+        "metadata": "/api/files/output/03590d9e9a234bbbaf05a72ae3683f8d.asr.json"
+      },
+      "qwen_five_ms_input": {
+        "text": "嗯。",
+        "language": "Chinese",
+        "backend": "qwen",
+        "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
+        "duration_seconds": 0.004988662131519274,
+        "elapsed_seconds": 0.3211015000124462,
+        "transcript": "嗯。",
+        "source_audio": "/api/files/input/0393a2c9fcca49e2b02c5c9b014a8f7f.wav",
+        "source_name": "audit5-five-ms.wav",
+        "text_file": "/api/files/output/527e5c3c3a1f41bfbfd02947f6fa0106.txt",
+        "metadata": "/api/files/output/527e5c3c3a1f41bfbfd02947f6fa0106.asr.json"
+      },
+      "alignment": {
+        "alignment": [
+          {
+            "text": "这",
+            "start": 0.0,
+            "end": 0.08
+          },
+          {
+            "text": "是",
+            "start": 0.08,
+            "end": 0.24
+          },
+          {
+            "text": "第",
+            "start": 0.24,
+            "end": 0.32
+          },
+          {
+            "text": "二",
+            "start": 0.32,
+            "end": 0.48
+          },
+          {
+            "text": "轮",
+            "start": 0.48,
+            "end": 0.64
+          },
+          {
+            "text": "本",
+            "start": 0.64,
+            "end": 0.8
+          },
+          {
+            "text": "地",
+            "start": 0.8,
+            "end": 1.04
+          },
+          {
+            "text": "语",
+            "start": 1.04,
+            "end": 1.12
+          },
+          {
+            "text": "音",
+            "start": 1.12,
+            "end": 1.28
+          },
+          {
+            "text": "测",
+            "start": 1.28,
+            "end": 1.52
+          },
+          {
+            "text": "试",
+            "start": 1.52,
+            "end": 1.76
+          }
+        ],
+        "session_id": "9f9fd31bad214d6cb5b95be0eda297a5",
+        "take_id": "2e8e7f2c9d334df4acdaf41d8a2c8a1d",
+        "metadata": "/api/files/output/7bf57bd0b7bb49c9aa759be4a3bc513d.alignment.json"
+      },
+      "preview_same_length": true,
+      "reference": {
+        "reference_id": "4c341f05f4c84e4c8e108944a9836122",
+        "name": "Audit5 codec validation",
+        "frames": 40
+      }
+    },
+    "runtime_dependencies": {
+      "compatible": 139,
+      "report": "validation/audit5-dependencies.log"
+    },
+    "artifact_format": "Cumulative source overlay for unchanged 0.1.3 full portable base, also applicable to its 0.1.4/0.1.5 upgraded directories; full independent node ZIP. Models/runtime/native DLLs unchanged.",
+    "real_comfyui_graph": {
+      "nodes": 17,
+      "qwen_asr": "passed",
+      "forced_alignment": "passed",
+      "r2t2": "passed",
+      "report": "validation/audit5-comfy-native.json"
+    },
+    "real_comfyui_live": {
+      "history_status": "success",
+      "packets": 2,
+      "actual_browser_audio_starts": 2,
+      "frames": 110592,
+      "sample_rate": 44100,
+      "saved_audio": "D:\\drama-3\\vendor\\ComfyUI\\output\\Drama3_T8\\output_00003.flac",
+      "chunk_and_complete_length_match": true,
+      "report": "validation/audit5-comfy-live-browser.json"
+    }
+  },
+  "release_017": {
+    "changes": "Code-only public release, bilingual documentation and transactional portable auto-update",
+    "updater_tests": 43,
+    "installer_tests": 12,
+    "release_excludes": [
+      "model weights",
+      "Python runtime",
+      "user data",
+      "roadmap.md"
+    ],
+    "registry_publisher": "t8star",
+    "models_repo": "t8star/Drama-3-Comfy",
+    "core_inference_changes": false,
+    "exported_source_fix": "Retain legitimate ComfyUI API input and ldm models Python packages"
+  }
+}

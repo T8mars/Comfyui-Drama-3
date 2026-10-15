@@ -1,0 +1,20 @@
+{
+  "1": {
+    "class_type": "LoadAudio",
+    "inputs": {
+      "audio": "reference.wav"
+    }
+  },
+  "2": {
+    "class_type": "T8DramaAlign",
+    "inputs": {
+      "aligner": "qwen-aligner",
+      "audio": [
+        "1",
+        0
+      ],
+      "transcript": "你好，这是本地语音测试。",
+      "language": "Chinese"
+    }
+  }
+}

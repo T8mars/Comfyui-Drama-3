@@ -1,0 +1,33 @@
+{
+  "1": {
+    "class_type": "T8DramaLoader",
+    "inputs": {
+      "model": "drama3-t8-fp8.safetensors",
+      "codec": "drama3-codec.safetensors",
+      "expert_cache_gb": 12,
+      "gdn_backend": "torch"
+    }
+  },
+  "3": {
+    "class_type": "T8DramaSRT",
+    "inputs": {
+      "engine": [
+        "1",
+        0
+      ],
+      "srt": "1\n00:00:00,000 --> 00:00:02,000\nHello.\n\n2\n00:00:03,000 --> 00:00:05,000\nGoodbye.\n",
+      "seed": 55,
+      "max_frames": 160
+    }
+  },
+  "5": {
+    "class_type": "SaveAudio",
+    "inputs": {
+      "audio": [
+        "3",
+        1
+      ],
+      "filename_prefix": "Drama3_T8/srt"
+    }
+  }
+}

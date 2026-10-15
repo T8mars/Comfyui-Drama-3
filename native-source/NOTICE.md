@@ -1,0 +1,1 @@
+T8 Drama 0.1.1: Python ABI-independent C API adapted from the pinned T8 Confucius native implementation. Same-process execution, cancellation checks and native context bounds were added. See NOTICE-UPSTREAM.md, LICENSE and licenses/NOTICE-R2T2.txt for provenance. No Python worker or model server is used.

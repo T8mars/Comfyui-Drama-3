@@ -1,0 +1,14 @@
+# Local research must never be published.
+/roadmap.md
+/r2t2-runtime/
+/.updates/
+__pycache__/
+*.pyc
+.pytest_cache/
+/portable/models/
+/portable/runtime/
+/portable/userdata/
+/portable/outputs/
+/portable/.updates/
+/portable/release_packages/
+/portable/validation/

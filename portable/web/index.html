@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drama 3 · 本地演出工作台</title><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/studio-extras.css"></head>
+<body><div class="shell">
+<header class="hero"><div><span class="eyebrow">T8STAR-AIX · LOCAL VOICE STUDIO</span><h1>Drama 3 <span>让声音进入角色</span></h1>
+<p>克隆音色、编排场景，让每一遍演出更接近你的想法。</p></div><div class="hardware"><span class="dot"></span><span id="gpu">正在读取设备…</span><small id="model-status">本地运行 · Built with Fish Audio</small></div></header>
+<nav id="tabs" aria-label="工作区"><button class="active" data-page="generate">语音生成</button><button data-page="scene">多角色与场景</button><button data-page="revise">导演修改</button><button data-page="infill">局部编辑</button><button data-page="stream">长文与流式</button><button data-page="voices">角色音色库</button><button data-page="history">历史与任务</button><button data-page="environment">环境与加速</button></nav>
+<div id="notice" class="notice" hidden></div>
+<main class="workspace">
+<aside class="card voices-panel"><div class="section-title"><span class="icon">♪</span><div><h2>演出角色</h2><p>选用已保存的参考，保持角色声音。</p></div></div>
+<div id="reference-list" class="reference-list"><div class="empty">还没有角色参考。上传音频与准确稿件，保存为可重复使用的音色。</div></div>
+<details class="upload" open><summary>添加参考音频</summary><form id="voice-form"><label>角色名称<input name="name" placeholder="例如：旁白 · 温暖沉稳"></label>
+<label class="drop">参考音频<input type="file" name="file" accept="audio/*" required><small>上传 WAV / FLAC / OGG / MP3，或从磁盘拖入。</small></label>
+<label>音频中的准确内容<textarea name="transcript" rows="3" placeholder="逐字填写台词，留空使用已选择的本地转写引擎。多角色可用 <|speaker:0|> 标记。"></textarea></label>
+<button class="secondary wide" type="submit">编码并保存音色</button></form></details>
+<div class="reference-tip">参考可以重复使用；多段参考可一起选择。演出指令放在台词中，例如 [whispering]。</div></aside>
+<section class="card editor-panel">
+<div class="section-title"><span class="icon">✧</span><div><h2 id="page-title">语音生成</h2><p id="page-description">输入台词与演出提示，生成你的第一遍声音。</p></div><span class="pill">本地原生推理</span></div>
+<form id="generate-form">
+<div id="session-field" class="field" hidden><label>选择原始会话<select id="session"><option value="">请选择已生成的会话</option></select></label><small>修改与局部编辑沿用真实的音频历史。</small></div>
+<div id="scene-fields" class="field conditional" hidden><label>场景描述<input id="scene" placeholder="例如：深夜的咖啡馆，两位朋友重逢"></label><label>角色描述<textarea id="characters" rows="2" placeholder="林：温暖的年轻女声；周：低沉、语速平稳的男声。"></textarea></label></div>
+<div id="note-field" class="field conditional" hidden><label>这一遍的导演意见<textarea id="note" rows="3" placeholder="例如：更温柔一点，后半句带着笑意；比上一遍慢一些。"></textarea></label></div>
+<label id="text-label">台词内容<textarea id="text" class="script" rows="7" placeholder="<|speaker:0|> [warmly] 你好，欢迎来到 Drama 3。让我们一起，给故事一个声音。" required></textarea></label>
+<div id="edit-fields" class="field conditional" hidden><div class="two-col"><label>起始位置（秒）<input id="start-seconds" type="number" min="0" step="0.05" value="0"></label><label>结束位置（秒）<input id="end-seconds" type="number" min="0" step="0.05" value="1"></label></div><label>新中段长度提示（音频帧，可留空）<input id="duration-frames" type="number" min="1" placeholder="每秒约 21.5 帧"></label><small>在台词框填写修改后的完整稿件。仅补写选定区间，保留区间外原始音频 codes。</small></div>
+<div id="stream-fields" class="field conditional" hidden><label>生成方式<select id="stream-mode"><option value="long">长文自动分段</option><option value="text_stream">逐段输入，附带下一段预览</option></select></label><label>下一段文本预览<textarea id="lookahead" rows="2" placeholder="输入下一段开头，让声音自然衔接。"></textarea></label></div>
+<details class="advanced"><summary>演出与采样设置</summary><label>整体演出方向<input id="direction" placeholder="例如：清晰、自然，像是在和朋友聊天"></label><div class="parameters"><label>随机种子<input id="seed" type="text" inputmode="numeric" pattern="[0-9]{1,20}" maxlength="20" title="0–18446744073709551615" value="42"></label><label>温度<input id="temperature" type="number" value="0.7" min="0.01" max="2" step="0.05"></label><label>Top P<input id="top-p" type="number" value="0.7" min="0.01" max="1" step="0.05"></label><label>Top K<input id="top-k" type="number" value="30" min="1"></label><label>最大音频帧<input id="max-frames" type="number" value="600" min="1" max="8192"></label></div><small>达到最大长度时会明确标记。时长提示与采样设置会影响演出结果。</small></details>
+<label class="stream-toggle"><input type="checkbox" id="audio-stream">生成期间实时试听（CPU 解码预览）</label>
+<div class="actions"><button type="submit" id="generate" class="primary">开始生成</button><span id="task-status">准备好后，声音会出现在右侧。</span></div></form>
+</section>
+<aside class="card output-panel"><div class="section-title"><span class="icon">▶</span><div><h2>本次演出</h2><p>试听、下载，或继续给出导演意见。</p></div></div>
+<div class="wave-decoration" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<audio id="audio" controls preload="metadata"></audio><p id="output-text" class="output-text">第一遍演出完成后，在这里试听。</p>
+<div id="output-links" class="output-links" hidden><a id="download" class="secondary" download>下载音频</a><a id="metadata-download" class="ghost" download>参数记录</a></div>
+<div id="metrics" class="metrics"></div><div class="output-note">每次生成都保存音频、参数与会话。修改会创建新的 take，保留原始版本。</div>
+</aside>
+</main>
+<section id="history-panel" class="card large-panel" hidden><div class="section-title"><span class="icon">◷</span><div><h2>生成历史与任务队列</h2><p>任务串行执行；失败与取消不会显示为成功。</p></div></div><div id="jobs"></div></section>
+<section id="environment-panel" class="card large-panel" hidden><div class="section-title"><span class="icon">⚙</span><div><h2>本地环境</h2><p>模型、缓存与可选加速的实际运行状态。</p></div></div><div id="environment" class="environment"></div><button id="unload" class="secondary">释放模型内存</button><p class="hint">使用项目自带 Python；模型在本机执行。可选加速需通过真实调用与音频验证。</p></section>
+<footer>整合制作 · T8star-Aix　<span>Built with Fish Audio · 本地工作台</span></footer>
+</div><script src="/live.js"></script><script src="/app.js"></script><script src="/workspace-tools.js"></script><script src="/transcribe.js"></script></body></html>

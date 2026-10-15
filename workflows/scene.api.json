@@ -1,0 +1,50 @@
+{
+  "1": {
+    "class_type": "T8DramaLoader",
+    "inputs": {
+      "model": "drama3-t8-fp8.safetensors",
+      "codec": "drama3-codec.safetensors",
+      "expert_cache_gb": 12,
+      "gdn_backend": "torch"
+    }
+  },
+  "3": {
+    "class_type": "T8DramaScene",
+    "inputs": {
+      "engine": [
+        "1",
+        0
+      ],
+      "script": "Anna: Ready?\nBen: Always.",
+      "scene": "Two friends are about to begin a journey.",
+      "characters": "- Anna: a calm young woman.\n- Ben: a cheerful young man.",
+      "seed": 44,
+      "max_frames": 180
+    }
+  },
+  "4": {
+    "class_type": "T8DramaDecode",
+    "inputs": {
+      "engine": [
+        "1",
+        0
+      ],
+      "session": [
+        "3",
+        0
+      ],
+      "take_index": -1,
+      "all_takes": false
+    }
+  },
+  "5": {
+    "class_type": "SaveAudio",
+    "inputs": {
+      "audio": [
+        "4",
+        0
+      ],
+      "filename_prefix": "Drama3_T8/output"
+    }
+  }
+}

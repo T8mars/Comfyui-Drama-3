@@ -1,0 +1,6 @@
+.stream-toggle{display:flex;align-items:center;gap:9px;font-size:11px;color:#9a7891;margin:16px 0 0}
+.stream-toggle input{width:14px;margin:0;accent-color:#ef2b82}
+.live-hint{color:#db4f87}
+.take-tools{display:grid;gap:12px;margin:8px 0 20px}.take-tools canvas{width:100%;height:130px;border:1px solid #f2c9dd;border-radius:12px;touch-action:none;cursor:crosshair}.word-timeline{display:flex;flex-wrap:wrap;gap:5px}.word{padding:6px 10px;border:1px solid #f7d0e0;border-radius:7px;background:white;color:#a83c72;cursor:pointer}.runtime-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:24px}.runtime-form p{grid-column:1/-1}.project-import{display:flex;align-items:end;gap:14px;margin-bottom:24px}.speaker-select{width:85px;font-size:11px;padding:6px}.output-links{flex-wrap:wrap}@media(max-width:760px){.runtime-form{grid-template-columns:1fr}.project-import{display:grid}.take-tools{min-width:0}}
+
+.model-path-state{display:block;font-weight:400;overflow-wrap:anywhere;color:#84909f;margin-top:5px;line-height:1.6}.model-path-state.missing{color:#c35a7b}.asr-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:30px}.asr-grid textarea{min-width:0}.asr-grid form button{margin:0 8px 10px 0}.runtime-form label{min-width:0}@media(max-width:760px){.asr-grid{grid-template-columns:1fr;gap:20px}}

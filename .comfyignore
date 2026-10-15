@@ -1,0 +1,7 @@
+portable/
+tests/
+tools/
+.github/
+r2t2-runtime/
+roadmap.md
+*.zip

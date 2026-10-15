@@ -1,0 +1,38 @@
+{
+  "target": {
+    "python": "cp310",
+    "torch": "2.8.0+cu128",
+    "gpu": "sm120",
+    "platform": "win_amd64"
+  },
+  "flash_attention": {
+    "version": "2.8.3",
+    "url": "https://github.com/kingbri1/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3%2Bcu128torch2.8.0cxx11abiFALSE-cp310-cp310-win_amd64.whl",
+    "sha256": "c880adca3f6cb81ad1ffa25cee2a09295ca5f10da0ac5d380dae2033947f068f"
+  },
+  "triton_windows": {
+    "version": "3.4.0.post21",
+    "sha256": "b5d12acb71d8fb4af8baff7588b5d26614bbe383888c22ab27b50948dc3baa82"
+  },
+  "fla": {
+    "version": "0.5.2"
+  },
+  "kernel_validation": {
+    "status": "passed",
+    "fla_relative_error": 0.00438,
+    "flash_attention_error": 0
+  },
+  "model_validation": {
+    "status": "passed",
+    "benchmark": "acceptance-report.json",
+    "default_backend": "torch",
+    "torch_decode_fps": [
+      3.2461,
+      3.4542
+    ],
+    "fla_decode_fps": 3.1638,
+    "conclusion": "No clear FLA end-to-end benefit on this RAM-expert configuration"
+  },
+  "full_attention_backend": "SDPA",
+  "cuda_graph": "not_enabled"
+}

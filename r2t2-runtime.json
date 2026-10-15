@@ -1,0 +1,96 @@
+{
+  "version": "1",
+  "url": "https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.1.7/Drama3-R2T2-native-win64-cu128.zip",
+  "bytes": 610426253,
+  "sha256": "4c2d73f49542d72c41a00359b973ea35f65204e8679028775f71632de4d2bf8f",
+  "files": {
+    "backends/ggml-cpu.dll": {
+      "bytes": 943616,
+      "sha256": "e6316f1856a20aa70f209de060b98c648d42078bb23df5f2f8f739b82e2d267a"
+    },
+    "backends/ggml-cuda.dll": {
+      "bytes": 53183488,
+      "sha256": "8a8474fa53f9b764570bde609963c1185cf80c0593be14db90f1f2f02e94d439"
+    },
+    "lib/cublas64_12.dll": {
+      "bytes": 113716224,
+      "sha256": "9513540e4ec4c51ee9e7304138c2cc255c29a8c181f9e80c38efa25738becd99"
+    },
+    "lib/cublasLt64_12.dll": {
+      "bytes": 674667520,
+      "sha256": "b199d1ff892a81b7fd3d57ba1781549609b41500b36008fef326038393ad46c7"
+    },
+    "lib/cudart64_12.dll": {
+      "bytes": 573952,
+      "sha256": "c2c9a9c22a9bcba90e261825968836787b331038047a26770cffb7a583c28344"
+    },
+    "lib/drama_r2t2.dll": {
+      "bytes": 57856,
+      "sha256": "20bc3312c4b2c2c0ae6fa88b2ac888d6c3415c3da24f4f579ffcf37e77f5be24"
+    },
+    "lib/ggml-base.dll": {
+      "bytes": 670720,
+      "sha256": "1c6255339f35743951ea1a097493e3391569e12261c5b06bdeda576feeee7429"
+    },
+    "lib/ggml.dll": {
+      "bytes": 64000,
+      "sha256": "74012136b4284b416f4601b37f952fb139609a99b1e994831aae5e7cea4bda6c"
+    },
+    "lib/llama.dll": {
+      "bytes": 2613760,
+      "sha256": "d1c654761fd7a4e98fedc34c4c458f5a64a0cdb45cf2badf8218854702a2591c"
+    },
+    "lib/mtmd.dll": {
+      "bytes": 1262592,
+      "sha256": "e03c7e8c9c276afff7f816859f72b66fd5673d037dabee4720eb9cff506d221c"
+    },
+    "licenses/CONFUCIUS-MODEL_LICENSE": {
+      "bytes": 11132,
+      "sha256": "064483c5ba1dc20907038108da4f45d5b37cd0a41a351c8a8bb98ba1af48c505"
+    },
+    "licenses/CONFUCIUS-MODEL_LICENSE_zh": {
+      "bytes": 7789,
+      "sha256": "6ed2e9946bd0b0185a6c690565cf2f8de23044a513be6e1ec7c97e6995ce241b"
+    },
+    "licenses/LICENSE-APACHE": {
+      "bytes": 11554,
+      "sha256": "fb576006b32d09620b812e9949b0fb08ac94759605f8eec7b33015f0fd83121f"
+    },
+    "licenses/LICENSE-CONFUCIUS-CODE": {
+      "bytes": 11156,
+      "sha256": "4681a55599193333d3f250bd75778114ff9e17a525f0493cedc25a524162e5ee"
+    },
+    "licenses/LICENSE-FIRERED-VAD": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "licenses/LICENSE-FISH-AUDIO": {
+      "bytes": 19799,
+      "sha256": "4949184a00884b24d7ba473d81b16fcca7e6edae371a72f61cd1005dd0a24adc"
+    },
+    "licenses/LICENSE-LLAMA-CPP": {
+      "bytes": 1099,
+      "sha256": "bcd8ec749126d45cb06737d0690295d73df4b6e7e194205bcf91190368f27285"
+    },
+    "licenses/LICENSE-TORCH-THIRD-PARTY": {
+      "bytes": 509053,
+      "sha256": "8bc4f2fa9143380a52a0644229bc9a4bcc158e0f9cab8c8340f1eab3f353dbe9"
+    },
+    "licenses/NOTICE-R2T2.txt": {
+      "bytes": 795,
+      "sha256": "dcd036ab94d038df53a378a32e1397d752240b92c2cb5d42a8417f0ca7c2d25c"
+    },
+    "licenses/NOTICE-T8": {
+      "bytes": 888,
+      "sha256": "9a24ab6278ff4ad9b78ccc283ad95137eec1aa1929aacfa95126c8a6aed26e5e"
+    },
+    "licenses/NOTICE-UPSTREAM": {
+      "bytes": 2391,
+      "sha256": "53bf9c6e71c7bce15b8faa13707278411fc75ac84537eb9a113a1e8f39baa4ee"
+    },
+    "licenses/NVIDIA-CUDA-EULA.txt": {
+      "bytes": 63021,
+      "sha256": "e2c71babfd18a8e69542dd7e9ca018f9caa438094001a58e6bc4d8c999bf0d07"
+    }
+  }
+}

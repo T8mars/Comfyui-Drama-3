@@ -1,0 +1,19 @@
+Drama 3 Local Studio and ComfyUI-Drama3-T8
+
+Built with Fish Audio.
+
+Native inference modules originate from PedroMarinhoDev/ComfyUI-Drama3,
+commit 0465897ec86c0f655af12bf8ae698afd89a58723.
+Its GPL-3.0 code, Fish Audio Community License material and Apache-2.0
+Qwen ASR adaptations retain their original licenses and upstream notices.
+
+T8 changes: complete control-token output head, multimodal prompt builders,
+stateful director revision, infill, text/audio streaming, local application,
+portable packaging and native ComfyUI workflow integration.
+
+Bundled ComfyUI model engine originates from Comfy-Org/ComfyUI,
+commit e0a32bce84f4603f2b61b16b50f8958e68fd6171, under GPL-3.0.
+Fish Audio Drama 3 original weights and configuration originate from
+fishaudio/drama-3 at e0a9218aa48888270f06ef1ed9ea67622c0e17d2.
+
+This project is not affiliated with or endorsed by Fish Audio, Qwen or Comfy.
