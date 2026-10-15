@@ -8,6 +8,7 @@ import torch
 import comfy.model_management
 import comfy.ops
 from .config import MIN_TEMPERATURE, RAS_TEMPERATURE, RAS_TOP_K, RAS_TOP_P, RAS_WINDOW
+from .scene_boundary import SceneBoundaryPolicy
 
 # A take that falls silent without ending repeats a handful of codes: 96 frames (4.5 s) of speech hold 80-95
 # distinct first codes and the most expressive measured stretch (sighs, laughs) 41; silent runaways 5-20.
@@ -39,7 +40,8 @@ def embed_rows(embed, ids, dtype):
 
 def generate(drama3, prompt, max_frames, temperature, top_k, top_p, seed, on_frame=None,
              on_audio=None, stop_token_ids=(), progress=None, on_finish=None,
-             inspect_logits=None, head_override=None, extra_patchers=()):
+             inspect_logits=None, head_override=None, extra_patchers=(),
+             expected_segments=None, on_boundary=None):
     """Frames [frames, 1 + N] (CPU int64) sampled after the prompt rows [rows, 1 + N], without the end frame."""
     config = drama3.config
     backbone = drama3.model.model
@@ -59,6 +61,15 @@ def generate(drama3, prompt, max_frames, temperature, top_k, top_p, seed, on_fra
     generator = torch.Generator(device=last).manual_seed(seed)
     candidates = torch.tensor(output_ids, device=last)
     separator_id = drama3.tokenizer.token_to_id("<|audio_separator|>")
+    scene_boundary=None
+    if expected_segments is not None:
+        newline=drama3.tokenizer.encode("\n").ids
+        if len(newline)!=1:
+            raise ValueError("Scene boundary recovery requires a single newline token")
+        scene_boundary=SceneBoundaryPolicy(expected_segments,newline_id=newline[0],
+            eos_id=config.eos_token_id,separator_id=separator_id,
+            semantic_start=config.semantic_start_token_id,semantic_end=config.semantic_end_token_id,
+            on_correction=on_boundary)
 
     def run(frames):
         text = embed_rows(backbone.embed_tokens, frames[:, 0].to(first), dtype)
@@ -103,6 +114,11 @@ def generate(drama3, prompt, max_frames, temperature, top_k, top_p, seed, on_fra
                 repeated = (history == draw[:, None]).any(-1) & tower.is_semantic(draw)
                 main = torch.where(repeated, retry, draw)
                 main_id = main.item()
+                if scene_boundary is not None:
+                    selected=scene_boundary.select(main_id,step)
+                    if selected!=main_id:
+                        main_id=selected
+                        main=torch.full_like(main,selected)
                 if main_id == config.eos_token_id or main_id in stop_token_ids:
                     finish_reason = "eos" if main_id == config.eos_token_id else f"control:{main_id}"
                     break

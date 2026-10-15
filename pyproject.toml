@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-drama3-t8"
-version = "0.1.9"
+version = "0.1.10"
 description = "Native DRAMA-3 speech generation, voice cloning, scenes, revision, infill and local ASR. Built with Fish Audio."
 requires-python = ">=3.10"
 license = { file = "LICENSE" }

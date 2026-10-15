@@ -34,6 +34,8 @@ python install.py
 
 在 `LoadAudio` 中选择自己的音频；参考与对齐节点的台词须匹配录音。加载工程前先运行 `workflow_save_session.json`，刷新 ComfyUI，再选择已保存的文件。长文默认输出全部段落。数字种子范围为 `0–9007199254740991`；更大的种子请在 `seed_text` 填写完整十进制数，最大 `18446744073709551615`。
 
+带参考的场景会按首次出现顺序为角色分配稳定的 `<|speaker:N|>` 编号，连续改稿沿用原映射。参考名称仅作显示；需要指定角色音色时，在参考转写与脚本中使用相同的显式 speaker 标签。
+
 ## 模型
 
 从 [t8star/Drama-3-Comfy](https://huggingface.co/t8star/Drama-3-Comfy) 下载。默认路径相对于 `ComfyUI/`：
@@ -54,13 +56,13 @@ python install.py
 
 完整 Windows 运行环境由作者单独提供。GitHub Release **只发布程序文件及原生运行库，不含模型和 Python 运行环境**；工作台源码位于 [portable/](https://github.com/T8mars/Comfyui-Drama-3/tree/main/portable)。
 
-已有基于 0.1.3 或后续版本的完整包：先关闭工作台，将 `Drama3-T8-Portable-0.1.9-code.zip` 解压到包含 `Start-Drama3.cmd` 的目录，再双击启动。此后启动时自动检查 GitHub 正式版并安装兼容的程序更新；关闭工作台后也可双击 `Update-Drama3.cmd` 手动检查。更新核对文件大小与 SHA-256，备份旧文件，失败时回滚。模型、Python、自定义路径、工程、音色库和输出均保留。断网仍可正常启动；依赖或运行库变更需使用作者提供的新完整环境。
+已有基于 0.1.3 或后续版本的完整包：先关闭工作台，将 `Drama3-T8-Portable-0.1.10-code.zip` 解压到包含 `Start-Drama3.cmd` 的目录，再双击启动。此后启动时自动检查 GitHub 正式版并安装兼容的程序更新；关闭工作台后也可双击 `Update-Drama3.cmd` 手动检查。更新核对文件大小与 SHA-256，备份旧文件，失败时回滚。模型、Python、自定义路径、工程、音色库和输出均保留。断网仍可正常启动；依赖或运行库变更需使用作者提供的新完整环境。
 
 ## 硬件与加速
 
 实测 Windows x64、RTX 5090 Laptop **24 GB 显存 / 64 GB 内存**、Torch 2.8 / CUDA 12.8，专家缓存 12 GiB。FP8 专家驻系统内存，缓存 `0` 自动预算；显存需为驻留权重、Codec 与上下文留出空间。其他硬件组合尚未实测。
 
-默认 Torch 线性注意力与 SDPA。FLA 已接入，本机测试未见明显提速；安装 FlashAttention 不代表模型已启用，CUDA Graph 当前关闭。CPU 试听分包会在生成过程中送达，本机卸载配置低于音频实时生成速度。转写结果可能需要人工校对。部分带参考音色的场景改稿可能缺少所需分段符，运行时会拒绝此类结果。
+默认 Torch 线性注意力与 SDPA。FLA 已接入，本机测试未见明显提速；安装 FlashAttention 不代表模型已启用，CUDA Graph 当前关闭。CPU 试听分包会在生成过程中送达，本机卸载配置低于音频实时生成速度。转写结果可能需要人工校对。场景改稿保留完整工程历史，并对提前结束的台词进行有限边界恢复；空段、多段或未完成的输出仍会被拒绝。
 
 ## 来源与许可
 

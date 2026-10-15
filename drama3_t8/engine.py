@@ -19,6 +19,7 @@ from .prompts import (
     SEPARATOR, infill_prompt, scene_prompt, streaming_prompt, tts_prompt, spoken_text,
 )
 from .state import Reference, Session, Take, validate_codes
+from .scene_cast import prepare_scene_cast
 from .audio import audio_waveform
 
 
@@ -148,7 +149,7 @@ class DramaEngine:
         return {"waveform": waveform[:, None], "sample_rate": SAMPLE_RATE}
 
     def _take(self, prompt, prompt_text, transcript, sampling, on_codes=None, progress=None,
-              stop_token_ids=(), full_head=False, allow_empty=False):
+              stop_token_ids=(), full_head=False, allow_empty=False, expected_segments=None):
         sampling.validate()
         drama = self.load_model()
         head = self.load_text_head() if full_head else None
@@ -158,6 +159,7 @@ class DramaEngine:
         start = time.perf_counter()
         first_frame = None
         finish_reason = None
+        boundary_corrections=[]
 
         def finished(reason):
             nonlocal finish_reason
@@ -174,7 +176,8 @@ class DramaEngine:
                           sampling.top_k, sampling.top_p, sampling.seed,
                           on_audio=audio_callback, progress=progress, stop_token_ids=stop_token_ids,
                           on_finish=finished, head_override=head,
-                          extra_patchers=(self.text_head_patcher,) if full_head else ())
+                          extra_patchers=(self.text_head_patcher,) if full_head else (),
+                          expected_segments=expected_segments,on_boundary=boundary_corrections.append)
         if finish_reason == "stalled":
             raise RuntimeError("The model entered a silent repetition; use another seed or a more accurate reference transcript")
         duration = ((frames[:, 0] >= drama.config.semantic_start_token_id)
@@ -193,6 +196,9 @@ class DramaEngine:
             for layer in drama.model.model.layers if layer.layer_type == "linear_attention") - calls_before[backend]
             for backend in ("torch","fla")}
         metadata["gdn_calls"] = sum(metadata["gdn_calls_by_backend"].values())
+        if expected_segments is not None:
+            metadata["scene_boundary_mode"]="eos_to_newline_once"
+            metadata["scene_boundary_corrections"]=boundary_corrections
         if duration <= 0 and not (allow_empty and finish_reason == "eos"):
             raise RuntimeError("The model stopped without producing audio; retry with another seed or reference")
         return Take(prompt_text, transcript, frames, drama.config.semantic_start_token_id,
@@ -213,7 +219,17 @@ class DramaEngine:
             raise ValueError("Generate a take before giving a director revision")
         previous=session.takes[-1]
         if previous.metadata.get("task")=="scene":
-            lines=previous.metadata.get("script_lines") or previous.prompt_text.replace(SEPARATOR,"\n").splitlines()
+            lines=previous.metadata.get("script_lines")
+            if not lines:
+                script=previous.prompt_text
+                # Older archives stored a global note before the first named
+                # line. Remove only our exact recorded prefix on this fallback;
+                # keep actor directions and all original archived data intact.
+                old_note=previous.metadata.get("director_note")
+                prefix=f"[{old_note}] " if old_note else ""
+                if prefix and script.startswith(prefix):
+                    script=script[len(prefix):]
+                lines=script.replace(SEPARATOR,"\n").splitlines()
             lines=[line for line in lines if line.strip()]
             return self.scene(lines,previous.metadata.get("scene",""),previous.metadata.get("characters",""),
                               session.references,sampling,progress,session=session,note=note,on_codes=on_codes)
@@ -225,6 +241,7 @@ class DramaEngine:
         return replace(result, takes=(*result.takes[:-1], take))
 
     def scene(self, lines, scene="", characters="", references=None, sampling=None, progress=None, session=None, note="",on_codes=None):
+        lines=list(lines)
         drama = self.load_model()
         controls = {drama.tokenizer.token_to_id(SEPARATOR)}
         if not controls.issubset(drama.config.output_token_ids):
@@ -236,19 +253,25 @@ class DramaEngine:
             references = session.references
         else:
             session = replace(session, references=references)
-        script=("\n" + SEPARATOR + "\n").join(lines)
-        request=(f"[{note}] " if note else "")+script
+        cast_lines,_,speaker_map=prepare_scene_cast(lines,references,session.takes)
+        script=("\n" + SEPARATOR + "\n").join(cast_lines)
+        request=script
         prompt = scene_prompt(drama.tokenizer, drama.config, lines, scene, characters, references,
                               session.takes, note, session.direction)
         take = self._take(prompt, request, spoken_text("\n".join(lines),scene=True), sampling or Sampling(), on_codes=on_codes,progress=progress,
-                          full_head=True)
+                          full_head=True,expected_segments=len(lines))
         take.metadata["expected_segments"] = len(lines)
         take.metadata["actual_segments"] = len(take.segments())
         take.metadata["task"] = "scene"
         take.metadata.update(scene=scene,characters=characters,script_lines=lines,director_note=note)
+        if references:
+            take.metadata["scene_speaker_map"]=speaker_map
+            take.metadata["scene_casting"]="reference_speaker_tags_v1"
         controls = take.frames[(take.frames[:,0] < drama.config.semantic_start_token_id)
                                | (take.frames[:,0] > drama.config.semantic_end_token_id),0].tolist()
         take.metadata["output_controls"] = [drama.tokenizer.id_to_token(t) for t in controls]
+        if take.metadata.get("length_limit_reached"):
+            raise RuntimeError("Scene generation reached max_frames before finishing the script")
         if len(take.segments()) != len(lines) or any(s.shape[-1] == 0 for s in take.segments()):
             raise RuntimeError(f"Scene generation returned {len(take.segments())}/{len(lines)} segments; controls: {take.metadata['output_controls'][:40]}")
         return session.append(take)

@@ -154,6 +154,9 @@ def validate_session(session):
             json.dumps(take.metadata, allow_nan=False)
         except (TypeError, ValueError, OverflowError) as exc:
             raise ValueError("Take metadata must contain finite JSON values") from exc
+        if "scene_speaker_map" in take.metadata:
+            from .scene_cast import validate_scene_speaker_map
+            validate_scene_speaker_map(take.metadata["scene_speaker_map"])
         limits = (take.semantic_start, take.semantic_end, take.separator_id)
         if not all(type(value) is int and 0 <= value < 252288 for value in limits):
             raise ValueError("Invalid take token boundaries")

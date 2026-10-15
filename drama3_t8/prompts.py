@@ -8,6 +8,7 @@ from .native.prompt import (
     SPEAKER_TAG, WHITE_SPACE, check_text, with_speaker_tag,
 )
 from .state import validate_codes, validate_frames, validate_reference
+from .scene_cast import prepare_scene_cast
 
 SEPARATOR = "<|audio_separator|>"
 END_OF_TURN = "<|endofturn|>"
@@ -24,10 +25,13 @@ STREAM_INSTRUCTION = "streaming speech continuation with one-chunk lookahead spl
 
 def spoken_text(text, scene=False):
     """Keep spoken words separate from the model's direction and casting syntax."""
+    # Directions can precede a named role as well as follow its colon. Remove
+    # them first, but keep speaker tags until after detecting a named prefix so
+    # that '<|speaker:0|> Meet at 9:30.' retains its spoken colon and words.
+    text=re.sub(r"\[[^\[\]]*\]", "", text)
     if scene:
         text=re.sub(r"(?m)^[^\n<>:\[\]]{1,48}:\s*", "", text)
     text=re.sub(r"<\|speaker:\d+\|>|<\|audio_separator\|>|<\|endofturn\|>", "", text)
-    text=re.sub(r"\[[^\[\]]*\]", "", text)
     text=re.sub(r"</?[A-Za-z][^>]*>", "", text)
     return "\n".join(re.sub(r"[ \t]+", " ", line).strip() for line in text.splitlines()).strip()
 
@@ -112,6 +116,8 @@ def tts_prompt(tokenizer, config, text, references=(), takes=(), direction=""):
 
 
 def scene_prompt(tokenizer, config, lines, scene="", characters="", references=(), takes=(), note="", direction=""):
+    lines=tuple(lines)
+    references=tuple(references)
     if not lines:
         raise ValueError("The scene contains no lines")
     for line in lines:
@@ -121,6 +127,12 @@ def scene_prompt(tokenizer, config, lines, scene="", characters="", references=(
             check_text(description, location)
     if direction:
         check_text(direction, "direction")
+    if note:
+        check_text(note, "director note")
+        # A Scene revision directs the whole script. Keep the current user turn
+        # in its original casting format and put its global revision in system.
+        direction = "\n\n".join(part for part in (direction, f"Director revision: {note}") if part)
+    lines,takes,_=prepare_scene_cast(lines,references,takes)
     description = "\n".join(p for p in (f"Scene: {scene}" if scene else "",
                            f"Characters:\n{characters}" if characters else "") if p)
     if characters and not references:
@@ -133,10 +145,8 @@ def scene_prompt(tokenizer, config, lines, scene="", characters="", references=(
         segments = system_segments(references, LINE_INSTRUCTION,
                                    "\n\n".join(part for part in (description, direction) if part))
     segments.extend(history_segments(takes))
-    if note:
-        check_text(note,"director note")
     script=("\n" + SEPARATOR + "\n").join(lines)
-    segments.extend(("<|im_start|>user\n", (f"[{note}] " if note else "")+script, MESSAGE_END, GENERATION_START))
+    segments.extend(("<|im_start|>user\n", script, MESSAGE_END, GENERATION_START))
     return rows_from_segments(tokenizer, config, segments)
 
 

@@ -1,11 +1,11 @@
 {
-  "version": "0.1.9",
+  "version": "0.1.10",
   "machine": "RTX5090 Laptop 24GB VRAM / 64GB RAM",
   "tests": {
-    "passed": 378,
+    "passed": 472,
     "skipped": 1,
     "skip_reason": "Windows symlink creation privilege unavailable",
-    "report": "validation/audit7-tests-final.log"
+    "report": "validation/scene-fix-source-tests-final.log"
   },
   "original_tts": {
     "text": "你好，这是本地语音测试。",
@@ -770,8 +770,7 @@
   "limitations": [
     "24GB RAM-expert offload is slower than audio realtime",
     "FA2 model dispatch not enabled",
-    "CUDA Graph not enabled",
-    "A reference-conditioned scene revision omitted the required separator at seeds 47 and 73. The node rejected it. No confirmed prompt-layout fault or cause; failed take/audio was not saved, so neither transcript loss nor termination reason is known."
+    "CUDA Graph not enabled"
   ],
   "r2t2_and_custom_paths": {
     "external_files_and_restart_persistence": "passed",
@@ -1922,6 +1921,150 @@
     "canvas_report": "validation/audit7-canvas-acceptance.json",
     "known_limit": "A reference-conditioned scene revision omitted the required separator at seeds 47 and 73. The node rejected it. No confirmed prompt-layout fault or cause; failed take/audio was not saved, so neither transcript loss nor termination reason is known.",
     "core_report": "validation/audit7-20-agent.md",
-    "inference_math_or_models_changed": false
+    "inference_math_or_models_changed": false,
+    "resolved_by": "scene_revision_fix_0110",
+    "retrospective_cause": "Captured failing output confirms early EOS after only Ready; see scene_revision_fix_0110. Original 3/5 result is retained as historical evidence."
+  },
+  "scene_revision_fix_0110": {
+    "failure_reproduced": {
+      "seeds": [
+        47,
+        73
+      ],
+      "termination": "EOS after 11 audio frames; no separator",
+      "actual_asr": "Ready only; Always omitted",
+      "report": "validation/scene-fix-comparison.json"
+    },
+    "changes": [
+      "Global Scene director notes belong in system direction; user scripts retain casting prefixes",
+      "One early-EOS to newline recovery per unfinished line; separator and all audio still sampled by the model",
+      "Reject empty/extra segments, repeated premature EOS and unfinished max_frames-limited scenes",
+      "Archive the actual user script and retain complete original session/history and director metadata",
+      "Legacy archives without script_lines remove only their recorded old global-note prefix when revising",
+      "Reference-conditioned named roles use stable persisted speaker IDs in current and historical prompt views, retaining original archive records",
+      "Reference display names do not implicitly bind voices; explicit speaker tags provide precise binding"
+    ],
+    "failed_alternatives": [
+      "layout only",
+      "speaker mapping only",
+      "note moved to first role",
+      "latest-take context only",
+      "direct early-EOS to separator produced repeated separators and was rejected"
+    ],
+    "cpu_regressions": {
+      "passed": 472,
+      "skipped": 1,
+      "new_cases": 94
+    },
+    "actual_canvas": {
+      "method": "file input import + visible Run button click; no direct prompt submission",
+      "positive_cases": 9,
+      "passed": 9,
+      "expected_budget_rejections": 1,
+      "unexpected_failures": 0,
+      "report": "validation/scene-fix-production_v3-browser-scene_revision-scene_revision_seed73-scene_revision_round2-scene_revis.json",
+      "cases": [
+        {
+          "name": "scene_revision",
+          "prompt_id": "2887aead-513e-44a8-8a95-83ca44a0083e",
+          "seconds": 63.035,
+          "expected_failure": false,
+          "passed": true
+        },
+        {
+          "name": "scene_revision_seed73",
+          "prompt_id": "d9a7bc0e-7821-4952-ad67-e4bbebc0f292",
+          "seconds": 26.55,
+          "expected_failure": false,
+          "passed": true
+        },
+        {
+          "name": "scene_revision_round2",
+          "prompt_id": "956769bf-6ff5-42fb-bb88-c7673aac1b36",
+          "seconds": 26.316,
+          "expected_failure": false,
+          "passed": true
+        },
+        {
+          "name": "scene_revision_round3",
+          "prompt_id": "287c441d-6e16-40a2-9807-ab11e5abf55a",
+          "seconds": 31.404,
+          "expected_failure": false,
+          "passed": true
+        },
+        {
+          "name": "reference",
+          "prompt_id": "321c27dd-8184-4cc8-9a88-647d49d1588c",
+          "seconds": 31.534,
+          "expected_failure": false,
+          "passed": true
+        },
+        {
+          "name": "scene",
+          "prompt_id": "737a8e82-1056-42d4-922a-5dab8ee6cdfe",
+          "seconds": 21.43,
+          "expected_failure": false,
+          "passed": true
+        },
+        {
+          "name": "scene_revision_coherent",
+          "prompt_id": "e43e1589-2b51-43f9-af3a-cbbac87c9300",
+          "seconds": 25.501,
+          "expected_failure": false,
+          "passed": true
+        },
+        {
+          "name": "scene_three_lines",
+          "prompt_id": "4265c8f3-bced-4da1-b14f-62acb0a430f2",
+          "seconds": 52.038,
+          "expected_failure": false,
+          "passed": true
+        },
+        {
+          "name": "scene_chinese",
+          "prompt_id": "b118d2ea-aa71-4d58-8095-222352b9f8a2",
+          "seconds": 45.769,
+          "expected_failure": false,
+          "passed": true
+        },
+        {
+          "name": "scene_short_budget",
+          "prompt_id": "324a230f-3ef8-44e5-8602-700fffa5e754",
+          "seconds": 11.391,
+          "expected_failure": true,
+          "passed": true
+        }
+      ]
+    },
+    "actual_audio": {
+      "asr_backend": "native Confucius R2T2 Q8",
+      "segments": 17,
+      "normalized_content_passed": 17,
+      "report": "validation/scene-fix-audio/qa-production-v3.json",
+      "scope": "English/Chinese fixture text and order checked by independent ASR; no subjective voice/style score"
+    },
+    "context_policy": "All archived takes remain in inference and archive; latest-only experiment was not adopted",
+    "separator_policy": "Never insert or force audio separators; only one newline recovery is recorded in take metadata",
+    "role_prefix_defect": {
+      "fixture": "Three-line reference scene, seed 57",
+      "before": "First segment spoke extra Ona; independently confirmed by native R2T2 and Qwen3 ASR",
+      "controlled_comparison": "Same script/reference/seed/settings and 4 GiB cache: named format repeated the defect; speaker-tag format produced all three expected lines",
+      "report": "validation/scene-fix-audio/qa-named_protocol_cache4-speaker_protocol_cache4.json",
+      "cross_asr": "validation/scene-fix-qwen-cross-asr.json"
+    },
+    "unchanged": [
+      "model weights",
+      "model math",
+      "reference identity",
+      "sampling seed/parameters",
+      "default acceleration",
+      "15 canvas-only workflows"
+    ],
+    "independent_agent_reports": [
+      "validation/scene-fix-agent.md",
+      "validation/scene-fix-agent-math.md",
+      "validation/scene-fix-agent-production-v3.json",
+      "validation/scene-fix-agent-cast-review.md"
+    ]
   }
 }

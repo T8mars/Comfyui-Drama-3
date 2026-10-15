@@ -34,6 +34,8 @@ The `workflows/` directory contains 15 canvas workflows: basic speech, reference
 
 Select your own audio in `LoadAudio`; reference and alignment transcripts must match the recording. Run `workflow_save_session.json` before loading a session, then refresh ComfyUI and select the saved file. Long text decodes all segments. Numeric seeds support `0–9007199254740991`; for larger seeds, enter the exact decimal value in `seed_text` (up to `18446744073709551615`).
 
+Reference-conditioned scenes assign named roles stable `<|speaker:N|>` IDs in first-appearance order, retained across revisions. Reference names are display labels; use matching explicit speaker tags in reference transcripts and scripts to bind particular voices.
+
 ## Models
 
 Download from [t8star/Drama-3-Comfy](https://huggingface.co/t8star/Drama-3-Comfy). Default paths are relative to `ComfyUI/`.
@@ -54,13 +56,13 @@ Keep all three DRAMA files for complete functionality. Each loader supports cust
 
 The author distributes the complete Windows environment separately. GitHub Releases contain **program files and native libraries only, without model weights or a Python runtime**. Studio source is in [portable/](https://github.com/T8mars/Comfyui-Drama-3/tree/main/portable).
 
-For an existing complete bundle based on 0.1.3 or later, close the studio and extract `Drama3-T8-Portable-0.1.9-code.zip` into the directory containing `Start-Drama3.cmd`. Double-click `Start-Drama3.cmd` to launch. Subsequent launches check stable GitHub Releases and apply compatible code updates; `Update-Drama3.cmd` checks manually while the studio is closed. Updates verify sizes and SHA-256, back up old files and roll back on failure. Models, Python, custom paths, projects, voice libraries and outputs are retained. Offline checks allow startup; dependency/runtime changes require a new complete environment from the author.
+For an existing complete bundle based on 0.1.3 or later, close the studio and extract `Drama3-T8-Portable-0.1.10-code.zip` into the directory containing `Start-Drama3.cmd`. Double-click `Start-Drama3.cmd` to launch. Subsequent launches check stable GitHub Releases and apply compatible code updates; `Update-Drama3.cmd` checks manually while the studio is closed. Updates verify sizes and SHA-256, back up old files and roll back on failure. Models, Python, custom paths, projects, voice libraries and outputs are retained. Offline checks allow startup; dependency/runtime changes require a new complete environment from the author.
 
 ## Hardware and acceleration
 
 Validated: Windows x64, RTX 5090 Laptop **24 GB VRAM / 64 GB RAM**, Torch 2.8 + CUDA 12.8, 12 GiB expert cache. FP8 MoE experts stay in system RAM; cache `0` selects an automatic budget. Leave VRAM for resident weights, codec and context. Other hardware configurations have not been validated.
 
-Default: Torch linear attention + SDPA. Optional FLA is integrated but showed no clear speed gain on this setup. Installing FlashAttention alone does not enable it in the model; CUDA Graph is disabled. CPU previews arrive during generation, but the tested offload setup generates below real time. Transcription may require manual correction. Some reference-based scene revisions can omit required segment separators; the runtime rejects these results.
+Default: Torch linear attention + SDPA. Optional FLA is integrated but showed no clear speed gain on this setup. Installing FlashAttention alone does not enable it in the model; CUDA Graph is disabled. CPU previews arrive during generation, but the tested offload setup generates below real time. Transcription may require manual correction. Scene revisions preserve the full session and use bounded line-boundary recovery. Empty, extra or unfinished segments are rejected.
 
 ## Credits and licenses
 
