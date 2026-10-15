@@ -1,17 +1,17 @@
 {
-  "last_node_id": 2,
-  "last_link_id": 1,
+  "last_node_id": 6,
+  "last_link_id": 4,
   "nodes": [
     {
       "id": 1,
       "type": "LoadAudio",
       "pos": [
-        80,
-        150
+        60,
+        60
       ],
       "size": [
-        330,
-        180
+        370,
+        260
       ],
       "flags": {},
       "order": 0,
@@ -26,21 +26,24 @@
           ]
         }
       ],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "LoadAudio"
+      },
       "widgets_values": [
-        "reference.wav"
-      ]
+        ""
+      ],
+      "title": "上传音频 / Upload audio"
     },
     {
       "id": 2,
       "type": "T8DramaR2T2Transcribe",
       "pos": [
-        500,
-        150
+        480,
+        60
       ],
       "size": [
-        580,
-        520
+        370,
+        380
       ],
       "flags": {},
       "order": 1,
@@ -54,30 +57,164 @@
       ],
       "outputs": [
         {
-          "name": "transcript",
+          "name": "STRING",
           "type": "STRING",
-          "links": []
+          "links": [
+            2
+          ]
         },
         {
-          "name": "language",
+          "name": "STRING",
           "type": "STRING",
-          "links": []
+          "links": [
+            3
+          ]
         },
         {
-          "name": "metadata",
+          "name": "STRING",
           "type": "STRING",
-          "links": []
+          "links": [
+            4
+          ]
         }
       ],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "T8DramaR2T2Transcribe"
+      },
       "widgets_values": [
         "asr/Confucius4-R2T2-GGUF/Confucius4-R2T2-Q8_0.gguf",
         "asr/Confucius4-R2T2-GGUF/mmproj-Confucius4-R2T2-Q8_0.gguf",
         "asr/FireRedVAD-ONNX",
-        "auto",
+        "Chinese",
         "",
         ""
       ]
+    },
+    {
+      "id": 3,
+      "type": "PreviewAny",
+      "pos": [
+        900,
+        60
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [],
+      "title": "转写文字 / Transcript"
+    },
+    {
+      "id": 4,
+      "type": "PreviewAny",
+      "pos": [
+        900,
+        520
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [],
+      "title": "识别语言 / Language"
+    },
+    {
+      "id": 5,
+      "type": "PreviewAny",
+      "pos": [
+        900,
+        980
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [],
+      "title": "分段与元数据 / Segments and metadata"
+    },
+    {
+      "id": 6,
+      "type": "Note",
+      "pos": [
+        60,
+        980
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "在 LoadAudio 上传或选择本地音频；运行后，在文字预览节点中查看结果。\nUpload or select audio in LoadAudio; after Run, read the results in the Preview as Text nodes.\n模型、投影器和 VAD 路径相对于 ComfyUI/models，也可填写绝对路径。\nModel, projector and VAD paths accept absolute paths or paths relative to ComfyUI/models."
+      ],
+      "title": "使用说明 / Instructions"
     }
   ],
   "links": [
@@ -88,10 +225,42 @@
       2,
       0,
       "AUDIO"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      0,
+      "STRING"
+    ],
+    [
+      3,
+      2,
+      1,
+      4,
+      0,
+      "STRING"
+    ],
+    [
+      4,
+      2,
+      2,
+      5,
+      0,
+      "STRING"
     ]
   ],
   "groups": [],
   "config": {},
-  "extra": {},
+  "extra": {
+    "ds": {
+      "scale": 0.75,
+      "offset": [
+        40,
+        40
+      ]
+    }
+  },
   "version": 0.4
 }

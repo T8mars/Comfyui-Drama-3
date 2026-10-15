@@ -1,17 +1,17 @@
 {
-  "last_node_id": 5,
-  "last_link_id": 5,
+  "last_node_id": 7,
+  "last_link_id": 6,
   "nodes": [
     {
       "id": 1,
       "type": "T8DramaLoader",
       "pos": [
-        50,
-        50
+        60,
+        60
       ],
       "size": [
-        330,
-        150
+        370,
+        380
       ],
       "flags": {},
       "order": 0,
@@ -27,24 +27,29 @@
           ]
         }
       ],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "T8DramaLoader"
+      },
       "widgets_values": [
         "drama3-t8-fp8.safetensors",
         "drama3-codec.safetensors",
         12,
-        "torch"
+        "torch",
+        "",
+        "",
+        ""
       ]
     },
     {
       "id": 2,
       "type": "T8DramaSession",
       "pos": [
-        50,
-        280
+        60,
+        520
       ],
       "size": [
-        330,
-        120
+        370,
+        260
       ],
       "flags": {},
       "order": 1,
@@ -65,7 +70,9 @@
           ]
         }
       ],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "T8DramaSession"
+      },
       "widgets_values": [
         ""
       ]
@@ -74,12 +81,12 @@
       "id": 3,
       "type": "T8DramaGenerate",
       "pos": [
-        470,
-        50
+        480,
+        60
       ],
       "size": [
-        420,
-        430
+        370,
+        380
       ],
       "flags": {},
       "order": 2,
@@ -105,10 +112,12 @@
           ]
         }
       ],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "T8DramaGenerate"
+      },
       "widgets_values": [
         "speech",
-        "你好，欢迎来到本地演出工作台。",
+        "你好，这是本地语音测试。",
         "",
         300,
         42,
@@ -116,19 +125,20 @@
         0.7,
         0.7,
         30,
-        200
+        180,
+        ""
       ]
     },
     {
       "id": 4,
       "type": "T8DramaDecode",
       "pos": [
-        980,
-        50
+        900,
+        60
       ],
       "size": [
-        320,
-        140
+        370,
+        260
       ],
       "flags": {},
       "order": 3,
@@ -156,10 +166,14 @@
         {
           "name": "STRING",
           "type": "STRING",
-          "links": []
+          "links": [
+            6
+          ]
         }
       ],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "T8DramaDecode"
+      },
       "widgets_values": [
         -1,
         false
@@ -169,12 +183,12 @@
       "id": 5,
       "type": "SaveAudio",
       "pos": [
-        980,
-        280
+        1320,
+        60
       ],
       "size": [
-        320,
-        160
+        370,
+        260
       ],
       "flags": {},
       "order": 4,
@@ -186,11 +200,77 @@
           "link": 5
         }
       ],
-      "outputs": [],
-      "properties": {},
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveAudio"
+      },
       "widgets_values": [
-        "Drama3_T8/output"
+        "Drama3_T8/basic"
       ]
+    },
+    {
+      "id": 6,
+      "type": "PreviewAny",
+      "pos": [
+        900,
+        520
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [],
+      "title": "生成台词 / Generated transcript"
+    },
+    {
+      "id": 7,
+      "type": "Note",
+      "pos": [
+        1320,
+        980
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "seed 数字控件支持 JavaScript 安全整数；更大的 uint64 种子请填 seed_text 十进制文本。\nUse decimal seed_text for larger uint64 seeds; leave it blank to use the numeric seed widget."
+      ],
+      "title": "使用说明 / Instructions"
     }
   ],
   "links": [
@@ -233,10 +313,26 @@
       5,
       0,
       "AUDIO"
+    ],
+    [
+      6,
+      4,
+      1,
+      6,
+      0,
+      "STRING"
     ]
   ],
   "groups": [],
   "config": {},
-  "extra": {},
+  "extra": {
+    "ds": {
+      "scale": 0.75,
+      "offset": [
+        40,
+        40
+      ]
+    }
+  },
   "version": 0.4
 }

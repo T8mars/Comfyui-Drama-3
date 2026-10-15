@@ -18,6 +18,26 @@ EngineType = io.Custom("DRAMA3_T8_ENGINE")
 ReferencesType = io.Custom("DRAMA3_T8_REFERENCES")
 SessionType = io.Custom("DRAMA3_T8_SESSION")
 CodesType = io.Custom("DRAMA3_T8_CODES")
+CANVAS_SEED_MAX = 2**53 - 1
+
+
+def sampling_seed(seed, seed_text=""):
+    """A decimal text override survives the browser's JSON number precision."""
+    if not isinstance(seed_text, str):
+        raise ValueError("seed_text must be a decimal string")
+    text = seed_text.strip()
+    if text:
+        if not text.isascii() or not text.isdecimal() or len(text) > 20:
+            raise ValueError("seed_text must contain 0 to 18446744073709551615")
+        seed = int(text)
+    if type(seed) is not int or not 0 <= seed < 2**64:
+        raise ValueError("Seed must be an integer from 0 to 18446744073709551615")
+    return seed
+
+
+def exact_seed_input():
+    return io.String.Input("seed_text", default="", optional=True,
+        tooltip="Optional exact 64-bit decimal seed (0–18446744073709551615). Overrides seed; leave blank for its normal controls.")
 
 SESSIONS = Path(folder_paths.get_output_directory()) / "drama3_t8_sessions"
 folder_paths.add_model_folder_path("drama3_t8_sessions", str(SESSIONS))
@@ -97,17 +117,17 @@ class T8DramaGenerate(io.ComfyNode):
                 io.String.Input("text", multiline=True), SessionType.Input("session", optional=True),
                 io.String.Input("lookahead", default="", multiline=True),
                 io.Int.Input("chunk_bytes", default=300, min=32, max=3000),
-                io.Int.Input("seed", default=42, min=0, max=2**64-1),
+                io.Int.Input("seed", default=42, min=0, max=CANVAS_SEED_MAX),
                 io.Float.Input("temperature", default=.7, min=.01, max=2, step=.05),
                 io.Float.Input("top_p", default=.7, min=.01, max=1, step=.05),
                 io.Int.Input("top_k", default=30, min=1),
-                io.Int.Input("max_frames", default=600, min=1, max=8192)],
+                io.Int.Input("max_frames", default=600, min=1, max=8192), exact_seed_input()],
             outputs=[SessionType.Output()])
 
     @classmethod
     def execute(cls, engine, mode, text, session=None, lookahead="", seed=42, temperature=.7,
-                top_p=.7, top_k=30, max_frames=600, chunk_bytes=300):
-        sampling = Sampling(seed, temperature, top_k, top_p, max_frames)
+                top_p=.7, top_k=30, max_frames=600, chunk_bytes=300, seed_text=""):
+        sampling = Sampling(sampling_seed(seed, seed_text), temperature, top_k, top_p, max_frames)
         session = session or Session()
         if mode == "speech":
             result = engine.speak(text, session, sampling)
@@ -130,15 +150,15 @@ class T8DramaScene(io.ComfyNode):
                 io.String.Input("scene", default="", multiline=True),
                 io.String.Input("characters", default="", multiline=True),
                 ReferencesType.Input("references", optional=True),
-                io.Int.Input("seed", default=42, min=0, max=2**64-1),
-                io.Int.Input("max_frames", default=1200, min=1, max=8192)],
+                io.Int.Input("seed", default=42, min=0, max=CANVAS_SEED_MAX),
+                io.Int.Input("max_frames", default=1200, min=1, max=8192), exact_seed_input()],
             outputs=[SessionType.Output()])
 
     @classmethod
-    def execute(cls, engine, script, scene="", characters="", references=None, seed=42, max_frames=1200):
+    def execute(cls, engine, script, scene="", characters="", references=None, seed=42, max_frames=1200, seed_text=""):
         lines = [line for line in script.splitlines() if line.strip()]
         return io.NodeOutput(engine.scene(lines, scene, characters, tuple(references or ()),
-                                         Sampling(seed=seed, max_frames=max_frames)))
+                                         Sampling(seed=sampling_seed(seed, seed_text), max_frames=max_frames)))
 
 
 class T8DramaInfill(io.ComfyNode):
@@ -150,17 +170,17 @@ class T8DramaInfill(io.ComfyNode):
                 io.Float.Input("start_seconds", default=0, min=0, step=.05),
                 io.Float.Input("end_seconds", default=1, min=0, step=.05),
                 io.Int.Input("duration_frames", default=0, min=0),
-                io.Int.Input("seed", default=42, min=0, max=2**64-1),
-                io.Int.Input("max_frames", default=300, min=1, max=8192)],
+                io.Int.Input("seed", default=42, min=0, max=CANVAS_SEED_MAX),
+                io.Int.Input("max_frames", default=300, min=1, max=8192), exact_seed_input()],
             outputs=[SessionType.Output()])
 
     @classmethod
     def execute(cls, engine, session, target_transcript, start_seconds=0, end_seconds=1,
-                duration_frames=0, seed=42, max_frames=300):
+                duration_frames=0, seed=42, max_frames=300, seed_text=""):
         if not session.takes:
             raise ValueError("Connect a session containing the source take")
         take = engine.infill(session.takes[-1], target_transcript, start_seconds, end_seconds,
-                             Sampling(seed=seed, max_frames=max_frames), duration_frames or None)
+                             Sampling(seed=sampling_seed(seed, seed_text), max_frames=max_frames), duration_frames or None)
         return io.NodeOutput(session.append(take))
 
 
@@ -277,12 +297,12 @@ class T8DramaSRT(io.ComfyNode):
     def define_schema(cls):
         return io.Schema(node_id="T8DramaSRT", display_name="T8 Drama 3 · SRT 批量台词",category="T8/Drama3",
                          inputs=[EngineType.Input("engine"),io.String.Input("srt",multiline=True),SessionType.Input("session",optional=True),
-                                 io.Int.Input("seed",default=42,min=0,max=2**64-1),io.Int.Input("max_frames",default=600,min=1,max=8192)],
+                                 io.Int.Input("seed",default=42,min=0,max=CANVAS_SEED_MAX),io.Int.Input("max_frames",default=600,min=1,max=8192),exact_seed_input()],
                          outputs=[SessionType.Output(),io.Audio.Output(),io.String.Output()])
 
     @classmethod
-    def execute(cls,engine,srt,session=None,seed=42,max_frames=600):
-        result,audio,actual=generate_srt(engine,srt,session or Session(),Sampling(seed=seed,max_frames=max_frames))
+    def execute(cls,engine,srt,session=None,seed=42,max_frames=600,seed_text=""):
+        result,audio,actual=generate_srt(engine,srt,session or Session(),Sampling(seed=sampling_seed(seed,seed_text),max_frames=max_frames))
         return io.NodeOutput(result,audio,actual)
 
 
@@ -341,12 +361,12 @@ class T8DramaLive(io.ComfyNode):
     def define_schema(cls):
         return io.Schema(node_id="T8DramaLive",display_name="T8 Drama 3 · 实时语音输出",category="T8/Drama3",
                          inputs=[EngineType.Input("engine"),io.String.Input("text",multiline=True),SessionType.Input("session",optional=True),
-                                 io.Boolean.Input("preview_audio",default=False),io.Int.Input("seed",default=42,min=0,max=2**64-1),
-                                 io.Int.Input("max_frames",default=600,min=1,max=8192)],
+                                 io.Boolean.Input("preview_audio",default=False),io.Int.Input("seed",default=42,min=0,max=CANVAS_SEED_MAX),
+                                 io.Int.Input("max_frames",default=600,min=1,max=8192),exact_seed_input()],
                          outputs=[SessionType.Output(),io.Audio.Output(),io.String.Output()],hidden=[io.Hidden.unique_id],is_output_node=True)
 
     @classmethod
-    def execute(cls,engine,text,session=None,preview_audio=False,seed=42,max_frames=600):
+    def execute(cls,engine,text,session=None,preview_audio=False,seed=42,max_frames=600,seed_text=""):
         from server import PromptServer
         from .live_audio import LiveAudio
         folder=Path(folder_paths.get_output_directory())/"drama3_live"/uuid.uuid4().hex
@@ -360,7 +380,7 @@ class T8DramaLive(io.ComfyNode):
                 "subfolder":relative.parent.as_posix(),"type":"output","preview":preview_audio},sid=client)
         live=LiveAudio(engine.codec_path,folder,on_chunk=emitted)
         try:
-            result=engine.speak(text,session or Session(),Sampling(seed=seed,max_frames=max_frames),on_codes=live.append)
+            result=engine.speak(text,session or Session(),Sampling(seed=sampling_seed(seed,seed_text),max_frames=max_frames),on_codes=live.append)
             live.finish()
             audio=engine.decode(result.takes[-1].codes)
         except BaseException:

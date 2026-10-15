@@ -28,6 +28,12 @@ python install.py
 
 请使用 **ComfyUI 自己的 Python** 执行，然后重启。导入 `workflows/` 中的示例，选择本地模型与参考音频。要求 ComfyUI 0.40.0+、Python 3.10+。`install.py` 下载并校验单独分发的 Windows x64 / CUDA 12.8 R2T2 原生运行库，不下载模型。设置 `DRAMA_SKIP_R2T2_INSTALL=1` 可跳过；已有运行库可设置 `DRAMA_R2T2_NATIVE_DIR`。Qwen 转写独立可用。
 
+## 画布工作流
+
+`workflows/` 提供 15 张画布：普通生成、参考音色、导演修改、局部编辑、长文、流式文本、场景、SRT、Codec、Qwen 转写、R2T2、对齐、实时试听、工程保存与加载。将 JSON 导入 ComfyUI，点击 **运行**。示例均经过浏览器画布实跑，核对了文字显示和音频播放。
+
+在 `LoadAudio` 中选择自己的音频；参考与对齐节点的台词须匹配录音。加载工程前先运行 `workflow_save_session.json`，刷新 ComfyUI，再选择已保存的文件。长文默认输出全部段落。数字种子范围为 `0–9007199254740991`；更大的种子请在 `seed_text` 填写完整十进制数，最大 `18446744073709551615`。
+
 ## 模型
 
 从 [t8star/Drama-3-Comfy](https://huggingface.co/t8star/Drama-3-Comfy) 下载。默认路径相对于 `ComfyUI/`：
@@ -48,7 +54,7 @@ python install.py
 
 完整 Windows 运行环境由作者单独提供。GitHub Release **只发布程序文件及原生运行库，不含模型和 Python 运行环境**；工作台源码位于 [portable/](https://github.com/T8mars/Comfyui-Drama-3/tree/main/portable)。
 
-已有基于 0.1.3 或后续版本的完整包：先关闭工作台，将 `Drama3-T8-Portable-0.1.7-code.zip` 解压到包含 `Start-Drama3.cmd` 的目录，再双击启动。此后启动时自动检查 GitHub 正式版并安装兼容的程序更新；关闭工作台后也可双击 `Update-Drama3.cmd` 手动检查。更新核对文件大小与 SHA-256，备份旧文件，失败时回滚。模型、Python、自定义路径、工程、音色库和输出均保留。断网仍可正常启动；依赖或运行库变更需使用作者提供的新完整环境。
+已有基于 0.1.3 或后续版本的完整包：先关闭工作台，将 `Drama3-T8-Portable-0.1.8-code.zip` 解压到包含 `Start-Drama3.cmd` 的目录，再双击启动。此后启动时自动检查 GitHub 正式版并安装兼容的程序更新；关闭工作台后也可双击 `Update-Drama3.cmd` 手动检查。更新核对文件大小与 SHA-256，备份旧文件，失败时回滚。模型、Python、自定义路径、工程、音色库和输出均保留。断网仍可正常启动；依赖或运行库变更需使用作者提供的新完整环境。
 
 ## 硬件与加速
 

@@ -1,0 +1,166 @@
+{
+  "last_node_id": 4,
+  "last_link_id": 2,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadAudio",
+      "pos": [
+        60,
+        60
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "title": "上传音频 / Upload audio"
+    },
+    {
+      "id": 2,
+      "type": "T8DramaAlign",
+      "pos": [
+        480,
+        60
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaAlign"
+      },
+      "widgets_values": [
+        "qwen-aligner",
+        "你好，这是本地语音测试。",
+        "Chinese",
+        ""
+      ]
+    },
+    {
+      "id": 3,
+      "type": "PreviewAny",
+      "pos": [
+        900,
+        60
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [],
+      "title": "对齐词与时间 / Aligned words and timestamps"
+    },
+    {
+      "id": 4,
+      "type": "Note",
+      "pos": [
+        60,
+        980
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "在 LoadAudio 上传或选择本地音频；运行后，在文字预览节点中查看结果。\nUpload or select audio in LoadAudio; after Run, read the results in the Preview as Text nodes.\ntranscript 必须与音频中实际说出的文字对应。\nReplace transcript with the words actually spoken in the audio."
+      ],
+      "title": "使用说明 / Instructions"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "AUDIO"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      0,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.75,
+      "offset": [
+        40,
+        40
+      ]
+    }
+  },
+  "version": 0.4
+}

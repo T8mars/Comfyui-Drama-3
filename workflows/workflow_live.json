@@ -1,17 +1,17 @@
 {
-  "last_node_id": 4,
+  "last_node_id": 6,
   "last_link_id": 3,
   "nodes": [
     {
       "id": 1,
       "type": "T8DramaLoader",
       "pos": [
-        50,
-        50
+        60,
+        60
       ],
       "size": [
-        330,
-        150
+        370,
+        380
       ],
       "flags": {},
       "order": 0,
@@ -26,24 +26,29 @@
           ]
         }
       ],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "T8DramaLoader"
+      },
       "widgets_values": [
         "drama3-t8-fp8.safetensors",
         "drama3-codec.safetensors",
         12,
-        "torch"
+        "torch",
+        "",
+        "",
+        ""
       ]
     },
     {
       "id": 2,
       "type": "T8DramaSession",
       "pos": [
-        50,
-        280
+        60,
+        520
       ],
       "size": [
-        330,
-        120
+        370,
+        260
       ],
       "flags": {},
       "order": 1,
@@ -64,7 +69,9 @@
           ]
         }
       ],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "T8DramaSession"
+      },
       "widgets_values": [
         ""
       ]
@@ -73,12 +80,12 @@
       "id": 3,
       "type": "T8DramaLive",
       "pos": [
-        470,
-        50
+        480,
+        60
       ],
       "size": [
-        420,
-        430
+        370,
+        380
       ],
       "flags": {},
       "order": 2,
@@ -114,28 +121,31 @@
           "links": []
         }
       ],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "T8DramaLive"
+      },
       "widgets_values": [
         "你好，现在是浏览器实时试听测试。",
-        false,
+        true,
         67,
         "fixed",
-        180
+        180,
+        ""
       ]
     },
     {
       "id": 4,
       "type": "SaveAudio",
       "pos": [
-        980,
-        280
+        900,
+        60
       ],
       "size": [
-        320,
-        160
+        370,
+        260
       ],
       "flags": {},
-      "order": 4,
+      "order": 3,
       "mode": 0,
       "inputs": [
         {
@@ -144,11 +154,67 @@
           "link": 3
         }
       ],
-      "outputs": [],
-      "properties": {},
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveAudio"
+      },
       "widgets_values": [
-        "Drama3_T8/output"
+        "Drama3_T8/live"
       ]
+    },
+    {
+      "id": 5,
+      "type": "Note",
+      "pos": [
+        480,
+        520
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "preview_audio=true 时，先在画布上点击一次，再点击运行；浏览器需要鼠标操作来启用声音。\nWith preview_audio enabled, click the canvas before Run to unlock browser audio.\n分片在生成过程中播放；完整音频在结束后保存。\nChunks play during generation; the final audio is saved at completion."
+      ],
+      "title": "使用说明 / Instructions"
+    },
+    {
+      "id": 6,
+      "type": "Note",
+      "pos": [
+        1320,
+        980
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "seed 数字控件支持 JavaScript 安全整数；更大的 uint64 种子请填 seed_text 十进制文本。\nUse decimal seed_text for larger uint64 seeds; leave it blank to use the numeric seed widget."
+      ],
+      "title": "使用说明 / Instructions"
     }
   ],
   "links": [
@@ -179,6 +245,14 @@
   ],
   "groups": [],
   "config": {},
-  "extra": {},
+  "extra": {
+    "ds": {
+      "scale": 0.75,
+      "offset": [
+        40,
+        40
+      ]
+    }
+  },
   "version": 0.4
 }

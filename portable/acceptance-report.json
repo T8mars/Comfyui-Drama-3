@@ -1,11 +1,11 @@
 {
-  "version": "0.1.7",
+  "version": "0.1.8",
   "machine": "RTX5090 Laptop 24GB VRAM / 64GB RAM",
   "tests": {
-    "passed": 328,
+    "passed": 346,
     "skipped": 1,
     "skip_reason": "Windows symlink creation privilege unavailable",
-    "report": "validation/publish-tests-final.log"
+    "report": "validation/canvas20-tests-final.log"
   },
   "original_tts": {
     "text": "你好，这是本地语音测试。",
@@ -1830,5 +1830,74 @@
     "models_repo": "t8star/Drama-3-Comfy",
     "core_inference_changes": false,
     "exported_source_fix": "Retain legitimate ComfyUI API input and ldm models Python packages"
+  },
+  "audit_018": {
+    "changes": [
+      "15 canvas-only examples covering all 17 native nodes and four generation modes",
+      "Exact uint64 seed_text avoids JavaScript number precision loss",
+      "Visible transcript, language and alignment previews",
+      "Long text outputs every generated segment",
+      "Session-load instructions no longer cover the visible transcript preview"
+    ],
+    "independent_audit_rounds": 20,
+    "browser_method": "Browser file import and visible Run click for every case; HTTP GET and tensor/audio reads are supplementary evidence.",
+    "canvas_workflows": 15,
+    "actual_browser_cases": 23,
+    "all_passed": true,
+    "report": "validation/canvas20-acceptance.json",
+    "live": {
+      "workflow": "workflow_live.json",
+      "prompt_id": "587df6bf-2d05-4a39-9879-1e6293d521e6",
+      "seconds": 25.58,
+      "visible_text_previews": 0,
+      "browser_playback": {
+        "currentTime": 0.084333,
+        "duration": 3.529433,
+        "error": null,
+        "startupSeconds": 0.249
+      },
+      "audio": [
+        {
+          "path": "vendor/ComfyUI/output/canvas20/live_00001.flac",
+          "frames": 155648,
+          "sample_rate": 44100,
+          "rms": 0.07813679561328772
+        }
+      ],
+      "takes": 1,
+      "references": 0,
+      "code_frames": [
+        76
+      ],
+      "finish_reasons": [
+        "eos"
+      ],
+      "chunk_count": 3,
+      "audio_context_starts": 3,
+      "first_playback_before_completion_seconds": 9.98069999998808,
+      "chunk_frames": [
+        65536,
+        65536,
+        24576
+      ]
+    },
+    "evidence_checks": [
+      "Exact uint64 seed preserved in real saved session",
+      "Two distinct reference recordings preserve different audio codes",
+      "Infill prefix/suffix codes unchanged",
+      "Long output contains both takes",
+      "Scene output has real separator and two segments",
+      "SRT timeline includes actual timing and requested silence",
+      "Stream continuation matches lookahead",
+      "Session reload produces identical decoded audio",
+      "Two-take saved session branches to exactly the original first take and decodes it",
+      "Session-load rerun after layout fix: PreviewAny text visible and not covered by instructions"
+    ],
+    "limits": [
+      "Automatic browser playback verified; subjective listening quality not scored.",
+      "Single Windows RTX 5090 Laptop configuration; no general accuracy or speed claim.",
+      "Fixture inputs and model paths configured before Run; connected session-save outputs added for code inspection."
+    ],
+    "inference_math_changed": false
   }
 }

@@ -28,6 +28,12 @@ python install.py
 
 Use your **ComfyUI Python**, then restart ComfyUI. Import a workflow from `workflows/` and select your models and reference audio. Requires ComfyUI 0.40.0+ and Python 3.10+. `install.py` downloads and verifies the separately released Windows x64 / CUDA 12.8 R2T2 native runtime; it never downloads models. Set `DRAMA_SKIP_R2T2_INSTALL=1` to skip this optional backend, or `DRAMA_R2T2_NATIVE_DIR` to use an existing runtime. Qwen ASR works independently.
 
+## Canvas workflows
+
+The `workflows/` directory contains 15 canvas workflows: basic speech, references, revision, infill, long text, streamed text, scenes, SRT, codec, Qwen ASR, R2T2, alignment, live preview, session save and session load. Open a JSON file in ComfyUI and click **Run**. These examples were tested through the browser canvas, including visible text results and audio playback.
+
+Select your own audio in `LoadAudio`; reference and alignment transcripts must match the recording. Run `workflow_save_session.json` before loading a session, then refresh ComfyUI and select the saved file. Long text decodes all segments. Numeric seeds support `0–9007199254740991`; for larger seeds, enter the exact decimal value in `seed_text` (up to `18446744073709551615`).
+
 ## Models
 
 Download from [t8star/Drama-3-Comfy](https://huggingface.co/t8star/Drama-3-Comfy). Default paths are relative to `ComfyUI/`.
@@ -48,7 +54,7 @@ Keep all three DRAMA files for complete functionality. Each loader supports cust
 
 The author distributes the complete Windows environment separately. GitHub Releases contain **program files and native libraries only, without model weights or a Python runtime**. Studio source is in [portable/](https://github.com/T8mars/Comfyui-Drama-3/tree/main/portable).
 
-For an existing complete bundle based on 0.1.3 or later, close the studio and extract `Drama3-T8-Portable-0.1.7-code.zip` into the directory containing `Start-Drama3.cmd`. Double-click `Start-Drama3.cmd` to launch. Subsequent launches check stable GitHub Releases and apply compatible code updates; `Update-Drama3.cmd` checks manually while the studio is closed. Updates verify sizes and SHA-256, back up old files and roll back on failure. Models, Python, custom paths, projects, voice libraries and outputs are retained. Offline checks allow startup; dependency/runtime changes require a new complete environment from the author.
+For an existing complete bundle based on 0.1.3 or later, close the studio and extract `Drama3-T8-Portable-0.1.8-code.zip` into the directory containing `Start-Drama3.cmd`. Double-click `Start-Drama3.cmd` to launch. Subsequent launches check stable GitHub Releases and apply compatible code updates; `Update-Drama3.cmd` checks manually while the studio is closed. Updates verify sizes and SHA-256, back up old files and roll back on failure. Models, Python, custom paths, projects, voice libraries and outputs are retained. Offline checks allow startup; dependency/runtime changes require a new complete environment from the author.
 
 ## Hardware and acceleration
 
