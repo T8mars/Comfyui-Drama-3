@@ -15,6 +15,12 @@ Native [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) nodes and 
 - A separate white-and-pink Studio with the same inference core and multitrack editor: role gain/mute, cuts, inserted silence, pause presets, undo and captions.
 - Source-aware model infill, local Qwen3-ASR 0.6B/1.7B, word alignment and [Confucius R2T2](https://github.com/T8mars/comfyui-confucius-r2t2-t8). All model paths are configurable.
 
+## Changes in 0.2.3
+
+- Release decoder objects held by nested streaming errors and scene PCM held after preview callbacks fail. Preserve error identities, stack locations and unrelated caller diagnostics.
+- Clarify Qwen ASR chunking: the target duration has an upstream-compatible +/-5-second quiet-point search. The partitioning algorithm is unchanged.
+- Targeted Transformers 4.57.1 regression: **242 passed, 1 skipped** (Windows symlink privilege). This is separate from the earlier full-model/UI checks below.
+
 ## Changes in 0.2.2
 
 - Close workspace file handles even when initialization or explicit unlocking fails, preserving the original error and allowing the workspace to reopen. With Transformers 4.57.1, 494 targeted CPU regressions passed, including five new fault/ownership checks. The inference checks below retain their 0.2.1 scope; generation code is unchanged.

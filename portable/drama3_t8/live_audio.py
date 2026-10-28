@@ -3,7 +3,7 @@ import queue
 import copy
 from dataclasses import replace
 import threading
-import traceback
+import sys
 from pathlib import Path
 
 import soundfile as sf
@@ -11,6 +11,42 @@ import torch
 
 from .native.codec import FRAME_LENGTH, SAMPLE_RATE
 from .native.loader import load_codec
+
+
+def _clear_worker_error_frames(error, owner_frame):
+    """Release completed worker calls, including causes, without clearing callers."""
+    pending, seen, frames, frame_ids = [error], set(), [], set()
+    current = tb = frame = ancestor = None
+    try:
+        # Collect before clearing: inner-frame ancestry is needed for each cause.
+        while pending:
+            current = pending.pop()
+            if id(current) in seen:
+                continue
+            seen.add(id(current))
+            tb = current.__traceback__
+            while tb is not None:
+                frame = tb.tb_frame
+                if frame is not owner_frame and id(frame) not in frame_ids:
+                    ancestor = frame.f_back
+                    while ancestor is not None and ancestor is not owner_frame:
+                        ancestor = ancestor.f_back
+                    if ancestor is owner_frame:
+                        frames.append(frame)
+                        frame_ids.add(id(frame))
+                tb = tb.tb_next
+            for linked in (current.__cause__, current.__context__):
+                if linked is not None:
+                    pending.append(linked)
+        for frame in frames:
+            try:
+                frame.clear()
+            except RuntimeError:
+                pass  # An executing frame cannot be cleared.
+    finally:
+        pending.clear()
+        frames.clear()
+        current = tb = frame = ancestor = owner_frame = None
 
 
 class LiveAudio:
@@ -125,7 +161,9 @@ class LiveAudio:
         except BaseException as exc:
             # Keep useful stack locations, without pinning codec weights via
             # locals in an exited decode/callback frame retained by self.error.
-            traceback.clear_frames(exc.__traceback__)
+            _clear_worker_error_frames(exc, sys._getframe())
             self.error = exc
         finally:
-            codec = None
+            # This active frame cannot be cleared in the error handler. Drop
+            # its own scene PCM and input buffers before an error retains it.
+            codec = audio = wave = frame = codes = None
