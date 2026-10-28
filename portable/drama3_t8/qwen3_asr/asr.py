@@ -82,8 +82,11 @@ def prepare_audio(waveform, sample_rate):
 
 
 def split_long(audio):
-    """Pieces of at most MAX_SECONDS, cut at the quietest 100 ms within 5 s of each limit; short pieces padded to
-    MIN_SECONDS. Audio within the limit is returned whole."""
+    """Target MAX_SECONDS per piece, searching for quiet points within +/-5 s.
+
+    Like upstream, a cut may fall up to 5 s after the target. Short pieces are
+    padded to MIN_SECONDS; audio within the target is returned whole.
+    """
     limit = MAX_SECONDS * SAMPLE_RATE
     shortest = int(MIN_SECONDS * SAMPLE_RATE)
     if len(audio) <= limit:
