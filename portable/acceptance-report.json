@@ -1,12 +1,12 @@
 {
   "schema": "drama3.release-acceptance.v1",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "status": "passed",
   "validation_scope": "current_release",
-  "prepared_utc": "2026-10-28T13:23:27.090307+00:00",
+  "prepared_utc": "2026-10-28T14:58:00.748052+00:00",
   "source_sha256": {
-    "README.md": "10e8f9e60e83d9ea1f356c9618f2ff91725585dec44a82cacebf53c513f36798",
-    "README.zh-CN.md": "9ac5fc7837930c288c5c389d2aab893748212ab7133b3bdfda95be1dff9fe8cd",
+    "README.md": "cff0f9acdcf4f55903d7431fbe15c78143ebdaf04030c47e2f2bf4f7e3990900",
+    "README.zh-CN.md": "060e0ba47f03874100a4952a37c1477a263cce3e2dc3f0623f36880093d7e6d9",
     "Start-Drama3.cmd": "b09da463b292919b34df5bb6f874a9b3bc47f5c7bece12aa9f49b8a093b09c33",
     "Update-Drama3.cmd": "04ffb55ed48866119883a802f91f64181bcf4c5519600463d6258a7664bdb502",
     "acceleration-manifest.json": "8338e0a28494d6261840c0a6d4e8694af63a201a3c209340d1ad17e915d12a45",
@@ -15,10 +15,10 @@
     "comfyui-drama3-T8/.comfyignore": "ca666c2741b19a51cd80d5f103ed410ceda82da184828814ff9954752a78ee15",
     "comfyui-drama3-T8/.gitignore": "2cff18067a488a2789c8c124551235da98a2b40762fb57b8b1f28154498ada46",
     "comfyui-drama3-T8/LICENSE": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db",
-    "comfyui-drama3-T8/README.md": "10e8f9e60e83d9ea1f356c9618f2ff91725585dec44a82cacebf53c513f36798",
-    "comfyui-drama3-T8/README.zh-CN.md": "9ac5fc7837930c288c5c389d2aab893748212ab7133b3bdfda95be1dff9fe8cd",
+    "comfyui-drama3-T8/README.md": "cff0f9acdcf4f55903d7431fbe15c78143ebdaf04030c47e2f2bf4f7e3990900",
+    "comfyui-drama3-T8/README.zh-CN.md": "060e0ba47f03874100a4952a37c1477a263cce3e2dc3f0623f36880093d7e6d9",
     "comfyui-drama3-T8/__init__.py": "f4918b89e4eb9ab3308a8550ad0861f2548ec56d420e1dd00f62b3ed24bd9bb4",
-    "comfyui-drama3-T8/drama3_t8/__init__.py": "0087217236c583cb0af664fe1d340cdc3322b595547d434843cce19346a1a7ce",
+    "comfyui-drama3-T8/drama3_t8/__init__.py": "3cde40a8ea47dc78d92734632ac61189478bb43186df34c8ad682895147d84be",
     "comfyui-drama3-T8/drama3_t8/alignment.py": "38603b9a4e35c944cecd84de9b048df5d9ef6360da5044111f8a3d00d83a4540",
     "comfyui-drama3-T8/drama3_t8/audio.py": "bbc88a53ab5f90cdfaa92f7a09980dca1adbdb0a7a0a681d175c241c48c37246",
     "comfyui-drama3-T8/drama3_t8/audio_processing.py": "eb498e750306a45539ee38e319a22b690437d088b59b4010c39b1cdb57a32570",
@@ -90,7 +90,7 @@
     "comfyui-drama3-T8/drama3_t8/vendor_qwen/inference/qwen3_asr.py": "5c485b53ede6cb78ebae3e5163e30d9015ce4b67f84e71a7754c44431c24042b",
     "comfyui-drama3-T8/drama3_t8/vendor_qwen/inference/qwen3_forced_aligner.py": "a5cecd2994a7742be145408088f3608e48fc0870e3a22744df0b21f98af1bb04",
     "comfyui-drama3-T8/drama3_t8/vendor_qwen/inference/utils.py": "db89e24f94c803a49fe83ad9960660cdcfc18d91defcf20a7264f79facaf2d47",
-    "comfyui-drama3-T8/drama3_t8/workspace_lock.py": "ee51af88de3233fab442e7cb0d684b7b94fd6b0ebeef1de8b4348d431d63c9a9",
+    "comfyui-drama3-T8/drama3_t8/workspace_lock.py": "8ed7521639b9dc7db458b1e38e0f90b98a0d133e45a10923ce61473877e05d5c",
     "comfyui-drama3-T8/install.py": "f7b3791dcf4e4d96f0da7c0bd67494dd39e4e95d7ec5adcfa97bec4a28a40b4a",
     "comfyui-drama3-T8/licenses/CONFUCIUS-MODEL_LICENSE": "064483c5ba1dc20907038108da4f45d5b37cd0a41a351c8a8bb98ba1af48c505",
     "comfyui-drama3-T8/licenses/CONFUCIUS-MODEL_LICENSE_zh": "6ed2e9946bd0b0185a6c690565cf2f8de23044a513be6e1ec7c97e6995ce241b",
@@ -114,7 +114,7 @@
     "comfyui-drama3-T8/native-source/NOTICE.md": "b623247f7c153192c8ed77ef36644fb827e3b423ce2fdc8d27868e2605f37be9",
     "comfyui-drama3-T8/native-source/README.md": "5fc519a126372a452244045350d395aa10333d46a5234c62bcea72c8a5197cf9",
     "comfyui-drama3-T8/native-source/native_ext.cpp": "39867cf597a6fcfdb083ebb1b197da2fda75f526045349d0d19968102d6d9667",
-    "comfyui-drama3-T8/pyproject.toml": "7f6aca7e6c3ebfb6099f55e3ae6aebe0fea24429777e934f2e894b4afdd5c866",
+    "comfyui-drama3-T8/pyproject.toml": "d69a6f45539162d7ceb0f61f939cd4c1a33f01aa52eb5975eab05d76510f5d01",
     "comfyui-drama3-T8/r2t2-runtime.json": "4a5c7085be79fe588d2c3d54e1c6b34c9c6ded2e42182af0228189c44a72c046",
     "comfyui-drama3-T8/requirements.txt": "2e26adb5270ccab740109295fa7ccd4a6bb6b41afede0615a248ad371211a181",
     "comfyui-drama3-T8/upstream-lock.json": "2e8657c5bfce8fd5acdf7a43a812c4f1678c3edbc3ebc7acf653b6a95dab9b03",
@@ -138,7 +138,7 @@
     "comfyui-drama3-T8/workflows/workflow_scene.json": "231d51e15ec2ff948ef1859c686b5d133626ca1ed82fd1a8c51ef8c3d267bba1",
     "comfyui-drama3-T8/workflows/workflow_srt.json": "cbf34aa07b17328c4bc54a939a87152055f78ca3be2095a3188a9123c740955f",
     "comfyui-drama3-T8/workflows/workflow_stream.json": "0036818d757817410d9a1bc8fa8e0f382b7d628a94e7c223d9114522712e5106",
-    "drama3_t8/__init__.py": "0087217236c583cb0af664fe1d340cdc3322b595547d434843cce19346a1a7ce",
+    "drama3_t8/__init__.py": "3cde40a8ea47dc78d92734632ac61189478bb43186df34c8ad682895147d84be",
     "drama3_t8/alignment.py": "38603b9a4e35c944cecd84de9b048df5d9ef6360da5044111f8a3d00d83a4540",
     "drama3_t8/audio.py": "bbc88a53ab5f90cdfaa92f7a09980dca1adbdb0a7a0a681d175c241c48c37246",
     "drama3_t8/audio_processing.py": "eb498e750306a45539ee38e319a22b690437d088b59b4010c39b1cdb57a32570",
@@ -214,7 +214,7 @@
     "drama3_t8/vendor_qwen/inference/qwen3_asr.py": "5c485b53ede6cb78ebae3e5163e30d9015ce4b67f84e71a7754c44431c24042b",
     "drama3_t8/vendor_qwen/inference/qwen3_forced_aligner.py": "a5cecd2994a7742be145408088f3608e48fc0870e3a22744df0b21f98af1bb04",
     "drama3_t8/vendor_qwen/inference/utils.py": "db89e24f94c803a49fe83ad9960660cdcfc18d91defcf20a7264f79facaf2d47",
-    "drama3_t8/workspace_lock.py": "ee51af88de3233fab442e7cb0d684b7b94fd6b0ebeef1de8b4348d431d63c9a9",
+    "drama3_t8/workspace_lock.py": "8ed7521639b9dc7db458b1e38e0f90b98a0d133e45a10923ce61473877e05d5c",
     "licenses/CONFUCIUS-MODEL_LICENSE": "064483c5ba1dc20907038108da4f45d5b37cd0a41a351c8a8bb98ba1af48c505",
     "licenses/CONFUCIUS-MODEL_LICENSE_zh": "6ed2e9946bd0b0185a6c690565cf2f8de23044a513be6e1ec7c97e6995ce241b",
     "licenses/LICENSE-APACHE": "fb576006b32d09620b812e9949b0fb08ac94759605f8eec7b33015f0fd83121f",
@@ -267,9 +267,24 @@
           "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/adoption405-r1/03-adoption-and-targeted-CPU-receipt.json",
           "sha256": "eb8651e76d092847b2dbcaa16a707ea36c105016bd204c27e5a6b3b5df49a994",
           "bytes": 2675
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
+          "bytes": 3967,
+          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\bundled-4571.xml",
+          "bytes": 14217,
+          "sha256": "0a82d92b104da4b90503721300bd9d56811486b8b02244850dfd573d4b4b026b"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-agent\\tf4571\\cpu-result.json",
+          "bytes": 7678,
+          "sha256": "5c6122bd88d89945a36338e8e72d266385a6fc4c2458e214b0b9f25b72e4c254"
         }
       ],
-      "scope": "Source405 runtime baseline: bundled Kitchen0.2.37 and latest Kitchen0.2.40 each 1364 passed,5 skipped,1 deselected; skips/deselections are not passes. Targeted CPU34/34 both stacks. CUDA uninitialized."
+      "scope": "Current022 lock fix:494 disjoint targeted CPU cases withTransformers4.57.1, zero skips/failures and CUDAFalse, including five new real-file failure/ownership checks. Historical021 two full stacks1364 each retain their original scope; no new full-suite count is claimed."
     },
     "native_numerics": {
       "status": "passed",
@@ -303,9 +318,14 @@
           "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/tiny-gpu-report-r1.json",
           "sha256": "4d87f51cb0b3f2ce7e138bc0aceb476875999c758cc8ba04474701035b7e3de2",
           "bytes": 5975
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
+          "bytes": 3967,
+          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
         }
       ],
-      "scope": "Scoped numerical contracts: source404 canonical bundled27 and root-confirmed Kitchen0.2.40 canonical27 pass; candidate25/new2, exact conversion, independent rotation red-green are pinned. Source405 only idle host-cache synchronization plus CPU test; arithmetic paths unchanged. Not full-model correctness or seed42 repair.",
+      "scope": "Scoped numerical contracts: source404 canonical bundled27 and root-confirmed Kitchen0.2.40 canonical27 pass; candidate25/new2, exact conversion, independent rotation red-green are pinned. Source405 only idle host-cache synchronization plus CPU test; arithmetic paths unchanged. Not full-model correctness or seed42 repair. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run.",
       "additional_stack_provenance": "Root explicitly confirmed canonical27 passed on each Kitchen0.2.37/0.2.40. Existing attached reports retain their exact original stack and source scopes."
     },
     "real_model_checks": {
@@ -330,9 +350,14 @@
           "path": "E:/codex-record/drama3-upgrade/final-source405-Complex-blind-batch-r35/strict-content-score.json",
           "sha256": "2fe3293f24b5987c0743788f67e858578014392cb5baa1d57b1849d006546682",
           "bytes": 18831
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
+          "bytes": 3967,
+          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
         }
       ],
-      "scope": "Required positive cases passed within declared scope: source405 new0.42 original Complex generation+two revisions, all12 saved-PCM clips strict R2/Qwen12/12; source404 StudioLong96/old0.40 originalJoint actual UI with strict dual8/8 total and explicit405 unchanged-generation bridge. This gate does not convert separately recorded original W4 no-reference seed42 Torch/CUDA failures to passes.",
+      "scope": "Required positive cases passed within declared scope: source405 new0.42 original Complex generation+two revisions, all12 saved-PCM clips strict R2/Qwen12/12; source404 StudioLong96/old0.40 originalJoint actual UI with strict dual8/8 total and explicit405 unchanged-generation bridge. This gate does not convert separately recorded original W4 no-reference seed42 Torch/CUDA failures to passes. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run.",
       "known_negative_excluded_from_positive_case_count": [
         "original_W4_no_reference_Basic_seed42_Torch_and_CUDA"
       ]
@@ -355,9 +380,14 @@
           "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/adoption405-r1/03-adoption-and-targeted-CPU-receipt.json",
           "sha256": "eb8651e76d092847b2dbcaa16a707ea36c105016bd204c27e5a6b3b5df49a994",
           "bytes": 2675
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
+          "bytes": 3967,
+          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
         }
       ],
-      "scope": "Scoped old0.40 originalJoint actual UI succeeded on source404; whole+three line clips all passed both blind recognizers. Source404 evidence remains identified as404; explicit405 delta changes only idle host-cache ordering plus CPU test, with generation path unchanged. Not a claimed405 UI rerun."
+      "scope": "Scoped old0.40 originalJoint actual UI succeeded on source404; whole+three line clips all passed both blind recognizers. Source404 evidence remains identified as404; explicit405 delta changes only idle host-cache ordering plus CPU test, with generation path unchanged. Not a claimed405 UI rerun. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run."
     },
     "canvas_new_host": {
       "status": "passed",
@@ -377,9 +407,14 @@
           "path": "E:/codex-record/drama3-upgrade/final-source405-Complex-blind-batch-r35/strict-content-score.json",
           "sha256": "2fe3293f24b5987c0743788f67e858578014392cb5baa1d57b1849d006546682",
           "bytes": 18831
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
+          "bytes": 3967,
+          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
         }
       ],
-      "scope": "Actual source405 new0.42 original Complex generation and two revisions succeeded through actual UI; all12 exact saved-PCM whole/line clips strictly match targets in fresh blind R2 and Qwen recognizers,12/12 each. This does not prove arbitrary content or standalone Basic seed42."
+      "scope": "Actual source405 new0.42 original Complex generation and two revisions succeeded through actual UI; all12 exact saved-PCM whole/line clips strictly match targets in fresh blind R2 and Qwen recognizers,12/12 each. This does not prove arbitrary content or standalone Basic seed42. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run."
     },
     "studio_ui": {
       "status": "passed",
@@ -404,9 +439,14 @@
           "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/adoption405-r1/03-adoption-and-targeted-CPU-receipt.json",
           "sha256": "eb8651e76d092847b2dbcaa16a707ea36c105016bd204c27e5a6b3b5df49a994",
           "bytes": 2675
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
+          "bytes": 3967,
+          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
         }
       ],
-      "scope": "Scoped source404 Long96 actual UI and whole+three line strict dual4/4 scoring passed; source405 idle unload delta leaves generation unchanged. The separately pinned original CUDA/Graph no-reference Basic seed42 failure remains a failed known negative, not part of the positive pass count."
+      "scope": "Scoped source404 Long96 actual UI and whole+three line strict dual4/4 scoring passed; source405 idle unload delta leaves generation unchanged. The separately pinned original CUDA/Graph no-reference Basic seed42 failure remains a failed known negative, not part of the positive pass count. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run."
     },
     "portable_update": {
       "status": "passed",
@@ -435,9 +475,14 @@
           "path": "E:\\codex-record\\drama3-upgrade\\portable-r38-native-GPU-smoke\\report.json",
           "bytes": 210632,
           "sha256": "b3c10e00b6da90b2f8c51035f90b19e7a04ce06613127ee8f85bafdd8fa4f8de"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
+          "bytes": 3967,
+          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
         }
       ],
-      "scope": "Actual original public020 updater install_archive committed1303 code members to021, with explicit inert protected sentinels; separate complete private bundle249-source-SHA/18-schema/1402-origin own-Python CPU qualification. Neither fixture sentinels nor CPU checks are claimed as full-model inference or automatic latest.",
+      "scope": "Actual original public020 updater install_archive committed1303 code members to021, with explicit inert protected sentinels; separate complete private bundle249-source-SHA/18-schema/1402-origin own-Python CPU qualification. Neither fixture sentinels nor CPU checks are claimed as full-model inference or automatic latest. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run.",
       "scoped_code_transaction_status": "passed",
       "full_model_environment_status": "Own packaged Python CPU18 and native CUDA compiler/Graph smoke qualified; full checkpoint TTS was not loaded in this packaged layout. Separate actual UI tests qualify the byte-identical shared core.",
       "automatic_latest": false,
@@ -468,15 +513,25 @@
           "path": "E:\\codex-record\\drama3-upgrade\\requirements-final-delta-r37.json",
           "bytes": 14473,
           "sha256": "af3241274abc2d6b42fb1af9ee160d1a752b058591f7bf525c216a5e4d954c66"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
+          "bytes": 3967,
+          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-agent\\report.json",
+          "bytes": 25034,
+          "sha256": "879e142a3b8cad8c917ec073a268187524d7efd5cb14c5f1c7561e484e1f17b8"
         }
       ],
-      "scope": "Requirement implementation and precisely bounded evidence coverage. KnownW4 failure and external review are not passed by this gate."
+      "scope": "Twenty independent audit topics, 19 themes share397 selected checks per environment, and real workspace-lock fault reproduction. Both confirmed resource-cleanup bugs fixed and cross-checked; unchanged functional scope uses the preserved021 audit."
     }
   },
   "source_freeze": {
-    "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-readmes-r37\\01-source-freeze-405-final-docs.json",
-    "bytes": 64012,
-    "sha256": "4630881ca6f3c64fd5bba0be090cdbcf8330ab6a267a4ad56c827430ff16e68d"
+    "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\source406-before-acceptance.json",
+    "bytes": 64512,
+    "sha256": "3f719933b8cf755177211431b6f9356917423c5fd70eaaa9796c73c4060b6803"
   },
   "QA_refresh": {
     "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-readmes-r37\\02-QA-final-README-refresh-126.json",
@@ -489,7 +544,7 @@
     "bytes": 5138
   },
   "final_docs_freeze_required": false,
-  "source_hashes_origin": "Final source405 docs snapshot, all249 shipped canonical payload files except the acceptance output itself. Test/nonpayload sources remain bound by the405 snapshot.",
+  "source_hashes_origin": "Current022 named payload hashes excluding acceptance itself. Incremental406 snapshot and audit bind the new test; historical021 full inference evidence is retained only across proven unchanged files.",
   "source404_to405_delta": {
     "parent": {
       "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/adoption404/prepare_20261028T122053Z_90bc8371/01-source-freeze-404.json",
@@ -539,8 +594,7 @@
   ],
   "historical_evidence_policy": "Source40023-clip results remain historical; scoped unchanged-component audit evidence may be retained only with precise400-to405 delta coverage.",
   "external_status": {
-    "publication_scope": "This runtime acceptance does not assert publication, Registry activation or online latest. Check the separately recorded post-publication state.",
-    "historical_registry_020": "Previously observed Flagged/pending; not an Active assertion or fresh current-state claim."
+    "publication_scope": "This scoped engineering acceptance does not claim022 publication or Registry Active; separate actual receipts are required."
   },
   "distribution_boundary": {
     "GitHub_release_code_only": true,
@@ -551,38 +605,34 @@
     "roadmap_and_validation_trees_exported": false
   },
   "scoped_update_transaction": {
-    "report": {
-      "path": "E:/codex-record/drama3-upgrade/qualification-public020-to021-r36-transaction-result.json",
-      "sha256": "cefda61b00cd23d07a90bde43deecc56300d602319d2fc861d9f6fddf0033e15",
-      "bytes": 336208
-    },
-    "result": {
-      "status": "updated",
-      "version": "0.2.1"
-    },
-    "journal_state": "committed",
-    "scope": "real_original_install_archive_transaction_code_fixture_only_not_latest_not_full_environment",
-    "public020_original_updater": true,
-    "protected_sentinels_scope_only": true,
-    "full_model_environment_proven": false,
-    "automatic_latest": false
+    "scope": "Updater code and asset path protocol are byte-identical to021; earlier actual public020->021 latest proof is historical. A fresh public021->022 latest transaction is required after stable publication.",
+    "historical": {
+      "path": "E:\\codex-record\\drama3-upgrade\\final-online-public020-to021-r39-result.json",
+      "bytes": 338473,
+      "sha256": "e5d9480b3a56e8642137d6589a8eead6c1d4f633198edc89152e6e39ac01a791"
+    }
   },
-  "final_review_before_recording": "Root reviewed actual tool terminals, source lineage, exact inputs, raw+parsed blind scoring, private-runtime origins and the code-update transaction. Known failure is retained separately.",
-  "accepted_utc": "2026-10-28T13:48:34.580456+00:00",
+  "final_review_before_recording": "Actual old failures, unchanged private-red test contracts after fix, real OS lock reacquisition,494 disjoint4.57.1 cases, independent20round review and byte-identical inference bridge.",
+  "accepted_utc": "2026-10-28T14:58:00.748052+00:00",
   "acceptance_policy": "Passed means the eight named, source-bound release gates meet their stated scope. It does not mean every generative seed, every model/parameter combination, all historical diagnostics or fair performance comparisons passed.",
   "parent_private_draft": {
-    "path": "E:\\codex-record\\drama3-upgrade\\acceptance-0.2.1-private-draft-r35-r2\\acceptance-report-0.2.1.private-draft-r2.json",
-    "bytes": 60060,
-    "sha256": "0c4775d5d5e0a0156cf38bbd3453cdd960fd788f18ee97a879d780eec819cc17"
+    "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\historical021-acceptance-report.json",
+    "bytes": 46871,
+    "sha256": "115df60cc0402fe1ae3fd49c6083631a3a7240160fdaac8ed47dadfb618e89bb"
   },
   "performance_scope": {
     "fair_Torch_vs_CUDA_speedup_qualified": false,
     "reason": "The original Torch benchmark case stalled; an earlier CUDA eager EOS on pre-correction math is not a successful same-quality baseline. No replacement seed/text/budget/retry is used to claim a speedup."
   },
-  "post_publication_required_check": "Run the unchanged original020 update CLI against a fresh exact020 code installation and actual latest stable021. Record outside this self-excluded acceptance report.",
+  "post_publication_required_check": "Original published021 automatic updater must be exercised against actual stable022 latest and recorded separately.",
   "preliminary_root_review": {
     "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-acceptance-r38\\acceptance-report-0.2.1.reviewed.json",
     "bytes": 45351,
     "sha256": "6e64fb126cd86128ffcb59028cfd2b793ac55838ce389591ade91859aa468f26"
+  },
+  "incremental022": {
+    "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
+    "bytes": 3967,
+    "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
   }
 }
