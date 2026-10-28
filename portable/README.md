@@ -15,6 +15,10 @@ Native [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) nodes and 
 - A separate white-and-pink Studio with the same inference core and multitrack editor: role gain/mute, cuts, inserted silence, pause presets, undo and captions.
 - Source-aware model infill, local Qwen3-ASR 0.6B/1.7B, word alignment and [Confucius R2T2](https://github.com/T8mars/comfyui-confucius-r2t2-t8). All model paths are configurable.
 
+## Changes in 0.2.2
+
+- Close workspace file handles even when initialization or explicit unlocking fails, preserving the original error and allowing the workspace to reopen. With Transformers 4.57.1, 494 targeted CPU regressions passed, including five new fault/ownership checks. The inference checks below retain their 0.2.1 scope; generation code is unchanged.
+
 ## Changes in 0.2.1
 
 - Long-text continuation keeps a fixed voice reference. The first new chunk uses the existing conversation; later chunks use the Session's explicit references in their original order, or the first newly generated Take when no references were supplied. Saved references, prior Takes and direction remain in the Session. Ordinary speech, Scene, streaming and revision keep their existing history policies.
