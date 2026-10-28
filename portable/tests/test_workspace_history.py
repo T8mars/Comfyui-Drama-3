@@ -5,7 +5,7 @@ import torch
 import pytest
 from fastapi.testclient import TestClient
 
-import app as application
+from studio_app_loader import application
 from drama3_t8.state import Session, Take, save_session
 from drama3_t8.studio import Studio
 

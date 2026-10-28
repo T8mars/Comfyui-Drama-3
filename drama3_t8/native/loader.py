@@ -1,7 +1,11 @@
 """Load the converted Drama 3 files (`tools/convert.py`) as ComfyUI-managed models."""
+import gc
 import json
 import logging
 import os
+import contextlib
+import inspect
+import sys
 
 import torch
 
@@ -29,16 +33,57 @@ class _OpsConfig:
         self.quant_config = quant_config
 
 
+def load_checkpoint_storage(model, state):
+    """Assign checkpoint tensors without allocating a second model or losing quantized storage.
+
+    Comfy's mixed-precision modules load their weights and quantization parameters
+    themselves. Unlike ordinary ``assign=True`` parameters, those custom loaders
+    use ``factory_kwargs['device']`` and would move the checkpoint *onto meta* if
+    the model was constructed there. Point only meta factories at the checkpoint
+    device before loading; the model patcher still controls subsequent transfers.
+    """
+    for name, module in model.named_modules():
+        factory = getattr(module, "factory_kwargs", None)
+        if not isinstance(factory, dict):
+            continue
+        device = factory.get("device")
+        if device is None or torch.device(device).type != "meta":
+            continue
+        key = f"{name}.weight" if name else "weight"
+        weight = state.get(key)
+        if weight is None and callable(getattr(module, "reset_parameters", None)) and hasattr(module, "_orig_shape"):
+            # Some host quantized loaders merely warn and return when a weight
+            # is absent, so load_state_dict would otherwise miss this failure.
+            raise ValueError(f"Drama 3 checkpoint is missing weight: {key}")
+        module.factory_kwargs = {**factory, "device": weight.device if weight is not None else torch.device("cpu")}
+
+    result = model.load_state_dict(state, strict=False, assign=True)
+    if result.unexpected_keys or result.missing_keys:
+        raise ValueError(f"Drama 3 checkpoint keys: unexpected {result.unexpected_keys[:6]}, missing {result.missing_keys[:6]}")
+    # A QuantizedTensor's public device is not sufficient: inspect its actual
+    # packed data and every tensor-valued scale/codebook as well.
+    from .offload import tensor_fields
+    for name, value in list(model.named_parameters()) + list(model.named_buffers()):
+        fields = {"data": value}
+        if hasattr(value, "_qdata"):
+            fields = {"data": value._qdata, **tensor_fields(value)}
+        for field, tensor in fields.items():
+            if tensor.is_meta:
+                raise ValueError(f"Drama 3 checkpoint left unmaterialized storage: {name}.{field}")
+    return result
+
+
 class Drama3:
     """A loaded Drama 3: its patchers, where each part runs, and the tokenizer."""
 
-    def __init__(self, model, patcher, second=None, second_patcher=None, experts=None):
+    def __init__(self, model, patcher, second=None, second_patcher=None, experts=None, checkpoint_reader=None):
         from tokenizers import Tokenizer
         self.model = model
         self.patcher = patcher
         self.second = second
         self.second_patcher = second_patcher
         self.experts = experts
+        self.checkpoint_reader = dict(checkpoint_reader or {})
         self.tokenizer = Tokenizer.from_file(TOKENIZER_PATH)
 
     @property
@@ -47,6 +92,40 @@ class Drama3:
 
     def patchers(self):
         return [p for p in (self.patcher, self.second_patcher) if p is not None]
+
+    def load_resident(self, extra_patchers=(), memory_required=0):
+        """Load and verify full single-GPU weights, including optional scene heads."""
+        from .resident import ResidentExperts
+        if not isinstance(self.experts, ResidentExperts):
+            raise ValueError('load_resident requires full VRAM expert placement')
+        self.experts.load(self.patcher.load_device, [*self.patchers(), *extra_patchers], memory_required)
+        return self
+
+    def expert_stats(self):
+        from .resident import ResidentExperts
+        if isinstance(self.experts, ResidentExperts):
+            return self.experts.stats()
+        store = self.experts
+        return dict(placement='ram', requested_backend=getattr(store, 'requested_backend', 'torch'),
+                    actual_backend=getattr(store, 'last_backend', 'torch'),
+                    fallback_reason=getattr(store, 'fallback_reason', None),
+                    backend_calls=dict(getattr(store, 'backend_calls', {})),
+                    cpu_experts_run=getattr(store, 'cpu_experts_run', 0),
+                    cpu_decode_calls=getattr(store, 'cpu_decode_calls', 0),
+                    sync_free=getattr(store, 'sync_free', False))
+
+    def session(self, cpu_decode=False, extra_patchers=()):
+        """Keep the expert cache across related takes; inner generations reuse it.
+
+        CPU decode is opt-in because the caller must service CPU work between
+        layers/steps. The reference Torch store does not implement this option.
+        """
+        if self.experts is None:
+            return contextlib.nullcontext()
+        options = {}
+        if "cpu_decode" in inspect.signature(self.experts.session).parameters:
+            options["cpu_decode"] = cpu_decode
+        return self.experts.session(self.patcher.load_device, [*self.patchers(), *extra_patchers], **options)
 
     def parts(self):
         """(layers, layer devices, final norm, audio head, tower): the head and tower run on the last device."""
@@ -85,39 +164,209 @@ def auto_split(model, first_device, second_device):
     return best[1]
 
 
-def load_drama3(path, second_device=None, split=0, experts_in_ram=False, expert_cache_gb=0.0):
-    state, metadata = comfy.utils.load_torch_file(path, return_metadata=True)
-    if not metadata or "drama3_config" not in metadata:
-        raise ValueError(f"{os.path.basename(path)} is not a converted Drama 3 file (tools/convert.py model)")
-    config = parse_config(json.loads(metadata["drama3_config"]))
-    config.fp8_experts = metadata.get("drama3_format") == "fp8"
-    quant_config = comfy.utils.detect_layer_quantization(state, "")
-    dtype = torch.bfloat16
-    load_device = comfy.model_management.get_torch_device()
-    offload_device = comfy.model_management.unet_offload_device()
-    operations = comfy.ops.pick_operations(dtype, dtype, load_device=load_device, model_config=_OpsConfig(quant_config))
-    # Assign checkpoint storage directly; a second 39 GB CPU copy exceeds 64 GB machines.
-    model = Drama3Model(config, device=torch.device("meta"), dtype=dtype, operations=operations)
-    patcher = comfy.model_patcher.CoreModelPatcher(model, load_device=load_device, offload_device=offload_device)
-    result = model.load_state_dict(state, strict=False, assign=True)
-    del state
-    if result.unexpected_keys or result.missing_keys:
-        raise ValueError(f"Drama 3 checkpoint keys: unexpected {result.unexpected_keys[:6]}, missing {result.missing_keys[:6]}")
-    comfy.model_management.archive_model_dtypes(model)
-    experts = None
-    if experts_in_ram:
-        experts = ExpertStore(int(expert_cache_gb * 1024 ** 3))
-        for layer in model.model.layers:
-            layer.mlp.experts = experts.add(layer.mlp.experts)
-    if second_device is None:
-        return Drama3(model, patcher, experts=experts)
+def _clear_failed_load_frames(error, owner_frame):
+    """Release this load's internal copies without clearing user tracebacks.
 
-    first = split or auto_split(model, load_device, second_device)
-    second = SecondGPU(model, first)
-    second_patcher = comfy.model_patcher.CoreModelPatcher(second, load_device=second_device, offload_device=offload_device)
-    logging.info("Drama 3: layers 0-%d on %s, layers %d-%d, head and tower on %s", first - 1, load_device, first,
-                 config.text.num_hidden_layers - 1, second_device)
-    return Drama3(model, patcher, second, second_patcher, experts)
+    An exception may refer to a prior, unrelated cause or an external callback.
+    Only frames within this exact active load and an owned implementation root
+    can contain temporary copies that this loader is entitled to release.
+    """
+    modules = [torch, comfy.ops, sys.modules.get('comfy_kitchen')]
+    roots = [os.path.normcase(os.path.abspath(os.path.dirname(__file__)))]
+    for implementation in modules:
+        filename = getattr(implementation, '__file__', None)
+        if filename:
+            roots.append(os.path.normcase(os.path.abspath(os.path.dirname(filename))))
+    pending, seen, frames, frame_ids = [error], set(), [], set()
+    current = tb = frame = ancestor = None
+    try:
+        # Collect first: clearing an inner frame must not change the ancestry
+        # checks for another exception or linked cause.
+        while pending:
+            current = pending.pop()
+            if id(current) in seen:
+                continue
+            seen.add(id(current))
+            tb = current.__traceback__
+            while tb is not None:
+                frame = tb.tb_frame
+                filename = os.path.normcase(os.path.abspath(frame.f_code.co_filename))
+                owned = False
+                for root in roots:
+                    try:
+                        if os.path.commonpath((filename, root)) == root:
+                            owned = True
+                            break
+                    except ValueError:
+                        pass  # Different Windows volumes cannot share a root.
+                if owned and frame is not owner_frame and id(frame) not in frame_ids:
+                    ancestor = frame.f_back
+                    while ancestor is not None and ancestor is not owner_frame:
+                        ancestor = ancestor.f_back
+                    if ancestor is owner_frame:
+                        frames.append(frame)
+                        frame_ids.add(id(frame))
+                tb = tb.tb_next
+            for linked in (current.__cause__, current.__context__):
+                if linked is not None:
+                    pending.append(linked)
+        for frame in frames:
+            try:
+                frame.clear()
+            except RuntimeError:
+                pass  # Python does not allow clearing an executing frame.
+    finally:
+        pending.clear()
+        frames.clear()
+        current = tb = frame = ancestor = owner_frame = None
+
+
+def _failed_load_cleanup(operation, description, *args):
+    """Attempt owned rollback without replacing the original load exception."""
+    try:
+        operation(*args)
+    except BaseException as cleanup_error:
+        try:
+            logging.warning('Drama 3 failed-load %s: %s: %s', description,
+                            type(cleanup_error).__name__, str(cleanup_error))
+        except BaseException:
+            pass  # Diagnostics must not hide the original cancellation/error.
+    finally:
+        operation = None
+        args = ()
+
+
+def _clear_unpublished_model(model):
+    for module in model.modules():
+        module._parameters.clear()
+        module._buffers.clear()
+
+
+def _release_failed_load_pins():
+    from .acceleration import release_unused_pinned_memory
+    release_unused_pinned_memory()
+
+
+def load_drama3(path, second_device=None, split=0, experts_in_ram=False, expert_cache_gb=0.0,moe_backend="torch"):
+    if moe_backend not in {'auto', 'torch', 'cuda'}:
+        raise ValueError('MoE backend must be auto, torch or cuda')
+    if not experts_in_ram and second_device is not None:
+        raise ValueError('Full VRAM expert placement supports one CUDA device')
+    load_device = comfy.model_management.get_torch_device()
+    if not experts_in_ram and load_device.type != 'cuda':
+        from .resident import ResidentMemoryError
+        raise ResidentMemoryError('Full VRAM placement requires one CUDA GPU; select RAM placement on this host')
+    if not experts_in_ram:
+        from .resident import preflight_resident_checkpoint
+        preflight_resident_checkpoint(path, load_device)
+    state = model = patcher = experts = second = second_patcher = layer = None
+    ownership_module = ownership = assignment = None
+    reader = {}
+    load_failed = False
+    try:
+        if experts_in_ram:
+            from .checkpoint_reader import load_torch_file
+            state, metadata = load_torch_file(path, return_metadata=True, diagnostics=reader,
+                                             _with_ownership=moe_backend != 'torch')
+        else:
+            state, metadata = comfy.utils.load_torch_file(path, return_metadata=True)
+            reader.update(actual_reader='host', fallback_reason='VRAM placement retains the host checkpoint loader')
+        checks = reader.get('memory_checks') or []
+        logging.info('Drama 3 checkpoint reader: actual_reader=%s fallback_reason=%r '
+                     'source_bytes=%s ram_checks=%d first_available_ram=%s last_available_ram=%s',
+                     reader.get('actual_reader'), reader.get('fallback_reason'), reader.get('source_cpu_bytes'),
+                     len(checks), checks[0].get('available_bytes') if checks else None,
+                     checks[-1].get('available_bytes') if checks else None)
+        if not metadata or "drama3_config" not in metadata:
+            raise ValueError(f"{os.path.basename(path)} is not a converted Drama 3 file (tools/convert.py model)")
+        config = parse_config(json.loads(metadata["drama3_config"]))
+        config.fp8_experts = metadata.get("drama3_format") == "fp8"
+        quant_config = comfy.utils.detect_layer_quantization(state, "")
+        dtype = torch.bfloat16
+        offload_device = comfy.model_management.unet_offload_device()
+        operations = comfy.ops.pick_operations(dtype, dtype, load_device=load_device, model_config=_OpsConfig(quant_config))
+        model = Drama3Model(config, device=torch.device("meta"), dtype=dtype, operations=operations)
+        patcher_class = comfy.model_patcher.CoreModelPatcher if experts_in_ram else comfy.model_patcher.ModelPatcher
+        patcher = patcher_class(model, load_device=load_device, offload_device=offload_device)
+        if experts_in_ram:
+            from . import checkpoint_ownership as ownership_module
+            assignment = ownership_module.assign_owned(model, state, diagnostics=reader)
+        else:
+            load_checkpoint_storage(model, state)
+        state.clear()
+        state = None
+        if ownership_module is not None:
+            ownership = ownership_module.finish_assignment(assignment, model, diagnostics=reader)
+            assignment = None
+        comfy.model_management.archive_model_dtypes(model)
+        if experts_in_ram:
+            from .acceleration import expert_store
+            experts = expert_store(model,int(expert_cache_gb * 1024 ** 3),moe_backend,ownership=ownership)
+            incremental = ownership_module.is_incremental(ownership, model, experts)
+            admission = getattr(experts, 'admission', None)
+            if admission is not None:
+                reader.setdefault('expert_ownership', {}).update(policy=admission['policy'], admission=admission)
+                if admission.get('ownership_refusal') is not None:
+                    reader['expert_ownership']['fallback_reason']=admission['ownership_refusal']
+            if incremental:
+                reader['expert_ownership'].update(layer_releases=[], layer_admissions=[], release_count=0)
+            for index, layer in enumerate(model.model.layers):
+                comfy.model_management.throw_exception_if_processing_interrupted()
+                if incremental:
+                    reader['expert_ownership']['layer_admissions'].append(ownership_module.begin_layer(ownership, model, index))
+                layer.mlp.experts = experts.add(layer.mlp.experts)
+                comfy.model_management.throw_exception_if_processing_interrupted()
+                if getattr(experts, 'pin_requested', False) and getattr(experts, 'pin_fallback_reason', None):
+                    from .checkpoint_reader import ReaderResourceError
+                    raise ReaderResourceError(
+                        f'Drama 3 expert pinning stopped at layer {index}: {experts.pin_fallback_reason}. '
+                        'Loading aborted before publishing a partially pinned model.')
+                if incremental:
+                    released = ownership_module.complete_layer(ownership, model, index)
+                    reader['expert_ownership']['layer_releases'].append(released)
+                    reader['expert_ownership'].update(completed_layers=released['completed_layers'],
+                                                      release_count=released['completed_layers'])
+        else:
+            from .resident import ResidentExperts
+            experts = ResidentExperts(model, moe_backend)
+        if second_device is None:
+            return Drama3(model, patcher, experts=experts, checkpoint_reader=reader)
+        first = split or auto_split(model, load_device, second_device)
+        second = SecondGPU(model, first)
+        second_patcher = comfy.model_patcher.CoreModelPatcher(second, load_device=second_device, offload_device=offload_device)
+        logging.info("Drama 3: layers 0-%d on %s, layers %d-%d, head and tower on %s", first - 1, load_device, first,
+                     config.text.num_hidden_layers - 1, second_device)
+        return Drama3(model, patcher, second, second_patcher, experts, checkpoint_reader=reader)
+    except BaseException as error:
+        load_failed = True
+        if state is not None:
+            _failed_load_cleanup(state.clear, 'checkpoint state cleanup')
+        close = getattr(experts, 'close', None)
+        if close is not None:
+            _failed_load_cleanup(close, 'expert cleanup')
+        # These models were never published or registered as loaded. Empty their
+        # owned weights even when a caller retains the exception traceback.
+        for partial in (model, second):
+            if partial is not None:
+                _failed_load_cleanup(_clear_unpublished_model, 'model storage cleanup', partial)
+        _failed_load_cleanup(_clear_failed_load_frames, 'retained frame cleanup', error, inspect.currentframe())
+        state = model = patcher = experts = second = second_patcher = layer = None
+        raise
+    finally:
+        primary_error = sys.exc_info()[1] if load_failed else None
+        try:
+            if ownership_module is not None:
+                for proof in (assignment, ownership):
+                    if primary_error is None:
+                        ownership_module.close(proof)
+                    else:
+                        _failed_load_cleanup(ownership_module.close, 'ownership cleanup', proof)
+        finally:
+            assignment = ownership = proof = None
+            if load_failed:
+                _failed_load_cleanup(gc.collect, 'garbage collection')
+                _failed_load_cleanup(_release_failed_load_pins, 'unused pinned allocator cleanup')
+            primary_error = None
 
 
 class Codec:

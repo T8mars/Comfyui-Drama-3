@@ -4,19 +4,20 @@
 
 Native [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) nodes and a local voice studio by T8star. Built with Fish Audio.
 
-[Models](https://huggingface.co/t8star/Drama-3-Comfy) · [Releases](https://github.com/T8mars/Comfyui-Drama-3/releases) · [Example workflows](https://github.com/T8mars/Comfyui-Drama-3/tree/main/workflows) · [Issues](https://github.com/T8mars/Comfyui-Drama-3/issues)
+[Models](https://huggingface.co/t8star/Drama-3-Comfy) · [Releases](https://github.com/T8mars/Comfyui-Drama-3/releases) · [16 canvas examples](https://github.com/T8mars/Comfyui-Drama-3/tree/main/workflows) · [Issues](https://github.com/T8mars/Comfyui-Drama-3/issues)
 
 ## Features
 
-- Voice cloning with multiple references and up to 16 speaker IDs; inline directions and multi-character scenes.
-- Director revisions using actual audio history; infill editing; long text, SRT and streamed text with lookahead.
-- Codec encoding/decoding, reusable references, session save/load/branch and audio chunk previews.
-- Local Qwen3-ASR, Qwen ForcedAligner and [Confucius R2T2](https://github.com/T8mars/comfyui-confucius-r2t2-t8), with editable model paths.
-- 17 native ComfyUI V3 nodes using standard `AUDIO`. Inference, codec and R2T2 run inside the host process. The separate white-and-pink studio shares the inference core.
+- **18 native ComfyUI V3 nodes**, standard `AUDIO` and 16 canvas workflows. Inference runs inside ComfyUI; no Studio server bridge is needed.
+- Native reference-voice conditioning without training: encode reference audio with an accurate transcript. Multiple references, up to 16 speaker IDs, delivery cues and four dialogue modes.
+- Director revisions using real audio history; Session save/load/branch and reusable reference-only voice libraries.
+- Long text, text streaming with lookahead, generation audio previews, SRT-driven speech and subtitle export.
+- A separate white-and-pink Studio with the same inference core and multitrack editor: role gain/mute, cuts, inserted silence, pause presets, undo and captions.
+- Source-aware model infill, local Qwen3-ASR 0.6B/1.7B, word alignment and [Confucius R2T2](https://github.com/T8mars/comfyui-confucius-r2t2-t8). All model paths are configurable.
 
-## Install in ComfyUI
+## Installation
 
-Install **ComfyUI-Drama3-T8**, publisher **t8star**, through ComfyUI-Manager, or install manually:
+Registry node ID: **`comfyui-drama3-t8`** · Publisher: **`t8star`**. For manual installation, use **ComfyUI's own Python**:
 
 ```sh
 cd ComfyUI/custom_nodes
@@ -26,68 +27,106 @@ python -m pip install -r requirements.txt
 python install.py
 ```
 
-Use your **ComfyUI Python**, then restart ComfyUI. Import a workflow from `workflows/` and select your models and reference audio. Requires ComfyUI 0.40.0+ and Python 3.10+. `install.py` downloads and verifies the separately released Windows x64 / CUDA 12.8 R2T2 native runtime; it never downloads models. Set `DRAMA_SKIP_R2T2_INSTALL=1` to skip this optional backend, or `DRAMA_R2T2_NATIVE_DIR` to use an existing runtime. Qwen ASR works independently.
+Restart ComfyUI, import a JSON from `workflows/`, select models/reference audio and click **Run**. Requires ComfyUI 0.40.0+ and Python 3.10+.
 
-## Transformers compatibility
+`install.py` installs the separately verified **Windows x64 / CUDA 12.8** R2T2 runtime, without model weights. Set `DRAMA_SKIP_R2T2_INSTALL=1` to skip it or `DRAMA_R2T2_NATIVE_DIR` to use an existing runtime. Qwen ASR works independently.
 
-Transformers **4.57.1** is supported; an existing compatible 4.x installation can be kept. The nodes accept `transformers>=4.57.1,<6` and `tokenizers>=0.22,<0.24`.
-
-| Validated Transformers | Tokenizers | Hugging Face Hub |
-|---|---|---|
-| **4.57.1** | **0.22.2** | **0.36.2** |
-| 5.19.0 | 0.23.2 | 1.33.0 |
-
-The portable `requirements.txt` defaults to the 4.57.1 combination. Existing 5.19 environments remain compatible. Both combinations passed the CPU regression suite, including actual Qwen model forward/cache tests; 4.57.1 was also checked through browser canvas generation, transcription and word alignment. Other versions within the allowed range have not all been tested.
-
-To select the tested 4.57.1 combination, run with your ComfyUI or studio Python:
+The portable default and tested dependency set is **Transformers 4.57.1 / tokenizers 0.22.2 / huggingface-hub 0.36.2**, with Torch 2.8 + CUDA 12.8:
 
 ```sh
 python -m pip install "transformers==4.57.1" "tokenizers==0.22.2" "huggingface-hub==0.36.2"
 ```
 
-Portable code updates preserve the installed Python packages; they do not run pip or automatically switch Transformers versions. No model downloads are needed for this compatibility update.
+The node requirement ranges are `transformers>=4.57.1,<6` and `tokenizers>=0.22,<0.24`; the validation below uses the exact pinned versions.
 
-## Canvas workflows
+## Voices and dialogue
 
-The `workflows/` directory contains 15 canvas workflows: basic speech, references, revision, infill, long text, streamed text, scenes, SRT, codec, Qwen ASR, R2T2, alignment, live preview, session save and session load. Open a JSON file in ComfyUI and click **Run**. These examples were tested through the browser canvas, including visible text results and audio playback.
+Use matching `<|speaker:N|>` tags in reference transcripts and scripts to bind voices; names are display labels. Named roles keep stable IDs across revisions. Correct inaccurate automatic transcripts before generating.
 
-Select your own audio in `LoadAudio`; reference and alignment transcripts must match the recording. Run `workflow_save_session.json` before loading a session, then refresh ComfyUI and select the saved file. Long text decodes all segments. Numeric seeds support `0–9007199254740991`; for larger seeds, enter the exact decimal value in `seed_text` (up to `18446744073709551615`).
+`T8DramaLoadSession` output **0** is the complete Session; output **1** is References. Use output 1 with a fresh Session to reuse voices without old takes. Save, refresh the selector, then load. Scene's optional `session` preserves direction/history; connecting `references` explicitly replaces its references.
 
-Reference-conditioned scenes assign named roles stable `<|speaker:N|>` IDs in first-appearance order, retained across revisions. Reference names are display labels; use matching explicit speaker tags in reference transcripts and scripts to bind particular voices.
+| Scene mode | Behavior |
+|---|---|
+| `together` | Generates dialogue with shared context. |
+| `per_line` | Each line uses its role's references and history. |
+| `per_line_context` | Also uses the preceding other role's actual line. |
+| `per_speaker` | Groups by role, then restores script order. |
 
-## Models
+All modes expose `temperature`, `top_p`, `top_k`, `sampling_preset` and `opening_retries`. **stable** uses 0.7 / 0.7 / 30; **expressive** uses 1.0 / 0.9 / 0; **custom** uses entered values. Retries default to 0. Old workflows retain saved settings. For seeds above JavaScript's safe integer limit `9007199254740991`, use decimal `seed_text` up to `18446744073709551615`.
 
-Download from [t8star/Drama-3-Comfy](https://huggingface.co/t8star/Drama-3-Comfy). Default paths are relative to `ComfyUI/`.
+All four modes support `split_long_text`. `chunk_bytes` is **32–3000 UTF-8 bytes**, default 300, including new-script tags/separators; references, direction and history also consume context. Same-line chunks add no gaps. Isolated Scene previews play in script order after generation; ordinary speech can preview live audio.
 
-| Model | Default location |
+Chunk policy v3 preserves spoken content and protected tags. Old v1/v2 boundaries remain readable; revisions retain their budget. Archive v2 stores source groups, roles and timing; incompatible readers reject it explicitly.
+
+## Editing, transcription and alignment
+
+Editor outputs a new Session, audio, SRT and source-bound edit metadata. Defaults preserve the original waveform. Set `align_words` / `aligner_path` for word timing; otherwise captions use line timing. Rhythm warnings are editing aids.
+
+Model infill uses the actual playback selection and **complete replacement script**; set `target_speaker` for cross-role or silent selections. Native Session/AUDIO preserve Float32. Studio preserves unselected FLOAT/PCM16 samples, archives source/model output and encodes the complete result for history. FLAC examples are playback exports, not lossless Float32 exports.
+
+Qwen ASR accepts ordered `AUDIO` batches and a per-clip `max_new_tokens` budget. Reference encoding and alignment take one clip at a time. A manual reference transcript needs no ASR. Auxiliary models load only when their features are used; short R2T2 clips need no VAD.
+
+## Models and custom paths
+
+Download converted weights from [t8star/Drama-3-Comfy](https://huggingface.co/t8star/Drama-3-Comfy). Node locations below are relative to `ComfyUI/`. Studio uses the same filenames/directories directly under `<bundle>/models/`.
+
+| Asset | Node location |
 |---|---|
 | DRAMA FP8, 38.58 GB | `models/diffusion_models/drama3-t8-fp8.safetensors` |
-| Complete text/control head, 1.03 GB | `models/diffusion_models/drama3-text-head.safetensors` |
+| **Optional W4A8, 24.60 GB** | `models/diffusion_models/drama3-t8-w4a8.safetensors` |
 | Codec, 1.57 GB | `models/vae/drama3-codec.safetensors` |
-| Qwen ASR, optional | `models/asr/qwen3-asr-06b.safetensors` |
-| ForcedAligner, optional full directory | `models/asr/qwen-aligner/` |
-| R2T2 Q8 model + projector, optional | `models/asr/Confucius4-R2T2-GGUF/` |
-| FireRedVAD, for segmented R2T2 | `models/asr/FireRedVAD-ONNX/` |
+| Compact Scene head | `models/diffusion_models/drama3-line-head.safetensors` |
+| Full text/control head, fallback | `models/diffusion_models/drama3-text-head.safetensors` |
+| Qwen3-ASR 0.6B / optional 1.7B | `models/asr/qwen3-asr-06b.safetensors` / `models/asr/qwen3_asr_1.7b_bf16.safetensors` |
+| ForcedAligner | `models/asr/qwen3_forced_aligner_0.6b_bf16.safetensors` or complete `models/asr/qwen-aligner/` |
+| R2T2 model + projector | `models/asr/Confucius4-R2T2-GGUF/Confucius4-R2T2-Q8_0.gguf` + `mmproj-Confucius4-R2T2-Q8_0.gguf` |
+| FireRedVAD for segmented R2T2 | `models/asr/FireRedVAD-ONNX/` |
 
-Keep all three DRAMA files for complete functionality. Each loader supports custom file/directory paths, including another drive. The studio stores these settings under `userdata/`.
+Absolute paths, other drives and Windows UNC shares are supported. Relative paths use `ComfyUI/models/` in nodes or `<bundle>/models/` in Studio. Studio saves all nine paths under `userdata/`. Loader overrides: `model_path`, `codec_path`, `text_head_path`, `line_head_path`; ASR/alignment: `model_path`; R2T2: `model_path` / `projector_path` / `vad_path`.
 
-## Local studio and updates
+`scene_head_mode=compact` uses the small head, falling back to required rows from the full head. `full` uses the legacy full projection. Saving Studio settings requires only the main model, Codec and selected head; unused auxiliary files are checked only when requested.
 
-The author distributes the complete Windows environment separately. GitHub Releases contain **program files and native libraries only, without model weights or a Python runtime**. Studio source is in [portable/](https://github.com/T8mars/Comfyui-Drama-3/tree/main/portable).
+Converted **INT8 convrot / W6A8 / W4A8** load through the same main-model selector. Convert an existing FP8 file in a complete environment with a new destination filename:
 
-For an existing complete bundle based on 0.1.3 or later, close the studio and extract `Drama3-T8-Portable-0.1.11-code.zip` into the directory containing `Start-Drama3.cmd`. Double-click `Start-Drama3.cmd` to launch. Subsequent launches check stable GitHub Releases and apply compatible code updates; `Update-Drama3.cmd` checks manually while the studio is closed. Updates verify sizes and SHA-256, back up old files and roll back on failure. Models, Python, custom paths, projects, voice libraries and outputs are retained. Offline checks allow startup; dependency/runtime changes require a new complete environment from the author.
+```bat
+runtime\python\python.exe tools\convert_model.py quantize "models\drama3-t8-fp8.safetensors" "models\drama3-t8-w4a8.safetensors" --format w4a8
+```
+
+Formats: `int8_convrot`, `w6a8`, `w4a8`. Smaller storage does not establish quality or memory feasibility for every model format.
+
+## Studio and automatic updates
+
+The author distributes the complete Windows environment separately. GitHub's `Drama3-T8-Portable-<version>-code.zip` contains **code only, without models or Python**. R2T2 native libraries are a separate verified asset. [Portable source](https://github.com/T8mars/Comfyui-Drama-3/tree/main/portable) is included in this repository.
+
+In a compatible complete bundle based on 0.1.3+, run `Start-Drama3.cmd` to start Studio and check stable GitHub Releases. Close Studio before running `Update-Drama3.cmd` manually. For an offline code patch, close Studio and extract the code ZIP beside `Start-Drama3.cmd`.
+
+The updater verifies size/SHA-256, backs up replaced files and rolls back failed transactions. It preserves models, Python, paths, projects, voices and outputs. Offline checks allow startup; updates do not run pip. Dependency changes require a compatible complete environment.
 
 ## Hardware and acceleration
 
-Validated: Windows x64, RTX 5090 Laptop **24 GB VRAM / 64 GB RAM**, Torch 2.8 + CUDA 12.8, 12 GiB expert cache. FP8 MoE experts stay in system RAM; cache `0` selects an automatic budget. Leave VRAM for resident weights, codec and context. Other hardware configurations have not been validated.
+Local validation used Windows x64, **24 GB VRAM / 64 GB RAM**, RTX 5090 Laptop and Torch 2.8 + CUDA 12.8. The W4 fixed cases used an **8 GiB expert VRAM cache**, which is not total memory consumption. Host RAM is checked before loading/pinning.
 
-Default: Torch linear attention + SDPA. Optional FLA is integrated but showed no clear speed gain on this setup. Installing FlashAttention alone does not enable it in the model; CUDA Graph is disabled. CPU previews arrive during generation, but the tested offload setup generates below real time. Transcription may require manual correction. Scene revisions preserve the full session and use bounded line-boundary recovery. Empty, extra or unfinished segments are rejected.
+| Control | Meaning |
+|---|---|
+| `gdn_backend` | `torch` default, optional `fla`. Attention follows available ComfyUI kernels; installing FlashAttention does not force its use. |
+| `moe_backend` | `auto` default, or `torch` / `cuda`. Actual backend and fallback reasons are recorded. |
+| `cuda_graph` | Requested by default; capture/replay requires a compatible CUDA expert/host lifecycle. |
+| `expert_placement` | `ram` default: host experts plus cache. `vram` requires the complete model and heads to fit one GPU. |
+| `expert_cache_gb` | RAM-mode cache budget in GiB; `0` is automatic. Related takes share the cache; supported single-GPU INT8 can use CPU experts. |
+
+Codec uses bounded windows. Supported quantized pread loads check ownership and memory budgets; other layouts retain conservative loading. Whole-model VRAM residency and W6/INT8 coverage remain incomplete on this device. Multi-GPU is outside scope. If CUDA capture is invalidated, restart the host and disable Graph for that configuration. Peer Voice/Codes files are not interchangeable with this project's Session archives.
+
+## Validation scope
+
+Tested canvas hosts: **ComfyUI 0.40.0 and 0.42.0**. With Transformers 4.57.1, two CPU dependency stacks (Comfy Kitchen 0.2.37 / 0.2.40) each completed **1322 passed, 5 skipped, 1 GPU deselected**.
+
+Actual canvas and Studio UI checks covered fixed dialogue, an initial Scene plus two revisions, an unchunked Scene and three-chunk long text. One R2T2 batch and one Qwen batch each scored **20/20** (12 + 4 + 4) on those 0.40.0 outputs. The 0.42.0 increment re-ran one original joint Scene, scoring **4/4 per recognizer** on whole/line clips. A separate replay reused prior 4/4 only after exact code/PCM equality. Live canvas node progress was checked.
+
+These checks establish the original words and order for those cases. They do not certify all 16 workflows or all prompts, voice similarity, emotion/accent quality or speed. Historical failures remain separate. See the [acceptance report](https://github.com/T8mars/Comfyui-Drama-3/blob/main/portable/acceptance-report.json), also included locally in complete bundles.
 
 ## Credits and licenses
 
-Based on [Fish Speech](https://github.com/fishaudio/fish-speech), [PedroMarinhoDev/ComfyUI-Drama3](https://github.com/PedroMarinhoDev/ComfyUI-Drama3), [ComfyUI](https://github.com/Comfy-Org/ComfyUI) and the linked R2T2 project. T8 additions include complete control output, stateful editing, streaming, native ASR integration and the local studio.
-
-Project code: [GPL-3.0](LICENSE), with upstream components retaining their licenses. DRAMA materials and weights: **Fish Audio Community License v1.0**; Qwen and FireRedVAD: Apache-2.0; Confucius models: NetEase Youdao Model Use License Agreement; llama.cpp: MIT. See [licenses/](licenses/) and [upstream-lock.json](upstream-lock.json). This project is not affiliated with or endorsed by upstream authors.
+Based on [Fish Speech](https://github.com/fishaudio/fish-speech), [PedroMarinhoDev/ComfyUI-Drama3](https://github.com/PedroMarinhoDev/ComfyUI-Drama3), [ComfyUI](https://github.com/Comfy-Org/ComfyUI) and R2T2. Project code: [GPL-3.0](LICENSE); upstream licenses remain applicable. DRAMA weights/materials: Fish Audio Community License v1.0; Qwen/FireRedVAD: Apache-2.0; Confucius: NetEase Youdao Model Use License Agreement; llama.cpp: MIT. See [licenses/](licenses/) and [upstream-lock.json](upstream-lock.json). No upstream endorsement is implied.
 
 ## T8star
 

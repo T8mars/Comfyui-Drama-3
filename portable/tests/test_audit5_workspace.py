@@ -3,7 +3,7 @@ import shutil
 
 import pytest
 import torch
-import app as application
+from studio_app_loader import application
 
 import drama3_t8.studio as module
 from drama3_t8.state import Session, Take, Reference, save_session

@@ -332,7 +332,7 @@ def test_backbone_device_groups_share_the_original_continuation_position(monkeyp
     monkeypatch.setattr(mm, "cuda_device_context", lambda *a: contextlib.nullcontext())
     observed = []
     caches = [SimpleNamespace(index=7), SimpleNamespace(index=7)]
-    def segment(x, layers, local, device, past):
+    def segment(x, layers, local, device, past, graphs=None, after_layer=None):
         observed.append((str(device), past))
         for cache in local:
             cache.index += x.shape[1]

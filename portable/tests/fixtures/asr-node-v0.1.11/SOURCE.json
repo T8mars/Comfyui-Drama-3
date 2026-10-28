@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/T8mars/Comfyui-Drama-3",
+  "commit": "f838deaee67f2bce467ce6a76e9b3dc3de615a86",
+  "path": "drama3_t8/nodes.py",
+  "source_sha256": "68cef5c57004a41cc6000a2589607136bfe5f477719b33c679af4b689f3df8d1",
+  "selection": "exact T8DramaTranscribe class; schema exercised via real host API, execute never called",
+  "fixtures": {
+    "transcribe.py": "ea7dd1bdd8b1ba31fceb260c1598f31dbb9a8f7efd7a70522aded6b7b2629812"
+  }
+}

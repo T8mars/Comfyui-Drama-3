@@ -57,21 +57,21 @@
       ],
       "outputs": [
         {
-          "name": "STRING",
+          "name": "transcript",
           "type": "STRING",
           "links": [
             2
           ]
         },
         {
-          "name": "STRING",
+          "name": "language",
           "type": "STRING",
           "links": [
             3
           ]
         },
         {
-          "name": "STRING",
+          "name": "metadata",
           "type": "STRING",
           "links": [
             4

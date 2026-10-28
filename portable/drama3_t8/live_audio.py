@@ -1,5 +1,7 @@
 """CPU codec worker that emits real audio before GPU speech generation finishes."""
 import queue
+import copy
+from dataclasses import replace
 import threading
 import traceback
 from pathlib import Path
@@ -37,6 +39,21 @@ class LiveAudio:
             # The worker runs later; a caller may immediately reuse its tensor.
             self.incoming.put(frame.detach().to(device="cpu", copy=True))
 
+    def append_scene(self,take):
+        """Publish a completed isolated scene with its actual codec boundaries."""
+        from .state import Take
+        if not isinstance(take,Take) or not (take.metadata.get('decode_sources') or 'scene_chunking' in take.metadata):
+            raise ValueError('Scene preview requires an isolated scene take')
+        if 'scene_chunking' in take.metadata:
+            from .scene_chunks import validate_scene
+            validate_scene(take)
+        snapshot=replace(take,frames=take.frames.detach().to(device='cpu',copy=True),
+            metadata=copy.deepcopy(take.metadata))
+        with self._state_lock:
+            if self.error is not None:raise self.error
+            if self._finished:raise RuntimeError('Live audio worker is already finished')
+            self.incoming.put(('scene',snapshot))
+
     def finish(self, abort=False):
         with self._state_lock:
             if abort:
@@ -57,24 +74,26 @@ class LiveAudio:
                 codec = load_codec(str(self.codec_path)).model
                 codes, emitted, index = [], 0, 0
 
+                def write_chunk(chunk):
+                    nonlocal index
+                    target=self.folder/f'{index:05}.wav'
+                    temporary=target.with_suffix('.part')
+                    try:
+                        sf.write(temporary,chunk,SAMPLE_RATE,format='WAV',subtype='PCM_16')
+                        temporary.replace(target)
+                    finally:temporary.unlink(missing_ok=True)
+                    if self.on_chunk is not None:self.on_chunk(target)
+                    index+=1
+
                 def emit():
-                    nonlocal emitted, index
+                    nonlocal emitted
                     if len(codes) * FRAME_LENGTH <= emitted:
                         return
                     # Decode the complete causal prefix so chunk boundaries cannot lose earlier context.
                     waveform = codec.decode(torch.stack(codes, dim=1)[None], torch.float32)[0]
                     chunk = waveform[emitted:].numpy()
-                    target = self.folder / f"{index:05}.wav"
-                    temporary = target.with_suffix(".part")
-                    try:
-                        sf.write(temporary, chunk, SAMPLE_RATE, format="WAV", subtype="PCM_16")
-                        temporary.replace(target)
-                    finally:
-                        temporary.unlink(missing_ok=True)
-                    if self.on_chunk is not None:
-                        self.on_chunk(target)
+                    write_chunk(chunk)
                     emitted = waveform.shape[-1]
-                    index += 1
 
                 while True:
                     frame = self.incoming.get()
@@ -83,6 +102,23 @@ class LiveAudio:
                     if frame is None:
                         emit()
                         break
+                    if isinstance(frame,tuple) and frame[0]=='scene':
+                        emit()
+                        codes,emitted=[],0
+                        from types import SimpleNamespace
+                        if 'scene_chunking' in frame[1].metadata:
+                            from .scene_chunks import decode_scene as decode_isolated
+                        else:
+                            from .dialogue import decode_isolated
+                        def decode(source):
+                            wave=codec.decode(source[None],torch.float32)
+                            return {'waveform':wave[:,None],'sample_rate':SAMPLE_RATE}
+                        audio,_=decode_isolated(SimpleNamespace(decode=decode),frame[1])
+                        wave=audio['waveform'][0,0]
+                        for start in range(0,len(wave),self.chunk_frames*FRAME_LENGTH):
+                            if self.aborted.is_set():break
+                            write_chunk(wave[start:start+self.chunk_frames*FRAME_LENGTH].numpy())
+                        continue
                     codes.append(frame)
                     if len(codes) % self.chunk_frames == 0:
                         emit()

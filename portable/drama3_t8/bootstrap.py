@@ -6,7 +6,7 @@ from pathlib import Path
 
 def standalone_engine(root=None):
     root = Path(root) if root is not None else Path(__file__).resolve().parents[1]
-    engine = root / "vendor" / "ComfyUI"
+    engine = Path(os.environ.get("DRAMA_COMFY_ROOT", str(root / "vendor" / "ComfyUI")))
     if not (engine / "comfy" / "model_management.py").is_file():
         raise FileNotFoundError(f"Missing bundled model engine: {engine}")
     sys.path.insert(0, str(engine))
@@ -15,6 +15,7 @@ def standalone_engine(root=None):
     os.environ.setdefault("TRITON_CACHE_DIR", str(root / "userdata" / "cache" / "triton"))
     os.environ.setdefault("TORCHINDUCTOR_CACHE_DIR", str(root / "userdata" / "cache" / "inductor"))
     from comfy.cli_args import args
+    args.drama_standalone_engine = True
     args.use_pytorch_cross_attention = True
     args.disable_pinned_memory = True
     args.disable_dynamic_vram = True

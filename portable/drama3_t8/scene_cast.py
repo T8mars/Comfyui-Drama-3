@@ -87,7 +87,7 @@ def _render_history(take, mapping):
     return take if text == take.prompt_text else replace(take, prompt_text=text)
 
 
-def prepare_scene_cast(lines, references=(), takes=()):
+def prepare_scene_cast(lines, references=(), takes=(), *, force=False):
     """Return mapped current lines, prompt-only history views and a stable map.
 
     With references, names are allocated in historical-script/current first-use
@@ -96,11 +96,12 @@ def prepare_scene_cast(lines, references=(), takes=()):
     Without references all supplied lines and take objects are preserved.
     """
     lines, takes = tuple(lines), tuple(takes)
-    if not references:
+    if not references and not force:
         return lines, takes, {}
     for line in lines:
         check_text(line, "scene line")
-    scenes = tuple(take for take in takes if take.metadata.get("task") == "scene")
+    scenes = tuple(take for take in takes if take.metadata.get("task") == "scene" or
+        take.metadata.get('render_infill',{}).get('scene_text') is True)
     mapping = {}
     for take in scenes:
         if "scene_speaker_map" in take.metadata:

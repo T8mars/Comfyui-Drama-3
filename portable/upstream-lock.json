@@ -1,7 +1,26 @@
 {
   "fish_speech": "541566932abbaebcb0a40e562a1f846738383f38",
   "comfyui_drama3": "0465897ec86c0f655af12bf8ae698afd89a58723",
+  "comfyui_drama3_adaptations": {
+    "repository": "https://github.com/PedroMarinhoDev/ComfyUI-Drama3",
+    "revision": "8cb3c64379d4988b9693cae9f3436b8fd54b22ad",
+    "components": [
+      "Host expert CUDA kernels and CPU/GPU expert scheduling",
+      "Windowed codec decode and compact scene control head",
+      "Single-file Qwen forced aligner",
+      "Shared audio editor and pause planning"
+    ],
+    "notice": "licenses/NOTICE-T8"
+  },
   "comfyui": "e0a32bce84f4603f2b61b16b50f8958e68fd6171",
+  "host_compatibility_review": {
+    "comfyui_revision": "0b05cd8a3683cbf0c291b1472bb8b64da41de9ae",
+    "comfy_kitchen_version": "0.2.40",
+    "comfy_kitchen_source_revision": "f8b7e97a1418d2e529bd5405fbf86312be198ae6",
+    "adapter": "drama3_t8/native/kitchen_compat.py",
+    "binding_contract": "https://github.com/Comfy-Org/comfy-kitchen/blob/f8b7e97a1418d2e529bd5405fbf86312be198ae6/comfy_kitchen/backends/cuda/dlpack_bindings.cpp#L4335",
+    "scope": "Native cache, DLPack, precision and CUDA Graph checks; visible canvas acceptance recorded separately. Bundled engine remains the comfyui revision above."
+  },
   "model_repo": "fishaudio/drama-3",
   "asr_repo": "Qwen/Qwen3-ASR-0.6B",
   "asr_revision": "5eb144179a02acc5e5ba31e748d22b0cf3e303b0",
@@ -17,5 +36,16 @@
   "confucius_native_upstream": "26d55a54ce5670cff9947a167d8ed95d569fd4d9",
   "llama_cpp_r2t2": "ad6c66839af3c5646fba8c6c2e2087a1e4e38948",
   "r2t2_model_repo": "t8star/Confucius-R2t2-Comfy",
-  "r2t2_model_revision": "2223a55593a85bbaf2b12d58c410da67a8822608"
+  "r2t2_model_revision": "2223a55593a85bbaf2b12d58c410da67a8822608",
+  "optional_qwen3_asr_1_7b": {
+    "file": "qwen3_asr_1.7b_bf16.safetensors",
+    "source_repo": "PedroMarinhoDev/Qwen3-ASR-ComfyUI",
+    "source_revision": "6ad8c9be026925839479a8d97749068a4202fbe9",
+    "source_sha256": "958ac49a7015ad546206e87fbcf390ac567b81d1cc7d613a1255a41033b8345f",
+    "upstream_repo": "Qwen/Qwen3-ASR-1.7B",
+    "upstream_revision": "7278e1e70fe206f11671096ffdd38061171dd6e5",
+    "license": "Apache-2.0",
+    "license_path": "licenses/QWEN3-ASR-1.7B/LICENSE",
+    "notice_path": "licenses/QWEN3-ASR-1.7B/NOTICE"
+  }
 }

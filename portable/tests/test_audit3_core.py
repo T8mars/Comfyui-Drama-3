@@ -275,7 +275,7 @@ def test_invalid_r2t2_prompt_rejected_before_unloading_or_model_allocation(monke
             "unused.gguf", "unused.gguf", "unused-vad", language=language, context=context)
 
 
-def test_segmented_vad_failure_closes_native_engine_and_cleans_cache(monkeypatch):
+def test_segmented_vad_failure_closes_native_engine_and_cleans_cache(tmp_path, monkeypatch):
     import drama3_t8.r2t2.transcribe as transcribe
     import drama3_t8.r2t2.vad as vad
     import comfy.model_management as mm
@@ -294,9 +294,12 @@ def test_segmented_vad_failure_closes_native_engine_and_cleans_cache(monkeypatch
     monkeypatch.setattr(vad, "FireRedOnnxVAD", lambda *a: SimpleNamespace(feed=fail))
     monkeypatch.setattr(mm, "unload_all_models", lambda: observed.append("unload"))
     monkeypatch.setattr(mm, "soft_empty_cache", lambda: observed.append("cache"))
+    model, projector = tmp_path / "model.gguf", tmp_path / "projector.gguf"
+    model.touch()
+    projector.touch()
     with pytest.raises(RuntimeError, match="VAD failure"):
         transcribe.transcribe_audio({"waveform": torch.ones(1, 1, 31 * 16000), "sample_rate": 16000},
-            "unused.gguf", "unused.gguf", "unused-vad")
+            model, projector, tmp_path / "unused-vad")
     assert observed == ["unload", "cache", "enter", "close", "cache"]
 
 

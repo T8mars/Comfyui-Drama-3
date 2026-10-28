@@ -175,10 +175,19 @@ def parse_output(raw, language):
     return "", text.strip()
 
 
+def validate_max_new_tokens(value):
+    if type(value) is not int or not 1 <= value <= 32768:
+        raise ValueError("max_new_tokens must be an integer from 1 to 32768")
+    return value
+
+
 def transcribe(asr, waveform, sample_rate, language=None, context="", max_new_tokens=4096):
     """(text, language) of [channels, samples] audio; `language` None detects it."""
+    validate_max_new_tokens(max_new_tokens)
     device = asr.patcher.load_device
     model = asr.model
+    if getattr(model,"aligner",False):
+        raise ValueError("Qwen3-ForcedAligner needs known text; select a Qwen3-ASR model for transcription")
     text_output, languages = "", []
     for piece in split_long(prepare_audio(waveform.to(device), sample_rate)):
         features = log_mel(piece.to(device))

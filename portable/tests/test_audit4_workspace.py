@@ -5,7 +5,7 @@ import pytest
 import torch
 from fastapi.testclient import TestClient
 from safetensors.torch import save_file
-import app as application
+from studio_app_loader import application
 
 from drama3_t8.state import Reference, Session, Take, save_session
 from drama3_t8.studio import Studio
@@ -106,8 +106,13 @@ def test_failed_repeat_preview_keeps_previous_complete_audio(tmp_path, monkeypat
         previous = folder / (session.session_id + '_0.wav')
         previous.write_bytes(b'previous complete audio')
         monkeypatch.setattr(studio.engine, 'decode', lambda *a: {'waveform': torch.zeros(1, 1, 100), 'sample_rate': 44100})
+        real_write = module.sf.write
         def fail(path, *a, **k):
-            Path(path).write_bytes(b'partial write')
+            # Playback identity serializes PCM in memory; fail only the
+            # durable preview write this regression is meant to exercise.
+            if not isinstance(path, Path):
+                return real_write(path, *a, **k)
+            path.write_bytes(b'partial write')
             raise OSError('Audio write failed')
         monkeypatch.setattr(module.sf, 'write', fail)
         with pytest.raises(OSError, match='write failed'):

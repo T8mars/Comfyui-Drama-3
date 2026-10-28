@@ -1,0 +1,51 @@
+{
+  "id": 2,
+  "type": "T8DramaScene",
+  "pos": [
+    480,
+    60
+  ],
+  "size": [
+    410,
+    600
+  ],
+  "flags": {},
+  "order": 1,
+  "mode": 0,
+  "inputs": [
+    {
+      "name": "engine",
+      "type": "DRAMA3_T8_ENGINE",
+      "link": 1
+    },
+    {
+      "name": "references",
+      "type": "DRAMA3_T8_REFERENCES",
+      "link": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "DRAMA3_T8_SESSION",
+      "type": "DRAMA3_T8_SESSION",
+      "links": [
+        3
+      ]
+    }
+  ],
+  "properties": {
+    "Node name for S&R": "T8DramaScene"
+  },
+  "widgets_values": [
+    "Anna: Ready?\nBen: Always.",
+    "Two friends begin a journey.",
+    "- Anna: a calm young woman.\n- Ben: a cheerful young man.",
+    44,
+    "fixed",
+    180,
+    "",
+    "together",
+    true,
+    300
+  ]
+}

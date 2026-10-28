@@ -1,0 +1,48 @@
+{
+  "fixture_version": 1,
+  "sha256": "b61c4ec393069b75e6e1b5352e2c97f41304063a4139230e9150fec7584ed67f",
+  "source_report_sha256": "f8cba8b70165cb95a91a68926d1ad771f1f967aff8c1825fc25f7264dc7dd6ac",
+  "source_case": "infill-PCM16/native-calls/call-00",
+  "source_note": "Small captured real204-row prompt; contains code IDs only, no model weights or audio PCM. Original failed evidence is retained separately.",
+  "target_text": "<|speaker:0|> [curious] 今天又整了什么邪修？\n<|speaker:1|> [deadpan] 我把会议改成了午睡。\n<|speaker:0|> [excited] 这福利建议全国推广。",
+  "target_speaker": 1,
+  "original_rows": 204,
+  "removed_system_rows": [
+    23,
+    41
+  ],
+  "prefix_audio_rows": [
+    144,
+    198
+  ],
+  "suffix_audio_rows": [
+    86,
+    143
+  ],
+  "expected_official_rows": 186,
+  "previous_prompts_sha256": "7946bb1d4ca3247e73fef2c2c78f40cd49e64473e426b83e3b86fca4ccbc34dd",
+  "selection_intervals": [
+    {
+      "start": 0,
+      "end": 92160,
+      "speaker": 0,
+      "audible": true
+    },
+    {
+      "start": 110902,
+      "end": 176438,
+      "speaker": 1,
+      "audible": true
+    },
+    {
+      "start": 189668,
+      "end": 292068,
+      "speaker": 0,
+      "audible": true
+    }
+  ],
+  "selection_samples": [
+    110902,
+    176438
+  ]
+}

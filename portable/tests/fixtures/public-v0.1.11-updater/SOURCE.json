@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/T8mars/Comfyui-Drama-3",
+  "commit": "f838deaee67f2bce467ce6a76e9b3dc3de615a86",
+  "release": "v0.1.11",
+  "asset": "Drama3-T8-Portable-0.1.11-code.zip",
+  "asset_sha256": "abf31e3ed986e24089d2883321e109015d042050ca5f72719a2a0ea315bbb0f0",
+  "member": "drama3_t8/updater.py",
+  "member_sha256": "34e7208432950730398fd507da2c9419fe49f9414800cd9092aefbfa82b13f62",
+  "license": "GPL-3.0"
+}

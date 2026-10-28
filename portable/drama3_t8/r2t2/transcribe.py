@@ -21,6 +21,12 @@ def transcribe_audio(audio, model, projector, vad_dir, *, language=None, context
     pcm, gain = limited_quiet_gain(comfy_audio_to_16k(audio))
     start = time.perf_counter()
     check_cancel()
+    # A silent recording avoids model allocation, but it must not turn a
+    # missing configuration into successful transcription. Keep this shared
+    # by node and Studio callers; VAD is required only by its actual branch.
+    for role, location in (("model", model), ("projector", projector)):
+        if not Path(location).is_file():
+            raise FileNotFoundError(f"Confucius R2T2 {role} file not found: {location}")
     result = {"text": "", "language": "", "segments": [], "truncated": False,
               "finish_reason": "stop", "mode_executed": "digital_silence"}
     if np.any(pcm):

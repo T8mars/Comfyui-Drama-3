@@ -1,8 +1,9 @@
 """Convert fishaudio/drama-3 to the files this pack loads.
 
-    python tools/convert.py model <hf_dir> <out.safetensors> [--format fp8|int8_convrot|w6a8|w4a8] [--dense bf16|int8]
-    python tools/convert.py codec <hf_dir>/codec.pth <out.safetensors>
-    python tools/convert.py asr <Qwen3-ASR-1.7B or -0.6B dir> <out.safetensors>
+    python tools/convert_model.py model <hf_dir> <out.safetensors> [--format fp8|int8_convrot|w6a8|w4a8] [--dense bf16|int8]
+    python tools/convert_model.py quantize <local-fp8.safetensors> <out.safetensors> --format int8_convrot|w6a8|w4a8
+    python tools/convert_model.py codec <hf_dir>/codec.pth <out.safetensors>
+    python tools/convert_model.py asr <Qwen3-ASR-1.7B or -0.6B dir> <out.safetensors>
 
 Model file: the backbone and the codebook tower under this pack's key names. The checkpoint ships its routed experts
 as block-FP8 (128x128 scales); they are dequantized in fp32 and written as int8 ConvRot or W4A8 expert banks, the
@@ -34,7 +35,7 @@ from drama3_t8.bootstrap import standalone_engine
 standalone_engine()
 from drama3_t8.native.config import AUDIO_HEAD_KEY  # noqa: E402
 from tokenizers import Tokenizer
-from safetensors_stream import write_tensors
+from safetensors_stream import write_tensors, TensorSource, write_tensor_sources
 
 CONVROT_GROUP_SIZE = 256
 W4A8_GROUP_SIZE = 16
@@ -257,7 +258,8 @@ def convert_codec(args):
 
 def convert_asr(args):
     src = Path(args.src)
-    config = json.loads((src / "config.json").read_text())["thinker_config"]
+    root = json.loads((src / "config.json").read_text())
+    config = root["thinker_config"]
     index = src / "model.safetensors.index.json"
     shards = sorted(set(json.loads(index.read_text())["weight_map"].values())) if index.exists() else ["model.safetensors"]
     prefixes = (("thinker.audio_tower.", "audio_tower."), ("thinker.model.", "decoder.model."))
@@ -270,9 +272,16 @@ def convert_asr(args):
                     continue
                 source, target = next((s, t) for s, t in prefixes if name.startswith(s))
                 out[target + name[len(source):]] = f.get_tensor(name)
-    if head is not None and not torch.equal(head, out["decoder.model.embed_tokens.weight"]):
+    kept={key:config[key] for key in ("audio_config","text_config")}
+    if "classify_num" in config:
+        if head is None:
+            raise ValueError("ForcedAligner checkpoint is missing its timestamp head")
+        out["timestamp_head.weight"]=head
+        kept.update(classify_num=config["classify_num"],timestamp_token_id=root["timestamp_token_id"],
+                    timestamp_segment_time=root["timestamp_segment_time"])
+    elif head is not None and not torch.equal(head, out["decoder.model.embed_tokens.weight"]):
         raise ValueError("this checkpoint's LM head is not its embedding table")
-    write(out, args.out, {"qwen3_asr_config": json.dumps({key: config[key] for key in ("audio_config", "text_config")})})
+    write(out, args.out, {"qwen3_asr_config": json.dumps(kept)})
 
 
 def write(tensors, path, metadata):
@@ -283,11 +292,79 @@ def write(tensors, path, metadata):
     print(f"wrote {path}: {len(tensors)} tensors, {size / 1e9:.2f} GB", flush=True)
 
 
-def main():
+def convert_quantized(args):
+    """Quantize converted FP8 experts; preserve dense tensors and control rows."""
+    if args.src.resolve()==args.out.resolve():raise ValueError('Output must differ from the source checkpoint')
+    if args.out.exists():raise FileExistsError(args.out)
+    args.out.parent.mkdir(parents=True,exist_ok=True)
+    device=torch.device(args.device)
+    started=time.time()
+    with safe_open(str(args.src),framework='pt',device='cpu') as archive,torch.inference_mode():
+        metadata=archive.metadata()
+        if not metadata or metadata.get('drama3_format')!='fp8':raise ValueError('Input must be a converted FP8 DRAMA checkpoint')
+        keys=list(archive.keys())
+        banks=sorted(k[:-len('_weight')] for k in keys if '.mlp.experts.' in k and k.endswith(('gate_up_weight','down_weight')))
+        if not banks:raise ValueError('No FP8 expert banks found')
+        sources={};plans={}
+        omitted={b+s for b in banks for s in ('_weight','_scale')}
+        for name in keys:
+            if name in omitted:continue
+            view=archive.get_slice(name)
+            dtype=archive.get_tensor(name).dtype
+            sources[name]=TensorSource(tuple(view.get_shape()),dtype,lambda name=name:archive.get_tensor(name))
+        for bank in banks:
+            shape=archive.get_slice(bank+'_weight').get_shape()
+            count=shape[0]
+            first=dequantize_fp8(archive.get_slice(bank+'_weight')[0],archive.get_slice(bank+'_scale')[0],device)
+            if args.format=='int8_convrot':
+                q,s=int8_convrot(first,device)
+                sample={'weight':q[None],'weight_scale':s[None],
+                    'comfy_quant':quant_conf(num_experts=count)}
+            else:
+                sample,_,_=w4a8_bank([first],device,4 if args.format=='w4a8' else 6)
+                conf=json.loads(bytes(sample['comfy_quant'].tolist()))
+                conf['num_experts']=count
+                sample['comfy_quant']=torch.tensor(list(json.dumps(conf).encode()),dtype=torch.uint8)
+            plans[bank]=dict(count=count,sample=sample)
+        cache={'bank':None,'entries':None}
+        def materialize(bank):
+            if cache['bank']==bank:return cache['entries']
+            cache['entries']=None
+            plan=plans[bank]
+            weight=archive.get_slice(bank+'_weight');scale=archive.get_slice(bank+'_scale')
+            values=[dequantize_fp8(weight[e],scale[e],device) for e in range(plan['count'])]
+            if args.format=='int8_convrot':
+                quantized=[int8_convrot(value,device) for value in values]
+                entries={'weight':torch.stack([v[0] for v in quantized]),
+                    'weight_scale':torch.stack([v[1] for v in quantized]),'comfy_quant':plan['sample']['comfy_quant']}
+            else:
+                entries,_,_=w4a8_bank(values,device,4 if args.format=='w4a8' else 6)
+            cache['bank']=bank;cache['entries']=entries
+            print('BANK_CONVERTED',bank,round(time.time()-started,1),flush=True)
+            return entries
+        for bank in banks:
+            module=bank.rsplit('.',1)[0]+'.'+('gate_up_proj' if bank.endswith('gate_up') else 'down_proj')
+            plan=plans[bank]
+            for suffix,tensor in plan['sample'].items():
+                shape=tuple(tensor.shape)
+                if suffix not in ('comfy_quant','weight_codebook'):shape=(plan['count'],*shape[1:])
+                sources[module+'.'+suffix]=TensorSource(shape,tensor.dtype,
+                    lambda bank=bank,suffix=suffix:materialize(bank)[suffix].contiguous())
+        metadata={**metadata,'drama3_format':args.format,'quantized_from':args.src.name}
+        part=args.out.with_suffix(args.out.suffix+'.part')
+        write_tensor_sources(sources,part,metadata)
+        os.replace(part,args.out)
+    report=dict(source=str(args.src),output=str(args.out),format=args.format,bytes=args.out.stat().st_size,
+        banks=len(banks),elapsed_seconds=time.time()-started)
+    args.out.with_suffix('.conversion.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+    print('QUANTIZED_CHECKPOINT_COMPLETE',json.dumps(report),flush=True)
+
+
+def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("kind", choices=("model", "codec", "asr"))
-    parser.add_argument("src")
-    parser.add_argument("out")
+    parser.add_argument("kind", choices=("model", "codec", "asr", "quantize"))
+    parser.add_argument("src", type=Path)
+    parser.add_argument("out", type=Path)
     parser.add_argument("--format", default="fp8", choices=("fp8", "int8_convrot", "w6a8", "w4a8"),
                         help="routed experts: the checkpoint's block FP8 as is (32.2 GB), int8 ConvRot (32.2 GB), W6A8 "
                              "(26.2 GB) or W4A8 (18.1 GB)")
@@ -295,7 +372,11 @@ def main():
                         help="every linear but the routed experts (attention, DeltaNet, shared expert, tower): the checkpoint's "
                              "bf16 (5.3 GB, fastest at one frame per step) or int8 ConvRot (2.7 GB)")
     parser.add_argument("--device", default="cuda:0")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    if args.kind == "quantize":
+        if args.format == "fp8":
+            parser.error("quantize requires --format int8_convrot, w6a8 or w4a8")
+        return convert_quantized(args)
     if os.path.exists(args.out):
         sys.exit(f"{args.out} exists")
     {"model": convert_model, "codec": convert_codec, "asr": convert_asr}[args.kind](args)

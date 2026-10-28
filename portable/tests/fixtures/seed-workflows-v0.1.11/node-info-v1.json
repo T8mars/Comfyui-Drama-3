@@ -1,0 +1,571 @@
+{
+  "T8DramaGenerate": {
+    "input": {
+      "required": {
+        "engine": [
+          "DRAMA3_T8_ENGINE",
+          {}
+        ],
+        "mode": [
+          "COMBO",
+          {
+            "multiselect": false,
+            "options": [
+              "speech",
+              "revision",
+              "long",
+              "stream"
+            ]
+          }
+        ],
+        "text": [
+          "STRING",
+          {
+            "multiline": true
+          }
+        ],
+        "lookahead": [
+          "STRING",
+          {
+            "default": "",
+            "multiline": true
+          }
+        ],
+        "chunk_bytes": [
+          "INT",
+          {
+            "default": 300,
+            "min": 32,
+            "max": 3000
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 42,
+            "min": 0,
+            "max": 9007199254740991
+          }
+        ],
+        "temperature": [
+          "FLOAT",
+          {
+            "default": 0.7,
+            "min": 0.01,
+            "max": 2,
+            "step": 0.05
+          }
+        ],
+        "top_p": [
+          "FLOAT",
+          {
+            "default": 0.7,
+            "min": 0.01,
+            "max": 1,
+            "step": 0.05
+          }
+        ],
+        "top_k": [
+          "INT",
+          {
+            "default": 30,
+            "min": 1
+          }
+        ],
+        "max_frames": [
+          "INT",
+          {
+            "default": 600,
+            "min": 1,
+            "max": 8192
+          }
+        ]
+      },
+      "optional": {
+        "session": [
+          "DRAMA3_T8_SESSION",
+          {}
+        ],
+        "seed_text": [
+          "STRING",
+          {
+            "tooltip": "Optional exact 64-bit decimal seed (0–18446744073709551615). Overrides seed; leave blank for its normal controls.",
+            "default": "",
+            "multiline": false
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "engine",
+        "mode",
+        "text",
+        "lookahead",
+        "chunk_bytes",
+        "seed",
+        "temperature",
+        "top_p",
+        "top_k",
+        "max_frames"
+      ],
+      "optional": [
+        "session",
+        "seed_text"
+      ]
+    },
+    "is_input_list": false,
+    "output": [
+      "DRAMA3_T8_SESSION"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "DRAMA3_T8_SESSION"
+    ],
+    "output_tooltips": [
+      null
+    ],
+    "output_matchtypes": null,
+    "name": "T8DramaGenerate",
+    "display_name": "T8 Drama 3 · 生成 / 导演修改 / 流式",
+    "description": "",
+    "python_module": null,
+    "category": "T8/Drama3",
+    "output_node": false,
+    "deprecated": false,
+    "experimental": false,
+    "dev_only": false,
+    "api_node": false,
+    "price_badge": null,
+    "search_aliases": null,
+    "essentials_category": null,
+    "has_intermediate_output": false
+  },
+  "T8DramaScene": {
+    "input": {
+      "required": {
+        "engine": [
+          "DRAMA3_T8_ENGINE",
+          {}
+        ],
+        "script": [
+          "STRING",
+          {
+            "multiline": true
+          }
+        ],
+        "scene": [
+          "STRING",
+          {
+            "default": "",
+            "multiline": true
+          }
+        ],
+        "characters": [
+          "STRING",
+          {
+            "default": "",
+            "multiline": true
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 42,
+            "min": 0,
+            "max": 9007199254740991
+          }
+        ],
+        "max_frames": [
+          "INT",
+          {
+            "default": 1200,
+            "min": 1,
+            "max": 8192
+          }
+        ]
+      },
+      "optional": {
+        "references": [
+          "DRAMA3_T8_REFERENCES",
+          {}
+        ],
+        "seed_text": [
+          "STRING",
+          {
+            "tooltip": "Optional exact 64-bit decimal seed (0–18446744073709551615). Overrides seed; leave blank for its normal controls.",
+            "default": "",
+            "multiline": false
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "engine",
+        "script",
+        "scene",
+        "characters",
+        "seed",
+        "max_frames"
+      ],
+      "optional": [
+        "references",
+        "seed_text"
+      ]
+    },
+    "is_input_list": false,
+    "output": [
+      "DRAMA3_T8_SESSION"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "DRAMA3_T8_SESSION"
+    ],
+    "output_tooltips": [
+      null
+    ],
+    "output_matchtypes": null,
+    "name": "T8DramaScene",
+    "display_name": "T8 Drama 3 · 多角色场景",
+    "description": "",
+    "python_module": null,
+    "category": "T8/Drama3",
+    "output_node": false,
+    "deprecated": false,
+    "experimental": false,
+    "dev_only": false,
+    "api_node": false,
+    "price_badge": null,
+    "search_aliases": null,
+    "essentials_category": null,
+    "has_intermediate_output": false
+  },
+  "T8DramaInfill": {
+    "input": {
+      "required": {
+        "engine": [
+          "DRAMA3_T8_ENGINE",
+          {}
+        ],
+        "session": [
+          "DRAMA3_T8_SESSION",
+          {}
+        ],
+        "target_transcript": [
+          "STRING",
+          {
+            "multiline": true
+          }
+        ],
+        "start_seconds": [
+          "FLOAT",
+          {
+            "default": 0,
+            "min": 0,
+            "step": 0.05
+          }
+        ],
+        "end_seconds": [
+          "FLOAT",
+          {
+            "default": 1,
+            "min": 0,
+            "step": 0.05
+          }
+        ],
+        "duration_frames": [
+          "INT",
+          {
+            "default": 0,
+            "min": 0
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 42,
+            "min": 0,
+            "max": 9007199254740991
+          }
+        ],
+        "max_frames": [
+          "INT",
+          {
+            "default": 300,
+            "min": 1,
+            "max": 8192
+          }
+        ]
+      },
+      "optional": {
+        "seed_text": [
+          "STRING",
+          {
+            "tooltip": "Optional exact 64-bit decimal seed (0–18446744073709551615). Overrides seed; leave blank for its normal controls.",
+            "default": "",
+            "multiline": false
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "engine",
+        "session",
+        "target_transcript",
+        "start_seconds",
+        "end_seconds",
+        "duration_frames",
+        "seed",
+        "max_frames"
+      ],
+      "optional": [
+        "seed_text"
+      ]
+    },
+    "is_input_list": false,
+    "output": [
+      "DRAMA3_T8_SESSION"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "DRAMA3_T8_SESSION"
+    ],
+    "output_tooltips": [
+      null
+    ],
+    "output_matchtypes": null,
+    "name": "T8DramaInfill",
+    "display_name": "T8 Drama 3 · 局部音频编辑",
+    "description": "",
+    "python_module": null,
+    "category": "T8/Drama3",
+    "output_node": false,
+    "deprecated": false,
+    "experimental": false,
+    "dev_only": false,
+    "api_node": false,
+    "price_badge": null,
+    "search_aliases": null,
+    "essentials_category": null,
+    "has_intermediate_output": false
+  },
+  "T8DramaSRT": {
+    "input": {
+      "required": {
+        "engine": [
+          "DRAMA3_T8_ENGINE",
+          {}
+        ],
+        "srt": [
+          "STRING",
+          {
+            "multiline": true
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 42,
+            "min": 0,
+            "max": 9007199254740991
+          }
+        ],
+        "max_frames": [
+          "INT",
+          {
+            "default": 600,
+            "min": 1,
+            "max": 8192
+          }
+        ]
+      },
+      "optional": {
+        "session": [
+          "DRAMA3_T8_SESSION",
+          {}
+        ],
+        "seed_text": [
+          "STRING",
+          {
+            "tooltip": "Optional exact 64-bit decimal seed (0–18446744073709551615). Overrides seed; leave blank for its normal controls.",
+            "default": "",
+            "multiline": false
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "engine",
+        "srt",
+        "seed",
+        "max_frames"
+      ],
+      "optional": [
+        "session",
+        "seed_text"
+      ]
+    },
+    "is_input_list": false,
+    "output": [
+      "DRAMA3_T8_SESSION",
+      "AUDIO",
+      "STRING"
+    ],
+    "output_is_list": [
+      false,
+      false,
+      false
+    ],
+    "output_name": [
+      "DRAMA3_T8_SESSION",
+      "AUDIO",
+      "STRING"
+    ],
+    "output_tooltips": [
+      null,
+      null,
+      null
+    ],
+    "output_matchtypes": null,
+    "name": "T8DramaSRT",
+    "display_name": "T8 Drama 3 · SRT 批量台词",
+    "description": "",
+    "python_module": null,
+    "category": "T8/Drama3",
+    "output_node": false,
+    "deprecated": false,
+    "experimental": false,
+    "dev_only": false,
+    "api_node": false,
+    "price_badge": null,
+    "search_aliases": null,
+    "essentials_category": null,
+    "has_intermediate_output": false
+  },
+  "T8DramaLive": {
+    "input": {
+      "required": {
+        "engine": [
+          "DRAMA3_T8_ENGINE",
+          {}
+        ],
+        "text": [
+          "STRING",
+          {
+            "multiline": true
+          }
+        ],
+        "preview_audio": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 42,
+            "min": 0,
+            "max": 9007199254740991
+          }
+        ],
+        "max_frames": [
+          "INT",
+          {
+            "default": 600,
+            "min": 1,
+            "max": 8192
+          }
+        ]
+      },
+      "optional": {
+        "session": [
+          "DRAMA3_T8_SESSION",
+          {}
+        ],
+        "seed_text": [
+          "STRING",
+          {
+            "tooltip": "Optional exact 64-bit decimal seed (0–18446744073709551615). Overrides seed; leave blank for its normal controls.",
+            "default": "",
+            "multiline": false
+          }
+        ]
+      },
+      "hidden": {
+        "unique_id": [
+          "UNIQUE_ID"
+        ],
+        "prompt": [
+          "PROMPT"
+        ],
+        "extra_pnginfo": [
+          "EXTRA_PNGINFO"
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "engine",
+        "text",
+        "preview_audio",
+        "seed",
+        "max_frames"
+      ],
+      "optional": [
+        "session",
+        "seed_text"
+      ],
+      "hidden": [
+        "unique_id",
+        "prompt",
+        "extra_pnginfo"
+      ]
+    },
+    "is_input_list": false,
+    "output": [
+      "DRAMA3_T8_SESSION",
+      "AUDIO",
+      "STRING"
+    ],
+    "output_is_list": [
+      false,
+      false,
+      false
+    ],
+    "output_name": [
+      "DRAMA3_T8_SESSION",
+      "AUDIO",
+      "STRING"
+    ],
+    "output_tooltips": [
+      null,
+      null,
+      null
+    ],
+    "output_matchtypes": null,
+    "name": "T8DramaLive",
+    "display_name": "T8 Drama 3 · 实时语音输出",
+    "description": "",
+    "python_module": null,
+    "category": "T8/Drama3",
+    "output_node": true,
+    "deprecated": false,
+    "experimental": false,
+    "dev_only": false,
+    "api_node": false,
+    "price_badge": null,
+    "search_aliases": null,
+    "essentials_category": null,
+    "has_intermediate_output": false
+  }
+}

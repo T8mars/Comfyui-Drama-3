@@ -2,21 +2,22 @@
 
 [English](README.md) | **简体中文**
 
-T8star 制作的 [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) 原生节点与本地演出工作台。Built with Fish Audio.
+T8star 制作的 [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) 原生节点与本地配音工作台。Built with Fish Audio.
 
-[模型下载](https://huggingface.co/t8star/Drama-3-Comfy) · [版本下载](https://github.com/T8mars/Comfyui-Drama-3/releases) · [示例工作流](https://github.com/T8mars/Comfyui-Drama-3/tree/main/workflows) · [问题反馈](https://github.com/T8mars/Comfyui-Drama-3/issues)
+[模型下载](https://huggingface.co/t8star/Drama-3-Comfy) · [版本下载](https://github.com/T8mars/Comfyui-Drama-3/releases) · [16 张画布示例](https://github.com/T8mars/Comfyui-Drama-3/tree/main/workflows) · [问题反馈](https://github.com/T8mars/Comfyui-Drama-3/issues)
 
 ## 功能
 
-- 多参考音色克隆、最多 16 个角色编号、行内演出指令与多角色场景。
-- 基于真实音频历史的导演修改、局部编辑、长文、SRT 与带下段预览的流式文本输入。
-- Codec 编解码、参考复用、工程保存/回读/分支，以及生成中的音频分包试听。
-- 本地 Qwen3-ASR、Qwen ForcedAligner 和 [Confucius R2T2 转写](https://github.com/T8mars/comfyui-confucius-r2t2-t8)，均支持自定义模型路径。
-- 17 个 ComfyUI V3 原生节点，输出标准 `AUDIO`；模型、Codec 与 R2T2 均在宿主进程内执行。独立白粉工作台共用推理核心。
+- **18 个 ComfyUI V3 原生节点**、标准 `AUDIO`、16 张画布工作流。推理直接在 ComfyUI 内运行，无需 Studio 服务桥接。
+- 无需训练的原生参考音色条件：编码参考音频并配准确台词。支持多参考、最多 16 个角色编号、演出提示与四种对话模式。
+- 使用真实音频历史的导演改稿；Session 保存、回读、分支与仅含参考的可复用音色库。
+- 长文、带 lookahead 的流式文本、生成中音频试听、SRT 驱动配音与字幕导出。
+- 独立白粉 Studio，共用推理核心与多轨编辑器：角色音量/静音、剪切、插入静音、停顿预设、撤销与字幕。
+- 基于真实音频来源的模型局部编辑、本地 Qwen3-ASR 0.6B/1.7B、词级对齐及 [Confucius R2T2](https://github.com/T8mars/comfyui-confucius-r2t2-t8)。模型路径均可自定义。
 
-## 安装节点
+## 安装
 
-在 ComfyUI-Manager 中搜索 **ComfyUI-Drama3-T8**，发布者 **t8star**。也可手动安装：
+Registry 节点 ID：**`comfyui-drama3-t8`** · 发布者：**`t8star`**。手动安装须使用 **ComfyUI 自己的 Python**：
 
 ```sh
 cd ComfyUI/custom_nodes
@@ -26,69 +27,107 @@ python -m pip install -r requirements.txt
 python install.py
 ```
 
-请使用 **ComfyUI 自己的 Python** 执行，然后重启。导入 `workflows/` 中的示例，选择本地模型与参考音频。要求 ComfyUI 0.40.0+、Python 3.10+。`install.py` 下载并校验单独分发的 Windows x64 / CUDA 12.8 R2T2 原生运行库，不下载模型。设置 `DRAMA_SKIP_R2T2_INSTALL=1` 可跳过；已有运行库可设置 `DRAMA_R2T2_NATIVE_DIR`。Qwen 转写独立可用。
+重启 ComfyUI，导入 `workflows/` 的 JSON，选择模型、参考音频后点击 **Run**。要求 ComfyUI 0.40.0+、Python 3.10+。
 
-## Transformers 兼容性
+`install.py` 安装单独校验的 **Windows x64 / CUDA 12.8** R2T2 运行库，不下载模型。设 `DRAMA_SKIP_R2T2_INSTALL=1` 可跳过，已有运行库用 `DRAMA_R2T2_NATIVE_DIR` 指定。Qwen 转写独立可用。
 
-支持 **Transformers 4.57.1**，已有兼容的 4.x 环境可继续使用。节点依赖范围为 `transformers>=4.57.1,<6`、`tokenizers>=0.22,<0.24`。
-
-| 已验证的 Transformers | Tokenizers | Hugging Face Hub |
-|---|---|---|
-| **4.57.1** | **0.22.2** | **0.36.2** |
-| 5.19.0 | 0.23.2 | 1.33.0 |
-
-整合包的 `requirements.txt` 默认安装 4.57.1 这组依赖；已有 5.19 环境也可继续使用。两组均通过完整 CPU 回归，包含真实 Qwen 模型前向与缓存续算；4.57.1 另经过浏览器画布生成、转写和词级对齐实测。允许范围内的其他版本尚未逐版验证。
-
-需要切换到已测 4.57.1 组合时，使用 ComfyUI 或工作台自己的 Python 执行：
+整合包默认及验证依赖为 **Transformers 4.57.1 / tokenizers 0.22.2 / huggingface-hub 0.36.2**，配合 Torch 2.8 + CUDA 12.8：
 
 ```sh
 python -m pip install "transformers==4.57.1" "tokenizers==0.22.2" "huggingface-hub==0.36.2"
 ```
 
-程序自动更新会保留已安装的 Python 包，不运行 pip，也不自动切换 Transformers 版本；本次兼容更新无需重新下载模型。
+节点依赖范围为 `transformers>=4.57.1,<6`、`tokenizers>=0.22,<0.24`；下述验证使用精确固定版本。
 
-## 画布工作流
+## 音色与对话
 
-`workflows/` 提供 15 张画布：普通生成、参考音色、导演修改、局部编辑、长文、流式文本、场景、SRT、Codec、Qwen 转写、R2T2、对齐、实时试听、工程保存与加载。将 JSON 导入 ComfyUI，点击 **运行**。示例均经过浏览器画布实跑，核对了文字显示和音频播放。
+用参考台词与脚本中对应的 `<|speaker:N|>` 标签绑定音色，名称仅用于显示。命名角色改稿时保留稳定编号；自动转写不准确时请先校正。
 
-在 `LoadAudio` 中选择自己的音频；参考与对齐节点的台词须匹配录音。加载工程前先运行 `workflow_save_session.json`，刷新 ComfyUI，再选择已保存的文件。长文默认输出全部段落。数字种子范围为 `0–9007199254740991`；更大的种子请在 `seed_text` 填写完整十进制数，最大 `18446744073709551615`。
+`T8DramaLoadSession` 输出 **0** 为完整 Session，输出 **1** 为 References。不带旧 Take 复用音色时，将输出 1 接到新 Session。先保存、刷新列表，再加载。Scene 的可选 `session` 保留方向与历史；显式连接 `references` 会替换其参考。
 
-带参考的场景会按首次出现顺序为角色分配稳定的 `<|speaker:N|>` 编号，连续改稿沿用原映射。参考名称仅作显示；需要指定角色音色时，在参考转写与脚本中使用相同的显式 speaker 标签。
+| Scene 模式 | 行为 |
+|---|---|
+| `together` | 共享上下文生成对话。 |
+| `per_line` | 每行使用本角色参考和历史。 |
+| `per_line_context` | 另带前一位其他角色的真实台词。 |
+| `per_speaker` | 分角色生成，再还原脚本顺序。 |
 
-## 模型
+四种模式均提供 `temperature`、`top_p`、`top_k`、`sampling_preset` 和 `opening_retries`。**stable** 使用 0.7 / 0.7 / 30；**expressive** 使用 1.0 / 0.9 / 0；**custom** 使用手填数值。重试默认 0，旧工作流保留已存设置。超过 JavaScript 安全整数上限 `9007199254740991` 的种子，请使用十进制 `seed_text`，最大 `18446744073709551615`。
 
-从 [t8star/Drama-3-Comfy](https://huggingface.co/t8star/Drama-3-Comfy) 下载。默认路径相对于 `ComfyUI/`：
+四种模式均支持 `split_long_text`。`chunk_bytes` 为 **32–3000 UTF-8 字节**，默认 300，含新脚本标签/分隔符；参考、方向与历史也占上下文。同一行分块不加停顿。隔离 Scene 完成后按脚本顺序试听，普通配音支持生成中试听。
 
-| 模型 | 默认位置 |
+分块策略 v3 保留正文与受保护标签。旧 v1/v2 边界仍可读取，改稿保留预算。v2 归档保存来源分组、角色与时间线；不兼容客户端会明确拒绝。
+
+## 编辑、转写与对齐
+
+Editor 输出新 Session、音频、SRT 与来源绑定的编辑信息，默认保留原波形。设置 `align_words` / `aligner_path` 可启用词时间，否则按行计时。节奏提示仅作编辑辅助。
+
+模型 infill 使用真实播放选区和**完整替换脚本**，跨角色或静音选区设置 `target_speaker`。原生 Session/AUDIO 保留 Float32；Studio 保留未选 FLOAT/PCM16 样本，归档来源与模型输出，并编码完整成品供后续历史使用。FLAC 示例是播放导出，不是无损 Float32 导出。
+
+Qwen ASR 支持顺序 `AUDIO` batch 和每条音频的 `max_new_tokens` 预算。参考编码、对齐每次接收一个音频；手填参考台词无需 ASR。辅助模型仅在对应功能运行时加载，短 R2T2 音频无需 VAD。
+
+## 模型与自定义路径
+
+从 [t8star/Drama-3-Comfy](https://huggingface.co/t8star/Drama-3-Comfy) 下载转换后的权重。下表节点位置相对 `ComfyUI/`；Studio 将对应文件名/目录直接放在 `<整合包>/models/` 下。
+
+| 模型 | 节点位置 |
 |---|---|
 | DRAMA FP8，38.58 GB | `models/diffusion_models/drama3-t8-fp8.safetensors` |
-| 完整文本/控制输出头，1.03 GB | `models/diffusion_models/drama3-text-head.safetensors` |
+| **可选 W4A8，24.60 GB** | `models/diffusion_models/drama3-t8-w4a8.safetensors` |
 | Codec，1.57 GB | `models/vae/drama3-codec.safetensors` |
-| Qwen 转写，可选 | `models/asr/qwen3-asr-06b.safetensors` |
-| 词级对齐，可选，下载完整目录 | `models/asr/qwen-aligner/` |
-| R2T2 Q8 主模型与投影器，可选 | `models/asr/Confucius4-R2T2-GGUF/` |
-| R2T2 分段使用的 FireRedVAD | `models/asr/FireRedVAD-ONNX/` |
+| 紧凑 Scene 控制头 | `models/diffusion_models/drama3-line-head.safetensors` |
+| 完整文本/控制头，可回退 | `models/diffusion_models/drama3-text-head.safetensors` |
+| Qwen3-ASR 0.6B / 可选 1.7B | `models/asr/qwen3-asr-06b.safetensors` / `models/asr/qwen3_asr_1.7b_bf16.safetensors` |
+| ForcedAligner | `models/asr/qwen3_forced_aligner_0.6b_bf16.safetensors` 或完整 `models/asr/qwen-aligner/` |
+| R2T2 模型与 projector | `models/asr/Confucius4-R2T2-GGUF/Confucius4-R2T2-Q8_0.gguf` + `mmproj-Confucius4-R2T2-Q8_0.gguf` |
+| 分段 R2T2 的 FireRedVAD | `models/asr/FireRedVAD-ONNX/` |
 
-完整 DRAMA 功能需保留前三个文件。各加载器均可填写文件或目录的自定义路径，支持跨磁盘存放；工作台设置保存在 `userdata/` 中。
+支持绝对路径、其他盘与 Windows UNC 共享。相对路径在节点以 `ComfyUI/models/` 为根，Studio 以 `<整合包>/models/` 为根，九项路径保存于 `userdata/`。Loader 覆盖参数：`model_path`、`codec_path`、`text_head_path`、`line_head_path`；转写/对齐：`model_path`；R2T2：`model_path` / `projector_path` / `vad_path`。
 
-## 整合包与自动更新
+`scene_head_mode=compact` 使用小控制头，缺少时从完整头读取所需行；`full` 使用旧完整投影。保存 Studio 设置只需主模型、Codec 与当前控制头；未使用的辅助文件仅在调用时检查。
 
-完整 Windows 运行环境由作者单独提供。GitHub Release **只发布程序文件及原生运行库，不含模型和 Python 运行环境**；工作台源码位于 [portable/](https://github.com/T8mars/Comfyui-Drama-3/tree/main/portable)。
+转换后的 **INT8 convrot / W6A8 / W4A8** 直接在同一主模型选择器加载。完整环境可将已有 FP8 转换到新的输出文件：
 
-已有基于 0.1.3 或后续版本的完整包：先关闭工作台，将 `Drama3-T8-Portable-0.1.11-code.zip` 解压到包含 `Start-Drama3.cmd` 的目录，再双击启动。此后启动时自动检查 GitHub 正式版并安装兼容的程序更新；关闭工作台后也可双击 `Update-Drama3.cmd` 手动检查。更新核对文件大小与 SHA-256，备份旧文件，失败时回滚。模型、Python、自定义路径、工程、音色库和输出均保留。断网仍可正常启动；依赖或运行库变更需使用作者提供的新完整环境。
+```bat
+runtime\python\python.exe tools\convert_model.py quantize "models\drama3-t8-fp8.safetensors" "models\drama3-t8-w4a8.safetensors" --format w4a8
+```
+
+格式可选 `int8_convrot`、`w6a8`、`w4a8`。存储更小不代表所有格式的质量或内存适用性均已验证。
+
+## Studio 与自动更新
+
+作者单独分发完整 Windows 环境。GitHub 的 `Drama3-T8-Portable-<版本>-code.zip` **仅含代码，不含模型和 Python**；R2T2 原生库为单独校验的资产。仓库同时提供[工作台源码](https://github.com/T8mars/Comfyui-Drama-3/tree/main/portable)。
+
+已有兼容的 0.1.3+ 完整环境，运行 `Start-Drama3.cmd` 启动 Studio 并检查 GitHub 稳定 Release。手动更新前关闭 Studio，再运行 `Update-Drama3.cmd`。离线代码补丁可在关闭 Studio 后，解压到 `Start-Drama3.cmd` 所在目录。
+
+更新器校验大小/SHA-256、备份文件并在事务失败时回滚，保留模型、Python、路径、工程、音色库与输出。离线检查不阻止启动，更新不自动 pip；依赖变更需兼容的完整环境。
 
 ## 硬件与加速
 
-实测 Windows x64、RTX 5090 Laptop **24 GB 显存 / 64 GB 内存**、Torch 2.8 / CUDA 12.8，专家缓存 12 GiB。FP8 专家驻系统内存，缓存 `0` 自动预算；显存需为驻留权重、Codec 与上下文留出空间。其他硬件组合尚未实测。
+本地验证设备为 Windows x64、**24 GB 显存 / 64 GB 内存**、RTX 5090 Laptop、Torch 2.8 + CUDA 12.8。固定 W4 案例使用 **8 GiB 专家显存缓存**，它不是总内存占用；加载和锁页前会检查主机 RAM。
 
-默认 Torch 线性注意力与 SDPA。FLA 已接入，本机测试未见明显提速；安装 FlashAttention 不代表模型已启用，CUDA Graph 当前关闭。CPU 试听分包会在生成过程中送达，本机卸载配置低于音频实时生成速度。转写结果可能需要人工校对。场景改稿保留完整工程历史，并对提前结束的台词进行有限边界恢复；空段、多段或未完成的输出仍会被拒绝。
+| 控件 | 含义 |
+|---|---|
+| `gdn_backend` | 默认 `torch`，可选 `fla`。注意力使用 ComfyUI 可用内核；安装 FlashAttention 不会强制启用。 |
+| `moe_backend` | 默认 `auto`，可选 `torch` / `cuda`；记录实际后端和回退原因。 |
+| `cuda_graph` | 默认请求开启，捕获/回放需要兼容的 CUDA 专家与宿主生命周期。 |
+| `expert_placement` | 默认 `ram`：主存专家加显存缓存；`vram` 要求整模型和控制头装入同一 GPU。 |
+| `expert_cache_gb` | RAM 模式缓存 GiB，`0` 自动；相关 Take 共用缓存，支持的单卡 INT8 可协同 CPU 专家。 |
+
+Codec 使用有界窗口；支持的量化 pread 加载会校验所有权与内存预算，其他布局保留保守加载。本机尚未完成整模型全显存驻留及 W6/INT8 全面验证，多卡不在范围内。CUDA capture 失效后，须重启宿主并对该配置关闭 Graph。对方项目的 Voice/Codes 文件不能直接替换本项目 Session 归档。
+
+## 验证范围
+
+已验证画布宿主：**ComfyUI 0.40.0 与 0.42.0**。Transformers 4.57.1 下，两套 CPU 依赖栈（Comfy Kitchen 0.2.37 / 0.2.40）各完成 **1322 passed、5 skipped、1 GPU deselected**。
+
+实际画布与 Studio UI 检查覆盖固定对话、初稿及两次连续改稿、未分块整场对话和三段长文。0.40.0 的实际输出经一次 R2T2 batch 与一次 Qwen batch，各 **20/20**（12 + 4 + 4）。0.42.0 增量仅重跑一例原整场对话，整段/分行音频经双引擎各 **4/4**。另一回归仅在音码/PCM 精确相等后复用原 4/4，并检查了实际画布节点进度。
+
+这些检查核实对应案例的原台词与顺序，不代表全部 16 张工作流或所有提示、音色相似度、情绪/口音质量、速度均已通过。历史失败独立保留。范围与限制见[验收报告](https://github.com/T8mars/Comfyui-Drama-3/blob/main/portable/acceptance-report.json)，完整包也包含本地副本。
 
 ## 来源与许可
 
-基于 [Fish Speech](https://github.com/fishaudio/fish-speech)、[PedroMarinhoDev/ComfyUI-Drama3](https://github.com/PedroMarinhoDev/ComfyUI-Drama3)、[ComfyUI](https://github.com/Comfy-Org/ComfyUI) 及上述 R2T2 项目。T8 补充完整控制输出、有状态编辑、流式、原生转写集成与本地工作台。
-
-项目代码遵循 [GPL-3.0](LICENSE)，上游组件保留原许可。DRAMA 材料及权重遵循 **Fish Audio Community License v1.0**；Qwen、FireRedVAD 为 Apache-2.0，Confucius 模型遵循网易有道模型使用许可，llama.cpp 为 MIT。完整文本见 [licenses/](licenses/)，固定来源版本见 [upstream-lock.json](upstream-lock.json)。本项目未获上游作者背书，亦非其官方产品。
+基于 [Fish Speech](https://github.com/fishaudio/fish-speech)、[PedroMarinhoDev/ComfyUI-Drama3](https://github.com/PedroMarinhoDev/ComfyUI-Drama3)、[ComfyUI](https://github.com/Comfy-Org/ComfyUI) 与 R2T2。项目代码 [GPL-3.0](LICENSE)，各上游保留原许可。DRAMA 权重/材料：Fish Audio Community License v1.0；Qwen/FireRedVAD：Apache-2.0；Confucius：网易有道模型使用许可；llama.cpp：MIT。详见 [licenses/](licenses/) 与 [upstream-lock.json](upstream-lock.json)，不代表上游认可或背书。
 
 ## T8star
 
-[B站](https://space.bilibili.com/385085361) · [YouTube](https://www.youtube.com/@T8star-Aix/) · [API](https://api.seedance.nz/sign-up?aff=5f4w) · [免费画廊](https://www.openzhenzhen.com) · [在线AI应用](https://www.runninghub.ai/zh-cn/user-center/1907375370302308353/userPost?inviteCode=rh-v1121) · [ComfyUI整合包](https://pan.quark.cn/s/264edb7e36bd) · [Hugging Face](https://huggingface.co/t8star)
+[哔哩哔哩](https://space.bilibili.com/385085361) · [YouTube](https://www.youtube.com/@T8star-Aix/) · [API](https://api.seedance.nz/sign-up?aff=5f4w) · [免费图库](https://www.openzhenzhen.com) · [在线 AI 应用](https://www.runninghub.ai/zh-cn/user-center/1907375370302308353/userPost?inviteCode=rh-v1121) · [ComfyUI 整合包](https://pan.quark.cn/s/264edb7e36bd) · [Hugging Face](https://huggingface.co/t8star)

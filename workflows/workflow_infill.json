@@ -11,7 +11,7 @@
       ],
       "size": [
         370,
-        380
+        430
       ],
       "flags": {},
       "order": 0,
@@ -38,7 +38,12 @@
         "torch",
         "",
         "",
-        ""
+        "",
+        "",
+        "compact",
+        "auto",
+        true,
+        "ram"
       ]
     },
     {
@@ -87,7 +92,7 @@
       ],
       "size": [
         370,
-        380
+        540
       ],
       "flags": {},
       "order": 2,
@@ -127,7 +132,9 @@
         0.7,
         30,
         180,
-        ""
+        "",
+        0,
+        "custom"
       ]
     },
     {
@@ -176,6 +183,8 @@
         45,
         "fixed",
         180,
+        "",
+        "auto",
         ""
       ]
     },
@@ -226,7 +235,9 @@
       },
       "widgets_values": [
         -1,
-        false
+        false,
+        false,
+        0.75
       ]
     },
     {
@@ -252,7 +263,7 @@
       ],
       "outputs": [
         {
-          "name": "AUDIO",
+          "name": "audio",
           "type": "AUDIO",
           "links": []
         }
@@ -318,7 +329,7 @@
         "Node name for S&R": "Note"
       },
       "widgets_values": [
-        "先试听原句，再按实际音频调整 start_seconds/end_seconds，仅框选要替换的词；0–0.5 秒仅为示例。\nListen to the original and select the actual word interval; 0–0.5 seconds is only an example.\ntarget_transcript 为编辑后整句；本例仅将开头“你好”改为“您好”，保留后文。\nThe complete edited transcript changes only the opening greeting and keeps the remainder.\nduration_frames=0 使用模型生成长度；正值指定替换帧数。\nUse 0 for generated duration, or a positive frame count."
+        "先试听原句，再按实际音频调整 start_seconds/end_seconds，仅框选要替换的词；0–0.5 秒仅为示例。\nListen to the original and select the actual word interval; 0–0.5 seconds is only an example.\ntarget_transcript 为编辑后整句；本例仅将开头“你好”改为“您好”，保留后文。\nThe complete edited transcript changes only the opening greeting and keeps the remainder.\nduration_frames=0 使用模型生成长度；正值指定替换帧数。\nUse 0 for generated duration, or a positive frame count.\n源感知场景按实际播放时间补写；跨角色/静音选区设置 target_speaker。expected_view 可填已试听资产身份JSON，防止误用旧选区。\nFor source-aware scenes, choose target_speaker for cross-role/silence and optionally bind expected_view. Session/AUDIO retain FLOAT; the standard FLAC output is a playback export."
       ],
       "title": "使用说明 / Instructions"
     },

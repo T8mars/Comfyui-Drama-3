@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import torch
 from fastapi.testclient import TestClient
-import app as application
+from studio_app_loader import application
 
 from drama3_t8.bootstrap import standalone_engine
 standalone_engine()
@@ -36,6 +36,11 @@ def settings_files(tmp_path):
 def test_cancel_is_rejected_once_result_writing_starts(tmp_path,monkeypatch,mode):
     entered,release=threading.Event(),threading.Event()
     with Studio(tmp_path) as studio:
+        if mode=='align':
+            # Optional assets are now checked at feature use; this test covers
+            # the subsequent commit boundary, not an absent model configuration.
+            studio.model_paths['aligner'].mkdir(parents=True)
+            (studio.model_paths['aligner']/'config.json').write_text('{}')
         session=Session(takes=(take(),));studio.register_session(session)
         monkeypatch.setattr(module,'read_audio',lambda path:(torch.zeros(1,1000),44100))
         monkeypatch.setattr(studio.engine,'encode_reference',lambda *a:Reference('Test',torch.ones(10,4,dtype=torch.long),'Voice'))
@@ -51,8 +56,8 @@ def test_cancel_is_rejected_once_result_writing_starts(tmp_path,monkeypatch,mode
             if mode=='reference' and target.parent.name=='references':pause()
         def write(target,*a,**k):
             original_write(target,*a,**k)
-            if mode=='tts' and target.parent==studio.output:pause()
-            if mode=='preview' and target.parent.name=='previews':pause()
+            if isinstance(target,Path) and mode=='tts' and target.parent==studio.output:pause()
+            if isinstance(target,Path) and mode=='preview' and target.parent.name=='previews':pause()
         def text(target,*a,**k):
             result=original_text(target,*a,**k)
             if (mode=='align' and target.name.endswith('.alignment.json')) or (mode=='transcribe' and target.suffix=='.txt'):pause()
@@ -216,7 +221,7 @@ def test_api_marks_saving_job_uncancelable_and_keeps_final_status_accurate(tmp_p
         original=module.sf.write
         def write(path,*a,**k):
             original(path,*a,**k)
-            if path.parent==studio.output:entered.set();assert release.wait(10)
+            if isinstance(path,Path) and path.parent==studio.output:entered.set();assert release.wait(10)
         monkeypatch.setattr(module.sf,'write',write)
         job=client.post('/api/jobs',json={'mode':'tts','text':'Test'}).json()['job_id']
         try:

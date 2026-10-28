@@ -1,0 +1,9 @@
+The shared editor UI (web/editor_core.js and web/drama3_editor.js) and the
+silence/piece planning model in drama3_t8/editor.py are adapted from:
+https://github.com/PedroMarinhoDev/ComfyUI-Drama3
+Revision: 8cb3c64379d4988b9693cae9f3436b8fd54b22ad
+License: GPL-3.0 (see LICENSE-DRAMA3-EDITOR).
+
+T8 modifications include source-bound edits, validation, immutable Session
+branches, exact identity rendering, mapped subtitle export, race-safe loading,
+shared native-node/Studio integration and the white/pink Chinese interface.

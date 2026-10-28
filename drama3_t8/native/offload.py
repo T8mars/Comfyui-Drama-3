@@ -71,11 +71,11 @@ def experts_decode(x, gate_up, down, weights):
 
 
 class HostBank:
-    """One expert bank in pinned host memory: tensors whose first dimension holds each expert's rows in turn."""
+    """One CPU expert bank, optionally pinned; the first dimension holds each expert's rows in turn."""
 
-    def __init__(self, num_experts, fields):
+    def __init__(self, num_experts, fields, *, pin_memory=True):
         self.num_experts = num_experts
-        self.fields = {n: pinned(t) for n, t in fields.items()}
+        self.fields = {n: pinned(t) if pin_memory else t.contiguous() for n, t in fields.items()}
 
     def rows(self, name):
         return self.fields[name].shape[0] // self.num_experts
@@ -96,15 +96,16 @@ class HostBank:
 class QuantHostBank(HostBank):
     """A flat `comfy.ops.MoEExperts` bank (int8 ConvRot, W4A8, W6A8); its experts run as QuantizedTensors."""
 
-    def __init__(self, module):
+    def __init__(self, module, *, pin_memory=True):
         weight = module.weight
         if not isinstance(weight, QuantizedTensor) or weight._qdata.ndim != 2:
             raise ValueError("Drama 3 keeps only flat quantized or FP8 expert banks in host memory")
         fields = per_row_fields(weight)
-        super().__init__(module.num_experts, fields)
+        super().__init__(module.num_experts, fields, pin_memory=pin_memory)
         self.shared = {n: v for n, v in tensor_fields(weight).items() if n not in fields}
         self.shared_on = {}
-        self.layout, self.params, self.in_features = weight._layout_cls, weight._params, weight._params.orig_shape[-1]
+        self.layout,self.in_features=weight._layout_cls,weight._params.orig_shape[-1]
+        self.params=dataclasses.replace(weight._params,**{n:v for n,v in self.fields.items() if n!='_qdata'},**self.shared)
 
     def weight(self, fields, device):
         # a CPU codebook would send every W4A8 matmul down comfy_kitchen's eager path
@@ -119,26 +120,37 @@ class QuantHostBank(HostBank):
 class FP8HostBank(HostBank):
     """Experts as Fish ships them, float8 rows and block scales; their experts run in bf16."""
 
-    def __init__(self, weight, scale):
-        super().__init__(weight.shape[0], {"weight": weight.view(torch.uint8).flatten(0, 1), "scale": scale.flatten(0, 1)})
+    def __init__(self, weight, scale, *, pin_memory=True):
+        super().__init__(weight.shape[0], {"weight": weight.view(torch.uint8).flatten(0, 1), "scale": scale.flatten(0, 1)},
+                         pin_memory=pin_memory)
 
     def weight(self, fields, device):
         return dequantize_fp8(fields["weight"].view(torch.float8_e4m3fn), fields["scale"], torch.bfloat16)
 
 
 class ExpertStore:
-    def __init__(self, cache_bytes=0):
+    def __init__(self, cache_bytes=0, *, pin_memory=True):
         """`cache_bytes` 0 sizes the expert cache to the VRAM free when a generation starts."""
         self.banks = []
         self.cache = None
         self.cache_bytes = cache_bytes
+        self.pin_memory = bool(pin_memory)
+        self.backend_calls={"torch":0,"cuda":0}
+        self.last_backend="torch"
+        self.fallback_reason=None
+
+    def close(self):
+        if self.cache is not None:raise RuntimeError('Cannot unload an active expert generation')
+        self.banks.clear()
 
     def add(self, experts):
         """Take a layer's experts into host memory; returns the module that replaces them in the model."""
         if isinstance(experts, FP8Experts):
-            banks = (FP8HostBank(experts.gate_up_weight, experts.gate_up_scale), FP8HostBank(experts.down_weight, experts.down_scale))
+            banks = (FP8HostBank(experts.gate_up_weight, experts.gate_up_scale, pin_memory=self.pin_memory),
+                     FP8HostBank(experts.down_weight, experts.down_scale, pin_memory=self.pin_memory))
         else:
-            banks = (QuantHostBank(experts.gate_up_proj), QuantHostBank(experts.down_proj))
+            banks = (QuantHostBank(experts.gate_up_proj, pin_memory=self.pin_memory),
+                     QuantHostBank(experts.down_proj, pin_memory=self.pin_memory))
         self.banks.append(banks)
         return OffloadedExperts(self, len(self.banks) - 1)
 
@@ -146,19 +158,38 @@ class ExpertStore:
     def session(self, device, patchers):
         """One generation's expert cache, sized to the VRAM free at its start less what the patchers' weights on
         this device still need: a dynamic model's weights arrive on first use, and must not find the cache there."""
+        if self.cache is not None:
+            yield
+            return
         pending = sum(p.model_size() - p.loaded_size() for p in patchers if p.load_device == device)
         budget = max(0, comfy.model_management.get_free_memory(device) - pending - CACHE_RESERVE)
         if self.cache_bytes:
             budget = min(budget, self.cache_bytes)
-        self.cache = SlotPool(self.banks[0], budget, len(self.banks) * self.banks[0][0].num_experts, device)
         try:
+            self.cache = SlotPool(self.banks[0], budget, len(self.banks) * self.banks[0][0].num_experts, device)
             yield
         finally:
-            self.cache.report()
-            self.cache = None
-            comfy.model_management.soft_empty_cache()
+            import sys
+            primary = sys.exc_info()[1]
+            try:
+                if self.cache is not None:
+                    try:
+                        self.cache.report()
+                    except BaseException as exc:
+                        if primary is None and not isinstance(exc, Exception):
+                            raise
+                        logging.warning('Drama expert cache diagnostics failed during cleanup: %s', exc)
+            finally:
+                self.cache = None
+                try:
+                    comfy.model_management.soft_empty_cache()
+                except BaseException as exc:
+                    if primary is None and not isinstance(exc, Exception):
+                        raise
+                    logging.warning('Drama expert device cache cleanup failed: %s', exc)
 
     def forward(self, layer, x, topk_idx, topk_weight):
+        self.backend_calls["torch"]+=1
         banks = self.banks[layer]
         if x.shape[0] == 1 and self.cache is not None:
             slots = self.cache.slots(layer, topk_idx[0].tolist(), banks)

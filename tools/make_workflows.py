@@ -1,6 +1,8 @@
 """Generate importable ComfyUI canvas examples; never export API prompts."""
 import json
+import sys
 from copy import deepcopy
+from functools import lru_cache
 from pathlib import Path
 
 
@@ -12,31 +14,116 @@ SESSION = "DRAMA3_T8_SESSION"
 REFERENCES = "DRAMA3_T8_REFERENCES"
 CODES = "DRAMA3_T8_CODES"
 
-# Socket order and widget order follow drama3_t8/nodes.py and the ComfyUI frontend.
-# Seed widgets have an additional, frontend-only control_after_generate value.
-SPECS = {
-    "T8DramaLoader": ([], [ENGINE], ["drama3-t8-fp8.safetensors", "drama3-codec.safetensors", 12, "torch", "", "", ""]),
-    "T8DramaReference": ([("engine", ENGINE), ("audio", "AUDIO"), ("previous", REFERENCES)], [REFERENCES], ["", ""]),
-    "T8DramaSession": ([("references", REFERENCES)], [SESSION], [""]),
-    "T8DramaGenerate": ([("engine", ENGINE), ("session", SESSION)], [SESSION], ["speech", "你好，这是本地语音测试。", "", 300, 42, "fixed", .7, .7, 30, 180, ""]),
-    "T8DramaScene": ([("engine", ENGINE), ("references", REFERENCES)], [SESSION], ["Anna: Ready?\nBen: Always.", "Two friends begin a journey.", "- Anna: a calm young woman.\n- Ben: a cheerful young man.", 44, "fixed", 180, ""]),
-    "T8DramaInfill": ([("engine", ENGINE), ("session", SESSION)], [SESSION], ["您好，这是本地语音测试。", 0, .5, 0, 45, "fixed", 180, ""]),
-    "T8DramaDecode": ([("engine", ENGINE), ("session", SESSION)], ["AUDIO", "STRING"], [-1, False]),
-    "T8DramaSaveSession": ([("session", SESSION)], [], ["drama3_example"]),
-    "T8DramaLoadSession": ([], [SESSION], [""]),
-    "T8DramaBranch": ([("session", SESSION)], [SESSION], [1]),
-    "T8DramaTranscribe": ([("audio", "AUDIO")], ["STRING", "STRING"], ["qwen3-asr-06b.safetensors", "Chinese", "", ""]),
-    "T8DramaCodecEncode": ([("engine", ENGINE), ("audio", "AUDIO")], [CODES], []),
-    "T8DramaCodecDecode": ([("engine", ENGINE), ("codes", CODES)], ["AUDIO"], []),
-    "T8DramaSRT": ([("engine", ENGINE), ("session", SESSION)], [SESSION, "AUDIO", "STRING"], ["1\n00:00:00,000 --> 00:00:02,000\n你好。\n\n2\n00:00:03,000 --> 00:00:05,000\n再见。\n", 55, "fixed", 180, ""]),
-    "T8DramaAlign": ([("audio", "AUDIO")], ["STRING"], ["qwen-aligner", "你好，这是本地语音测试。", "Chinese", ""]),
-    "T8DramaR2T2Transcribe": ([("audio", "AUDIO")], ["STRING", "STRING", "STRING"], ["asr/Confucius4-R2T2-GGUF/Confucius4-R2T2-Q8_0.gguf", "asr/Confucius4-R2T2-GGUF/mmproj-Confucius4-R2T2-Q8_0.gguf", "asr/FireRedVAD-ONNX", "Chinese", "", ""]),
-    "T8DramaLive": ([("engine", ENGINE), ("session", SESSION)], [SESSION, "AUDIO", "STRING"], ["你好，现在是浏览器实时试听测试。", True, 67, "fixed", 180, ""]),
-    "LoadAudio": ([], ["AUDIO"], [""]),
-    "SaveAudio": ([("audio", "AUDIO")], ["AUDIO"], ["Drama3_T8/output"]),
-    "PreviewAny": ([("source", "*")], ["STRING"], []),
-    "Note": ([], [], [""]),
+# Values are addressed by input name, never by their position in define_schema.
+# Required/optional groups returned by GET_NODE_INFO_V1 determine frontend order.
+EXAMPLES = {
+    "T8DramaLoader": {"model": "drama3-t8-fp8.safetensors", "codec": "drama3-codec.safetensors", "expert_placement": "ram"},
+    "T8DramaGenerate": {"mode": "speech", "text": "你好，这是本地语音测试。", "max_frames": 180},
+    "T8DramaScene": {"script": "Anna: Ready?\nBen: Always.", "scene": "Two friends begin a journey.",
+                     "characters": "- Anna: a calm young woman.\n- Ben: a cheerful young man.", "seed": 44, "max_frames": 180},
+    "T8DramaInfill": {"target_transcript": "您好，这是本地语音测试。", "end_seconds": .5, "seed": 45, "max_frames": 180},
+    "T8DramaSaveSession": {"name": "drama3_example"},
+    "T8DramaLoadSession": {"session_file": ""},
+    "T8DramaTranscribe": {"asr_model": "qwen3-asr-06b.safetensors", "language": "Chinese"},
+    "T8DramaSRT": {"srt": "1\n00:00:00,000 --> 00:00:02,000\n你好。\n\n2\n00:00:03,000 --> 00:00:05,000\n再见。\n", "seed": 55, "max_frames": 180},
+    "T8DramaAlign": {"aligner": "qwen3_forced_aligner_0.6b_bf16.safetensors", "transcript": "你好，这是本地语音测试。", "language": "Chinese",
+                     "model_path": "asr/qwen3_forced_aligner_0.6b_bf16.safetensors"},
+    "T8DramaR2T2Transcribe": {"language": "Chinese"},
+    "T8DramaLive": {"text": "你好，现在是浏览器实时试听测试。", "preview_audio": True, "seed": 67, "max_frames": 180},
+    "T8DramaEditor": {"aligner_path": "asr/qwen3_forced_aligner_0.6b_bf16.safetensors", "align_words": False},
+    "LoadAudio": {"audio": ""},
 }
+
+
+# Public example asset selectors are stable even before those files are installed.
+# User-selected audio/session inputs stay empty rather than embedding local files.
+PUBLIC_FILE_SELECTORS = {
+    ("T8DramaLoader", "model"), ("T8DramaLoader", "codec"),
+    ("T8DramaTranscribe", "asr_model"), ("T8DramaAlign", "aligner"),
+}
+EMPTY_FILE_SELECTORS = {("LoadAudio", "audio"), ("T8DramaLoadSession", "session_file")}
+
+
+@lru_cache(maxsize=1)
+def node_infos():
+    """Read actual host-adapted metadata without starting a server or loading models."""
+    # Keep the host before this project's app.py: recent ComfyUI imports its
+    # own app.governance package while defining built-in audio/text nodes.
+    if str(ROOT) not in sys.path:
+        sys.path.append(str(ROOT))
+    try:
+        import folder_paths  # noqa: F401
+    except ImportError:
+        from drama3_t8.bootstrap import standalone_engine
+        standalone_engine(ROOT)
+    from drama3_t8.nodes import NODES
+    from comfy_extras.nodes_audio import LoadAudio, SaveAudio
+    from comfy_extras.nodes_text import SaveTextNode
+    from comfy_extras.nodes_preview_any import PreviewAny
+    infos = {cls.__name__: cls.GET_NODE_INFO_V1() for cls in NODES}
+    for cls in (LoadAudio, SaveAudio, SaveTextNode):
+        info = cls.GET_NODE_INFO_V1()
+        infos[info["name"]] = info
+    infos["PreviewAny"] = {"input": PreviewAny.INPUT_TYPES(), "output": list(PreviewAny.RETURN_TYPES)}
+    # Note is a frontend-only built-in, with one serializable multiline widget.
+    infos["Note"] = {"input": {"required": {"text": ["STRING", {"default": "", "multiline": True}]}}, "output": []}
+    return infos
+
+
+def input_specs(info):
+    for group in ("required", "optional"):
+        inputs = info["input"].get(group, {})
+        order = info.get("input_order", {}).get(group, list(inputs))
+        for name in order:
+            yield name, inputs[name]
+
+
+def is_widget(spec):
+    kind, options = spec[0], spec[1] if len(spec) > 1 else {}
+    return not options.get("forceInput", False) and (isinstance(kind, list) or kind in {"STRING", "INT", "FLOAT", "BOOLEAN", "COMBO"})
+
+
+def widget_names(info):
+    names = []
+    for name, spec in input_specs(info):
+        if not is_widget(spec):
+            continue
+        names.append(name)
+        options = spec[1] if len(spec) > 1 else {}
+        # Legacy canvas arrays include the frontend's linked seed control.
+        # seed-compat.js also handles hosts that mark it nonserializable.
+        if spec[0] == "INT" and options.get("control_after_generate", name in {"seed", "noise_seed"}):
+            names.append("control_after_generate")
+    return names
+
+
+def widget_values(node_type, values=None):
+    info = node_infos()[node_type]
+    wanted = {**EXAMPLES.get(node_type, {}), **(values or {})}
+    allowed = set(widget_names(info))
+    if unknown := set(wanted) - allowed:
+        raise ValueError(f"Unknown widget input for {node_type}: {sorted(unknown)}")
+    result = {}
+    for name, spec in input_specs(info):
+        if not is_widget(spec):
+            continue
+        kind, options = spec[0], spec[1] if len(spec) > 1 else {}
+        choices = kind if isinstance(kind, list) else options.get("options", [])
+        default = options.get("default", choices[0] if choices else False if kind == "BOOLEAN" else 0 if kind in {"INT", "FLOAT"} else "")
+        value = wanted.get(name, default)
+        # Do not make a distributable canvas depend on the author's file list.
+        # Only known public example files and intentionally empty selectors may
+        # be absent; ordinary enums and explicit unknown files remain validated.
+        selector = (node_type, name)
+        public_file = selector in PUBLIC_FILE_SELECTORS and value == EXAMPLES[node_type][name]
+        requires_selection = selector in EMPTY_FILE_SELECTORS and value == ""
+        if choices and value not in choices and not (public_file or requires_selection):
+            if name in (values or {}):
+                raise ValueError(f"Invalid combo value for {node_type}.{name}: {value}")
+            value = default
+        result[name] = value
+    result["control_after_generate"] = wanted.get("control_after_generate", "fixed")
+    return [deepcopy(result[name]) for name in widget_names(info)]
 
 
 class Canvas:
@@ -46,16 +133,22 @@ class Canvas:
         self.links = []
 
     def add(self, node_type, column, row=0, widgets=None, title=None):
-        inputs, outputs, defaults = SPECS[node_type]
+        info = node_infos()[node_type]
+        inputs = [(name, spec[0]) for name, spec in input_specs(info) if not is_widget(spec)]
+        outputs = info.get("output", [])
+        defaults = widget_values(node_type, widgets)
+        size = {"T8DramaLoader": [370, 430], "T8DramaGenerate": [370, 540],
+                "T8DramaScene": [410, 600], "T8DramaEditor": [540, 720]}.get(
+                    node_type, [370, 380 if len(defaults) > 4 else 260])
         node = {
             "id": len(self.nodes) + 1, "type": node_type,
             "pos": [60 + column * 420, 60 + row * 460],
-            "size": [370, 380 if len(defaults) > 4 else 260],
+            "size": size,
             "flags": {}, "order": len(self.nodes), "mode": 0,
             "inputs": [{"name": name, "type": kind, "link": None} for name, kind in inputs],
-            "outputs": [{"name": kind, "type": kind, "links": []} for kind in outputs],
+            "outputs": [{"name": info.get("output_name", outputs)[index], "type": kind, "links": []} for index, kind in enumerate(outputs)],
             "properties": {"Node name for S&R": node_type},
-            "widgets_values": deepcopy(defaults if widgets is None else widgets),
+            "widgets_values": defaults,
         }
         if title:
             node["title"] = title
@@ -75,7 +168,7 @@ class Canvas:
         socket["link"] = link_id
 
     def note(self, text, column=0, row=2):
-        self.add("Note", column, row, [text], "使用说明 / Instructions")
+        self.add("Note", column, row, {"text": text}, "使用说明 / Instructions")
 
     def audio_output(self, engine, session, column=3, row=0):
         decode = self.add("T8DramaDecode", column, row)
@@ -87,7 +180,7 @@ class Canvas:
         return decode
 
     def save_audio(self, source, column, row=0, output=0):
-        save = self.add("SaveAudio", column, row, [f"Drama3_T8/{self.name}"])
+        save = self.add("SaveAudio", column, row, {"filename_prefix": f"Drama3_T8/{self.name}"})
         self.connect(source, save, "audio", output)
         return save
 
@@ -104,14 +197,13 @@ def speech_graph(name, mode="speech"):
     graph = Canvas(name)
     engine = graph.add("T8DramaLoader", 0)
     session = graph.add("T8DramaSession", 0, 1)
-    widgets = deepcopy(SPECS["T8DramaGenerate"][2])
-    widgets[0] = mode
+    widgets = {"mode": mode}
     if mode == "long":
-        widgets[1] = "你好，这是长文分段测试。\n第二段会沿用前一段的语音历史。"
-        widgets[3] = 48
+        widgets["text"] = "你好，这是长文分段测试。\n第二段会沿用前一段的语音历史。"
+        widgets["chunk_bytes"] = 48
     elif mode == "stream":
-        widgets[1] = "你好，这是流式文本测试。"
-        widgets[2] = "接下来会继续介绍本地演出工作台。"
+        widgets["text"] = "你好，这是流式文本测试。"
+        widgets["lookahead"] = "接下来会继续介绍本地演出工作台。"
     generate = graph.add("T8DramaGenerate", 1, widgets=widgets)
     graph.connect(engine, generate, "engine")
     graph.connect(session, generate, "session")
@@ -124,13 +216,11 @@ def make_workflows():
         graph, engine, _, generate = speech_graph(name, mode)
         decode = graph.audio_output(engine, generate, 2)
         if mode == "long":
-            decode["widgets_values"] = [-1, True]
+            decode["widgets_values"] = widget_values("T8DramaDecode", {"all_takes": True})
         workflows[name] = graph.export()
 
     graph, engine, _, generate = speech_graph("revision")
-    widgets = deepcopy(SPECS["T8DramaGenerate"][2])
-    widgets[:3] = ["revision", "Please say the previous sentence in a cheerful, warm tone.", ""]
-    widgets[4] = 43
+    widgets = {"mode": "revision", "text": "Please say the previous sentence in a cheerful, warm tone.", "seed": 43}
     revise = graph.add("T8DramaGenerate", 2, widgets=widgets)
     graph.connect(engine, revise, "engine")
     graph.connect(generate, revise, "session")
@@ -141,23 +231,27 @@ def make_workflows():
     graph = Canvas("reference")
     engine = graph.add("T8DramaLoader", 0)
     audio = graph.add("LoadAudio", 0, 1, title="选择参考音频 / Choose reference audio")
-    reference = graph.add("T8DramaReference", 1, widgets=["请填写参考音频中实际说出的文字。", "Narrator"])
+    reference = graph.add("T8DramaReference", 1, widgets={"transcript": "请填写参考音频中实际说出的文字。", "name": "Narrator"})
     session = graph.add("T8DramaSession", 2)
     generate = graph.add("T8DramaGenerate", 3)
     graph.connect(engine, reference, "engine")
     graph.connect(audio, reference, "audio")
     graph.connect(reference, session, "references")
+    save_voice = graph.add("T8DramaSaveSession", 2, 1, {"name": "drama3_voice_library"},
+                           title="保存参考音色 / Save reusable references")
+    graph.connect(session, save_voice, "session")
     graph.connect(engine, generate, "engine")
     graph.connect(session, generate, "session")
     graph.audio_output(engine, generate, 4)
-    graph.note("在 LoadAudio 上传参考音频，并把编码参考节点的 transcript 改为该音频的真实台词。\nUpload your audio and replace transcript with the words actually spoken.\n多参考：复制编码参考节点，将前一个 references 输出接入下一个 previous。\nFor multiple references, chain each references output into the next previous input.", 1, 1)
+    graph.note("在 LoadAudio 上传参考音频，并把 transcript 改为真实台词；角色绑定用转写前的 <|speaker:0|> / <|speaker:1|>，name 仅显示。\nUpload audio and enter its exact transcript with matching speaker tags; name is display-only.\n多参考：将前一个 references 输出接下一个 previous。保存音色分支写入仅含 references 的会话，再用 workflow_load_session.json 复用。\nChain references into previous for multiple voices. Save reusable references, then open workflow_load_session.json.", 0, 2)
     workflows[graph.name] = graph.export()
 
     graph = Canvas("scene")
     engine = graph.add("T8DramaLoader", 0)
-    scene = graph.add("T8DramaScene", 1)
+    scene = graph.add("T8DramaScene", 1, widgets={"split_long_text":True,"chunk_bytes":300})
     graph.connect(engine, scene, "engine")
     graph.audio_output(engine, scene, 2)
+    graph.note("可选 session 输入保留导演指令、参考音色与历史；references 未连接时继承会话参考，连接后替换。\nConnect session for direction, voices and history; leave references unconnected to inherit the Session voices.\ngeneration_mode：together 同场生成；per_line 逐句；per_line_context 逐句听前句；per_speaker 按角色生成后还原剧本顺序。\nSelect any of the four generation modes in the scene node.\nsplit_long_text 可用于全部四模式；chunk_bytes 限每次新剧本 UTF-8 字节（含标签/分隔符），历史另受模型上下文限制。同原台词分块间不加静音。\nEnable split_long_text for all modes; chunk_bytes includes new-script tags/separators. No extra gap between chunks of one original line.\n参考转写前加 <|speaker:0|> / <|speaker:1|>；剧本使用相同标签，或让 Anna / Ben 按首次出现顺序映射到 0 / 1。name 只作显示，不绑定音色。\nPrefix reference transcripts with matching speaker:0 / speaker:1 tags. Use the same script tags, or first-seen Anna / Ben mapping to 0 / 1. Reference name is display-only.\n加载器支持 FP8、INT8、W6、W4；可填写 model_path / codec_path 自定义位置。expert_placement 默认 ram；vram 要求完整单卡驻留，显存不足明确拒绝。moe_backend / cuda_graph 记录实际后端与回退。\nChoose your checkpoint and custom paths. expert_placement=ram uses a cache; vram requires full single-GPU residency and rejects insufficient memory. Kernel and Graph fallbacks are recorded separately.", 0, 2)
     workflows[graph.name] = graph.export()
 
     graph, engine, _, generate = speech_graph("infill")
@@ -165,7 +259,7 @@ def make_workflows():
     graph.connect(engine, infill, "engine")
     graph.connect(generate, infill, "session")
     graph.audio_output(engine, infill, 3)
-    graph.note("先试听原句，再按实际音频调整 start_seconds/end_seconds，仅框选要替换的词；0–0.5 秒仅为示例。\nListen to the original and select the actual word interval; 0–0.5 seconds is only an example.\ntarget_transcript 为编辑后整句；本例仅将开头“你好”改为“您好”，保留后文。\nThe complete edited transcript changes only the opening greeting and keeps the remainder.\nduration_frames=0 使用模型生成长度；正值指定替换帧数。\nUse 0 for generated duration, or a positive frame count.")
+    graph.note("先试听原句，再按实际音频调整 start_seconds/end_seconds，仅框选要替换的词；0–0.5 秒仅为示例。\nListen to the original and select the actual word interval; 0–0.5 seconds is only an example.\ntarget_transcript 为编辑后整句；本例仅将开头“你好”改为“您好”，保留后文。\nThe complete edited transcript changes only the opening greeting and keeps the remainder.\nduration_frames=0 使用模型生成长度；正值指定替换帧数。\nUse 0 for generated duration, or a positive frame count.\n源感知场景按实际播放时间补写；跨角色/静音选区设置 target_speaker。expected_view 可填已试听资产身份JSON，防止误用旧选区。\nFor source-aware scenes, choose target_speaker for cross-role/silence and optionally bind expected_view. Session/AUDIO retain FLOAT; the standard FLAC output is a playback export.")
     workflows[graph.name] = graph.export()
 
     graph = Canvas("srt")
@@ -203,6 +297,7 @@ def make_workflows():
         text = "在 LoadAudio 上传或选择本地音频；运行后，在文字预览节点中查看结果。\nUpload or select audio in LoadAudio; after Run, read the results in the Preview as Text nodes."
         if name == "align":
             text += "\ntranscript 必须与音频中实际说出的文字对应。\nReplace transcript with the words actually spoken in the audio."
+            text += "\nmodel_path 默认演示单文件 asr/qwen3_forced_aligner_0.6b_bf16.safetensors（相对 models）；也可填写原版模型目录的绝对路径。\nThe custom path accepts a native single-file aligner or the original model directory."
         elif name == "r2t2":
             text += "\n模型、投影器和 VAD 路径相对于 ComfyUI/models，也可填写绝对路径。\nModel, projector and VAD paths accept absolute paths or paths relative to ComfyUI/models."
         graph.note(text)
@@ -224,23 +319,40 @@ def make_workflows():
     graph.audio_output(engine, branch, 3)
     save = graph.add("T8DramaSaveSession", 2, 1)
     graph.connect(branch, save, "session")
-    graph.note("运行后在 output/drama3_t8_sessions/ 保存会话。take_count 可选择保留前几个生成片段。\nRun to save a session under output/drama3_t8_sessions/. take_count keeps the first N takes.\n随后打开 workflow_load_session.json，刷新页面并选择刚保存的会话。\nNext open workflow_load_session.json, refresh the page and select the saved session.", 1, 1)
+    graph.note("运行后在 output/drama3_t8_sessions/ 保存会话；take_count 选择保留前几个 take。恢复音频时，将 LoadSession 的第 0 个 Session 输出接 Decode。\nSave under output/drama3_t8_sessions/. take_count retains the first N takes. Reconnect LoadSession output 0 (Session) to Decode to restore audio.\nworkflow_load_session.json 演示第 1 个 References 输出复用已存音色；请先在 workflow_reference.json 保存参考。\nworkflow_load_session.json uses output 1 (References) for reusable voices saved by workflow_reference.json.", 1, 2)
     workflows[graph.name] = graph.export()
 
     graph = Canvas("load_session")
     engine = graph.add("T8DramaLoader", 0)
+    session = graph.add("T8DramaLoadSession", 0, 1, title="选择已存音色 / Select saved voice references")
+    scene = graph.add("T8DramaScene", 1)
+    graph.connect(engine, scene, "engine")
+    graph.connect(session, scene, "references", 1)
+    graph.audio_output(engine, scene, 2)
+    graph.note("先在 workflow_reference.json 编码并保存参考音色，刷新后选择含 references 的会话。第 1 个输出 References 接 Scene，按转写 speaker 标签复用；name 不参与绑定。\nSave references with workflow_reference.json, refresh, then select that voice-library session. Output 1 (References) feeds Scene; transcript speaker tags bind voices, not names.\n输出 0 仍是完整 Session，可接旧 Generate / Decode / Editor 连线。纯音色会话没有 take，不应直接接 Decode。\nOutput 0 remains Session for existing Generate/Decode/Editor links. Reference-only archives have no take to decode.\n本画布不附带私人音频或会话。\nNo private audio or sessions are distributed.", 1, 2)
+    workflows[graph.name] = graph.export()
+
+    graph = Canvas("editor")
+    engine = graph.add("T8DramaLoader", 0)
     session = graph.add("T8DramaLoadSession", 0, 1, title="选择已保存的会话 / Select a saved session")
-    graph.audio_output(engine, session, 1)
-    graph.note("先运行 workflow_save_session.json；刷新 ComfyUI 后，在加载会话节点选择已保存的文件。\nRun workflow_save_session.json first, refresh ComfyUI, then select the saved session file.\n本示例不附带用户会话或参考音频。\nNo user sessions or reference audio are distributed.", 2, 1)
+    editor = graph.add("T8DramaEditor", 1, title="多轨剪辑与字幕 / Multitrack editor and captions")
+    graph.connect(engine, editor, "engine")
+    graph.connect(session, editor, "session")
+    graph.save_audio(editor, 3, output=1)
+    save = graph.add("T8DramaSaveSession", 3, 1, {"name": "drama3_edited"})
+    graph.connect(editor, save, "session", 0)
+    subtitle = graph.add("PreviewAny", 4, title="剪辑后的字幕 / Edited subtitle timing")
+    graph.connect(editor, subtitle, "source", 2)
+    text_save = graph.add("SaveText", 4, 1, {"filename_prefix": "Drama3_T8/editor_subtitles", "format": "txt"},
+                          title="保存 SRT 文本 / Save SRT text")
+    graph.connect(editor, text_save, "text", 2)
+    graph.note("先运行 workflow_save_session.json；刷新页面并选择会话，再运行本画布加载波形。点击编辑器展开，剪切/插入停顿/调整角色音量与静音，应用后重新运行以保存。\nSave a session first, select it after refresh, and Run to load the waveform. Open the editor, adjust cuts/pauses/voice gain or mute, then apply and Run to save.\n默认保留原始音频；align_words=false 使用句级字幕。逐词字幕须填好单文件或目录 aligner_path，再启用 align_words。\nAudio is unchanged by default. Set your aligner path and enable align_words for word timing.\nSaveSession 保留非破坏剪辑；字幕保存为 .txt（内容为 SRT，可改为 .srt）。所有模型与用户音频均不随工作流分发。\nSaveSession preserves nondestructive edits; the saved .txt contains SRT and can be renamed .srt.", 0, 2)
     workflows[graph.name] = graph.export()
     return workflows
 
 
 def write_workflows(folder=FOLDER):
     folder.mkdir(parents=True, exist_ok=True)
-    # These obsolete files were previously distributed alongside canvas examples.
-    for path in folder.glob("*.api.json"):
-        path.unlink()
     workflows = make_workflows()
     for name, workflow in workflows.items():
         (folder / f"workflow_{name}.json").write_text(json.dumps(workflow, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

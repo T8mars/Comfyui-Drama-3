@@ -1,4 +1,4 @@
-"""Shared single-clip waveform contract for codec, ASR and forced alignment."""
+"""Single-clip waveform validation plus an explicit ASR batch adapter."""
 import math
 import numbers
 
@@ -21,3 +21,17 @@ def audio_waveform(waveform, sample_rate):
     if waveform.ndim == 1:
         waveform = waveform[None]
     return waveform.float()
+
+
+def asr_waveforms(waveform, sample_rate):
+    """Validate every ASR clip and return ordered [channels,time] waveforms.
+
+    Two-dimensional input is one multichannel clip. Only the standard
+    [batch,channels,time] layout introduces multiple independent clips.
+    The strict single-clip helper remains the Codec/reference/aligner contract.
+    """
+    if isinstance(waveform, torch.Tensor) and waveform.ndim == 3:
+        if waveform.shape[0] == 0:
+            raise ValueError("ASR audio batch must contain at least one clip")
+        return tuple(audio_waveform(clip, sample_rate) for clip in waveform.unbind(0))
+    return (audio_waveform(waveform, sample_rate),)

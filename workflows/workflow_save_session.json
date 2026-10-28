@@ -11,7 +11,7 @@
       ],
       "size": [
         370,
-        380
+        430
       ],
       "flags": {},
       "order": 0,
@@ -37,7 +37,12 @@
         "torch",
         "",
         "",
-        ""
+        "",
+        "",
+        "compact",
+        "auto",
+        true,
+        "ram"
       ]
     },
     {
@@ -86,7 +91,7 @@
       ],
       "size": [
         370,
-        380
+        540
       ],
       "flags": {},
       "order": 2,
@@ -126,7 +131,9 @@
         0.7,
         30,
         180,
-        ""
+        "",
+        0,
+        "custom"
       ]
     },
     {
@@ -214,7 +221,9 @@
       },
       "widgets_values": [
         -1,
-        false
+        false,
+        false,
+        0.75
       ]
     },
     {
@@ -240,7 +249,7 @@
       ],
       "outputs": [
         {
-          "name": "AUDIO",
+          "name": "audio",
           "type": "AUDIO",
           "links": []
         }
@@ -320,7 +329,7 @@
       "type": "Note",
       "pos": [
         480,
-        520
+        980
       ],
       "size": [
         370,
@@ -335,7 +344,7 @@
         "Node name for S&R": "Note"
       },
       "widgets_values": [
-        "运行后在 output/drama3_t8_sessions/ 保存会话。take_count 可选择保留前几个生成片段。\nRun to save a session under output/drama3_t8_sessions/. take_count keeps the first N takes.\n随后打开 workflow_load_session.json，刷新页面并选择刚保存的会话。\nNext open workflow_load_session.json, refresh the page and select the saved session."
+        "运行后在 output/drama3_t8_sessions/ 保存会话；take_count 选择保留前几个 take。恢复音频时，将 LoadSession 的第 0 个 Session 输出接 Decode。\nSave under output/drama3_t8_sessions/. take_count retains the first N takes. Reconnect LoadSession output 0 (Session) to Decode to restore audio.\nworkflow_load_session.json 演示第 1 个 References 输出复用已存音色；请先在 workflow_reference.json 保存参考。\nworkflow_load_session.json uses output 1 (References) for reusable voices saved by workflow_reference.json."
       ],
       "title": "使用说明 / Instructions"
     },

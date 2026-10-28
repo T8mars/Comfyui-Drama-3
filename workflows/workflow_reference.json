@@ -1,6 +1,6 @@
 {
-  "last_node_id": 10,
-  "last_link_id": 9,
+  "last_node_id": 11,
+  "last_link_id": 10,
   "nodes": [
     {
       "id": 1,
@@ -11,7 +11,7 @@
       ],
       "size": [
         370,
-        380
+        430
       ],
       "flags": {},
       "order": 0,
@@ -23,8 +23,8 @@
           "type": "DRAMA3_T8_ENGINE",
           "links": [
             1,
-            4,
-            6
+            5,
+            7
           ]
         }
       ],
@@ -38,7 +38,12 @@
         "torch",
         "",
         "",
-        ""
+        "",
+        "",
+        "compact",
+        "auto",
+        true,
+        "ram"
       ]
     },
     {
@@ -118,7 +123,9 @@
       },
       "widgets_values": [
         "请填写参考音频中实际说出的文字。",
-        "Narrator"
+        "Narrator",
+        false,
+        false
       ]
     },
     {
@@ -147,7 +154,8 @@
           "name": "DRAMA3_T8_SESSION",
           "type": "DRAMA3_T8_SESSION",
           "links": [
-            5
+            4,
+            6
           ]
         }
       ],
@@ -167,7 +175,7 @@
       ],
       "size": [
         370,
-        380
+        540
       ],
       "flags": {},
       "order": 4,
@@ -176,12 +184,12 @@
         {
           "name": "engine",
           "type": "DRAMA3_T8_ENGINE",
-          "link": 4
+          "link": 5
         },
         {
           "name": "session",
           "type": "DRAMA3_T8_SESSION",
-          "link": 5
+          "link": 6
         }
       ],
       "outputs": [
@@ -189,7 +197,7 @@
           "name": "DRAMA3_T8_SESSION",
           "type": "DRAMA3_T8_SESSION",
           "links": [
-            7
+            8
           ]
         }
       ],
@@ -207,15 +215,17 @@
         0.7,
         30,
         180,
-        ""
+        "",
+        0,
+        "custom"
       ]
     },
     {
       "id": 6,
-      "type": "T8DramaDecode",
+      "type": "T8DramaSaveSession",
       "pos": [
-        1740,
-        60
+        900,
+        520
       ],
       "size": [
         370,
@@ -226,45 +236,25 @@
       "mode": 0,
       "inputs": [
         {
-          "name": "engine",
-          "type": "DRAMA3_T8_ENGINE",
-          "link": 6
-        },
-        {
           "name": "session",
           "type": "DRAMA3_T8_SESSION",
-          "link": 7
+          "link": 4
         }
       ],
-      "outputs": [
-        {
-          "name": "AUDIO",
-          "type": "AUDIO",
-          "links": [
-            8
-          ]
-        },
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            9
-          ]
-        }
-      ],
+      "outputs": [],
       "properties": {
-        "Node name for S&R": "T8DramaDecode"
+        "Node name for S&R": "T8DramaSaveSession"
       },
       "widgets_values": [
-        -1,
-        false
-      ]
+        "drama3_voice_library"
+      ],
+      "title": "保存参考音色 / Save reusable references"
     },
     {
       "id": 7,
-      "type": "SaveAudio",
+      "type": "T8DramaDecode",
       "pos": [
-        2160,
+        1740,
         60
       ],
       "size": [
@@ -276,14 +266,66 @@
       "mode": 0,
       "inputs": [
         {
-          "name": "audio",
-          "type": "AUDIO",
+          "name": "engine",
+          "type": "DRAMA3_T8_ENGINE",
+          "link": 7
+        },
+        {
+          "name": "session",
+          "type": "DRAMA3_T8_SESSION",
           "link": 8
         }
       ],
       "outputs": [
         {
           "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            9
+          ]
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaDecode"
+      },
+      "widgets_values": [
+        -1,
+        false,
+        false,
+        0.75
+      ]
+    },
+    {
+      "id": 8,
+      "type": "SaveAudio",
+      "pos": [
+        2160,
+        60
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 9
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
           "type": "AUDIO",
           "links": []
         }
@@ -296,7 +338,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 9,
       "type": "PreviewAny",
       "pos": [
         1740,
@@ -307,13 +349,13 @@
         260
       ],
       "flags": {},
-      "order": 7,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
           "name": "source",
           "type": "*",
-          "link": 9
+          "link": 10
         }
       ],
       "outputs": [
@@ -330,18 +372,18 @@
       "title": "生成台词 / Generated transcript"
     },
     {
-      "id": 9,
+      "id": 10,
       "type": "Note",
       "pos": [
-        480,
-        520
+        60,
+        980
       ],
       "size": [
         370,
         260
       ],
       "flags": {},
-      "order": 8,
+      "order": 9,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -349,12 +391,12 @@
         "Node name for S&R": "Note"
       },
       "widgets_values": [
-        "在 LoadAudio 上传参考音频，并把编码参考节点的 transcript 改为该音频的真实台词。\nUpload your audio and replace transcript with the words actually spoken.\n多参考：复制编码参考节点，将前一个 references 输出接入下一个 previous。\nFor multiple references, chain each references output into the next previous input."
+        "在 LoadAudio 上传参考音频，并把 transcript 改为真实台词；角色绑定用转写前的 <|speaker:0|> / <|speaker:1|>，name 仅显示。\nUpload audio and enter its exact transcript with matching speaker tags; name is display-only.\n多参考：将前一个 references 输出接下一个 previous。保存音色分支写入仅含 references 的会话，再用 workflow_load_session.json 复用。\nChain references into previous for multiple voices. Save reusable references, then open workflow_load_session.json."
       ],
       "title": "使用说明 / Instructions"
     },
     {
-      "id": 10,
+      "id": 11,
       "type": "Note",
       "pos": [
         1320,
@@ -365,7 +407,7 @@
         260
       ],
       "flags": {},
-      "order": 9,
+      "order": 10,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -405,6 +447,14 @@
     ],
     [
       4,
+      4,
+      0,
+      6,
+      0,
+      "DRAMA3_T8_SESSION"
+    ],
+    [
+      5,
       1,
       0,
       5,
@@ -412,7 +462,7 @@
       "DRAMA3_T8_ENGINE"
     ],
     [
-      5,
+      6,
       4,
       0,
       5,
@@ -420,34 +470,34 @@
       "DRAMA3_T8_SESSION"
     ],
     [
-      6,
+      7,
       1,
       0,
-      6,
+      7,
       0,
       "DRAMA3_T8_ENGINE"
     ],
     [
-      7,
+      8,
       5,
       0,
-      6,
+      7,
       1,
       "DRAMA3_T8_SESSION"
     ],
     [
-      8,
-      6,
-      0,
+      9,
       7,
+      0,
+      8,
       0,
       "AUDIO"
     ],
     [
-      9,
-      6,
+      10,
+      7,
       1,
-      8,
+      9,
       0,
       "STRING"
     ]

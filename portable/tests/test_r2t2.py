@@ -124,15 +124,70 @@ def test_segment_boundaries_preserve_samples_join_words_and_keep_truncation():
     assert stream.finish()["idempotent"] and len(engine.lengths) == 2
 
 
-def test_digital_silence_skips_native_model_but_quiet_audio_is_retained(monkeypatch):
+def test_digital_silence_skips_native_model_but_quiet_audio_is_retained(tmp_path, monkeypatch):
     from drama3_t8.r2t2.audio import limited_quiet_gain
     import drama3_t8.r2t2.transcribe as transcription
     monkeypatch.setattr(transcription, "NativeQ8Engine", lambda *args, **kwargs: pytest.fail("silence must not load a model"))
+    model, projector = tmp_path / "model.gguf", tmp_path / "projector.gguf"
+    model.touch()
+    projector.touch()
     result = transcription.transcribe_audio({"waveform": np.zeros((1, 1, 16000), dtype=np.float32),
-                                             "sample_rate": 16000}, "model", "projector", "vad")
+                                             "sample_rate": 16000}, model, projector, tmp_path / "missing-vad")
     assert result["text"] == "" and result["mode_executed"] == "digital_silence"
     quiet, gain = limited_quiet_gain(np.full(16000, 1e-7, dtype=np.float32))
     assert np.all(quiet != 0) and gain == 10
+
+
+@pytest.mark.parametrize("kind", ["missing_model", "missing_projector", "model_directory", "projector_directory"])
+@pytest.mark.parametrize("silent", [True, False])
+def test_r2t2_missing_assets_fail_before_native_loading(tmp_path, monkeypatch, kind, silent):
+    import drama3_t8.r2t2.transcribe as transcription
+    model, projector = tmp_path / "主模型.gguf", tmp_path / "投影器.gguf"
+    model.touch()
+    projector.touch()
+    target = model if kind.startswith("missing_model") or kind == "model_directory" else projector
+    target.unlink()
+    if kind.endswith("directory"):
+        target.mkdir()
+    monkeypatch.setattr(transcription, "NativeQ8Engine",
+                        lambda *a, **kw: pytest.fail("invalid paths reached native loading"))
+    wave = np.zeros((1, 1, 16000), dtype=np.float32)
+    if not silent:
+        wave.fill(.1)
+    with pytest.raises(FileNotFoundError, match="model|projector"):
+        transcription.transcribe_audio({"waveform": wave, "sample_rate": 16000},
+                                       model, projector, tmp_path / "missing-optional-vad")
+
+
+def test_r2t2_node_missing_assets_are_not_successful_silent_transcription(tmp_path, monkeypatch):
+    import drama3_t8.nodes as nodes
+    import drama3_t8.r2t2.transcribe as transcription
+    monkeypatch.setattr(transcription, "NativeQ8Engine",
+                        lambda *a, **kw: pytest.fail("silent invalid configuration loaded native weights"))
+    with pytest.raises(FileNotFoundError, match="model"):
+        nodes.T8DramaR2T2Transcribe.execute(
+            {"waveform": np.zeros((1, 1, 16000), dtype=np.float32), "sample_rate": 16000},
+            str(tmp_path / "missing-model.gguf"), str(tmp_path / "missing-projector.gguf"),
+            str(tmp_path / "unused-vad"))
+
+
+def test_r2t2_node_configured_silence_still_skips_native_model_and_optional_vad(tmp_path, monkeypatch):
+    import drama3_t8.nodes as nodes
+    import drama3_t8.r2t2.transcribe as transcription
+    import drama3_t8.r2t2.vad as vad
+    monkeypatch.setattr(transcription, "NativeQ8Engine", lambda *a, **kw: pytest.fail("silence loaded weights"))
+    monkeypatch.setattr(vad, "FireRedOnnxVAD", lambda *a, **kw: pytest.fail("silence loaded optional VAD"))
+    model, projector = tmp_path / "中文 模型.gguf", tmp_path / "中文 投影器.gguf"
+    model.touch()
+    projector.touch()
+    result = nodes.T8DramaR2T2Transcribe.execute(
+        {"waveform": np.zeros((1, 1, 16000), dtype=np.float32), "sample_rate": 16000},
+        str(model), str(projector), str(tmp_path / "missing-vad"))
+    assert result[0:2] == ("", "")
+    metadata = json.loads(result[2])
+    assert metadata['mode_executed'] == 'digital_silence'
+    assert metadata['model_path'] == str(model.resolve())
+    assert metadata['projector_path'] == str(projector.resolve())
 
 
 def test_audio_contract_rejects_batch_nonfinite_and_bad_rates():
@@ -196,7 +251,7 @@ def test_hotwords_preserve_phrases_deduplicate_and_bound_combined_prompt():
         normalize_hotwords("汉" * (64 * 1024 // 3 + 1))
 
 
-def test_native_model_closes_when_transcription_raises_base_exception(monkeypatch):
+def test_native_model_closes_when_transcription_raises_base_exception(tmp_path, monkeypatch):
     from drama3_t8.bootstrap import standalone_engine
     standalone_engine()
     import comfy.model_management as mm
@@ -217,7 +272,10 @@ def test_native_model_closes_when_transcription_raises_base_exception(monkeypatc
     monkeypatch.setattr(transcription, "NativeQ8Engine", Engine)
     monkeypatch.setattr(mm, "unload_all_models", lambda: None)
     monkeypatch.setattr(mm, "soft_empty_cache", lambda: None)
+    model, projector = tmp_path / "model.gguf", tmp_path / "projector.gguf"
+    model.touch()
+    projector.touch()
     with pytest.raises(Stop):
         transcription.transcribe_audio({"waveform": np.ones((1, 1, 16000), dtype=np.float32),
-                                       "sample_rate": 16000}, "model", "projector", "vad")
+                                       "sample_rate": 16000}, model, projector, tmp_path / "unused-vad")
     assert calls == ["loaded", "closed"]

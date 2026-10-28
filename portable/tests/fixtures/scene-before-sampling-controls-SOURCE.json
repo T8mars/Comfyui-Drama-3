@@ -1,0 +1,25 @@
+{
+  "status": "confirmed_scene_canvas_sampling_controls_absent",
+  "source": "D:\\drama-3\\drama3_t8\\nodes.py",
+  "source_sha256": "cbd935c06f26892e2a022eebb4a6ab85e65cdf77f15f9907c6107e914456e00a",
+  "original_class_lines": [
+    160,
+    180
+  ],
+  "old_widgets": 10,
+  "missing": [
+    "temperature",
+    "top_p",
+    "top_k",
+    "opening_retries",
+    "sampling_preset"
+  ],
+  "actual_execute": "Sampling(seed=sampling_seed(seed, seed_text), max_frames=max_frames)",
+  "peer_source": "D:\\drama-3\\.upstream\\peer-review-20261026\\nodes.py",
+  "peer_commit": "8cb3c64379d4988b9693cae9f3436b8fd54b22ad",
+  "scope": "Peer four-mode Generate exposes sampling. T8 Generate and Studio do too, but the Scene node currently fixes Sampling defaults. No model/quality conclusion.",
+  "fixtures": {
+    "scene-before-sampling-controls.py": "8a8a62642a6ebc4a6cec68023036dac8f8f46e8069f8387fa399af985f33e294",
+    "scene-before-sampling-controls.json": "b3b0a9426136227f3cf9d2531620c6ce8142b2d7596f9b384c4118185e35eb49"
+  }
+}

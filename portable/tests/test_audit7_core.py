@@ -240,11 +240,14 @@ def test_r2t2_invalid_feed_does_not_consume_prior_valid_audio():
     assert final["audio_end_sample"] == 100 and recorder.audio[0].shape == (100,)
 
 
-def test_r2t2_whole_file_digital_zero_path_never_opens_model_or_vad(monkeypatch):
+def test_r2t2_whole_file_digital_zero_path_never_opens_model_or_vad(tmp_path, monkeypatch):
     import drama3_t8.r2t2.transcribe as module
     monkeypatch.setattr(module, "NativeQ8Engine", lambda *a, **kw: pytest.fail("silence opened model"))
+    model, projector = tmp_path / "model.gguf", tmp_path / "projector.gguf"
+    model.touch()
+    projector.touch()
     result = module.transcribe_audio({"waveform": torch.zeros(1, 2, 35 * 16000), "sample_rate": 16000},
-                                    "missing-model", "missing-projector", "missing-vad")
+                                    model, projector, tmp_path / "missing-vad")
     assert result["mode_executed"] == "digital_silence" and result["text"] == ""
     assert result["duration_seconds"] == 35 and result["segments"] == []
 

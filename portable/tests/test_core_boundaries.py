@@ -149,7 +149,10 @@ def test_reference_stereo_downmix_and_codec_decode_preserve_standard_audio(monke
         return torch.ones(1, 6144)
     codec = SimpleNamespace(patcher=SimpleNamespace(load_device=torch.device("cpu")),
         model=SimpleNamespace(encode=encode, decode=decode))
-    engine.load_codec = lambda: codec
+    def load_codec(**kwargs):
+        observed["decode_memory"] = kwargs.get("memory_required", 0)
+        return codec
+    engine.load_codec = load_codec
     monkeypatch.setattr(module.mm, "cuda_device_context", lambda device: contextlib.nullcontext())
     stereo = torch.stack((torch.ones(100), torch.zeros(100)))[None]
     reference = engine.encode_reference(stereo, 44100, "准确稿", "声音")
@@ -157,6 +160,8 @@ def test_reference_stereo_downmix_and_codec_decode_preserve_standard_audio(monke
     assert torch.equal(observed["input"], torch.full((1, 100), .5))
     assert reference.name == "声音" and reference.transcript == "准确稿"
     audio = engine.decode(reference.codes.short())
+    from drama3_t8.native.codec import DECODE_FRAME_BYTES
+    assert observed["decode_memory"] == 3 * DECODE_FRAME_BYTES
     assert observed["codes"].shape == (1, 10, 3) and observed["codes"].dtype == torch.long
     assert audio["waveform"].shape == (1, 1, 6144) and audio["sample_rate"] == 44100
 
@@ -170,8 +175,10 @@ def test_codec_decode_rejects_noninteger_codes_before_loading(codes):
 
 
 def test_long_form_maximum_seed_wraps_and_archive_keeps_all_takes(monkeypatch):
+    import contextlib
     import drama3_t8.engine as module
     engine = DramaEngine("model", "codec")
+    engine.generation_session=contextlib.nullcontext
     observed = []
     monkeypatch.setattr(module, "split_text", lambda *a, **k: ["a", "b", "c", "d"])
     def speak(text, session, sampling, *args):
@@ -357,12 +364,12 @@ def test_multilingual_long_chunks_preserve_speakers_and_protected_tags():
     assert sum(chunk.count("[laughs]") for chunk in chunks) == 1
 
 
-def test_qwen_node_rejects_multi_clip_before_loading_instead_of_using_first_clip(monkeypatch):
+def test_qwen_node_rejects_empty_batch_before_loading(monkeypatch):
     import drama3_t8.nodes as nodes
     import drama3_t8.qwen3_asr.asr as asr
     monkeypatch.setattr(asr, "load_qwen3_asr", lambda *a: pytest.fail("batch audio reached ASR model loading"))
     with pytest.raises(ValueError, match="batch"):
-        nodes.T8DramaTranscribe.execute("ignored", {"waveform": torch.zeros(2, 1, 8000), "sample_rate": 16000}, model_path="any.safetensors")
+        nodes.T8DramaTranscribe.execute("ignored", {"waveform": torch.zeros(0, 1, 8000), "sample_rate": 16000}, model_path="any.safetensors")
 
 
 @pytest.mark.parametrize("wave,rate,text", [

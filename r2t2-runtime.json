@@ -1,8 +1,8 @@
 {
   "version": "1",
-  "url": "https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.1.7/Drama3-R2T2-native-win64-cu128.zip",
-  "bytes": 610426253,
-  "sha256": "4c2d73f49542d72c41a00359b973ea35f65204e8679028775f71632de4d2bf8f",
+  "url": "https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.2.0/Drama3-R2T2-native-win64-cu128.zip",
+  "bytes": 610439942,
+  "sha256": "bfbc96c815e5315dff85ce6d465c2a5f9d7a7bd400787eea984e9b559114b7c6",
   "files": {
     "backends/ggml-cpu.dll": {
       "bytes": 943616,
@@ -60,6 +60,10 @@
       "bytes": 11156,
       "sha256": "4681a55599193333d3f250bd75778114ff9e17a525f0493cedc25a524162e5ee"
     },
+    "licenses/LICENSE-DRAMA3-EDITOR": {
+      "bytes": 35825,
+      "sha256": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db"
+    },
     "licenses/LICENSE-FIRERED-VAD": {
       "bytes": 11357,
       "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
@@ -76,13 +80,17 @@
       "bytes": 509053,
       "sha256": "8bc4f2fa9143380a52a0644229bc9a4bcc158e0f9cab8c8340f1eab3f353dbe9"
     },
+    "licenses/NOTICE-DRAMA3-EDITOR": {
+      "bytes": 523,
+      "sha256": "54ec8fb5d406e89d455de536b00caef37fcd897b1129c79ceb78d1a97c50e67f"
+    },
     "licenses/NOTICE-R2T2.txt": {
       "bytes": 795,
       "sha256": "dcd036ab94d038df53a378a32e1397d752240b92c2cb5d42a8417f0ca7c2d25c"
     },
     "licenses/NOTICE-T8": {
-      "bytes": 888,
-      "sha256": "9a24ab6278ff4ad9b78ccc283ad95137eec1aa1929aacfa95126c8a6aed26e5e"
+      "bytes": 2300,
+      "sha256": "be1c380e5937a4403b38d95242e453cafdf8a7bb9ecf7eb8d8de9d4a8141bac2"
     },
     "licenses/NOTICE-UPSTREAM": {
       "bytes": 2391,

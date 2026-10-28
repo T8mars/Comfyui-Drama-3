@@ -43,7 +43,7 @@
       ],
       "size": [
         370,
-        260
+        380
       ],
       "flags": {},
       "order": 1,
@@ -78,7 +78,8 @@
         "qwen3-asr-06b.safetensors",
         "Chinese",
         "",
-        ""
+        "",
+        4096
       ]
     },
     {

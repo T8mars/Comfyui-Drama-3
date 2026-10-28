@@ -44,16 +44,29 @@ def create_app(root=ROOT):
 
     @app.get("/api/status")
     def status():
+        engine=app.state.studio.engine
+        experts=getattr(engine.drama,'experts',None)
+        graphs=getattr(engine.drama,'last_graph_stats',None)
+        expert_stats=engine.expert_stats()
+        settings=dict(app.state.studio.settings)
         return {"gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else "没有 CUDA GPU",
                 "torch": torch.__version__, "model_ready": app.state.studio.engine.model_path.is_file(),
                 "codec_ready": app.state.studio.engine.codec_path.is_file(), "model_loaded": app.state.studio.engine.drama is not None,
                 "references": app.state.studio.references(), "sessions": app.state.studio.sessions(), "version": __version__, "application": "drama3-t8",
-                "settings": app.state.studio.settings, "models": [p.name for p in (root / "models").glob("*.safetensors")],
+                "settings": settings,
+                "asr_languages": {"backend": settings['asr_backend'],
+                                  "languages": app.state.studio.asr_languages(settings['asr_backend'])},
+                "models": [p.name for p in (root / "models").glob("*.safetensors")],
                 "model_paths": {key: {"path": str(path), "ready": path.exists()}
                                 for key, path in app.state.studio.model_paths.items()},
                 "acceleration": {"fla_installed": importlib.util.find_spec("fla") is not None,
                                  "flash_attn_installed": importlib.util.find_spec("flash_attn") is not None,
-                                 "attention": "SDPA", "cuda_graph": False}}
+                                 "attention": "SDPA", "cuda_graph": bool(graphs and (graphs.get('captures') or graphs.get('tower_captures'))),
+                                 "graph_stats":graphs,"moe_requested":engine.moe_backend,
+                                 "expert_placement":expert_stats['placement'],
+                                 "expert_stats":expert_stats,
+                                 "moe_backend":expert_stats['actual_backend'],
+                                 "moe_fallback":expert_stats['fallback_reason']}}
 
 
     @app.get("/api/jobs")
@@ -73,7 +86,7 @@ def create_app(root=ROOT):
 
     @app.post("/api/jobs")
     def submit(payload: dict):
-        allowed = {"tts", "dialogue", "scene", "revise", "infill", "long", "srt", "text_stream", "unload", "configure", "align", "preview"}
+        allowed = {"tts", "dialogue", "scene", "revise", "infill", "long", "srt", "text_stream", "unload", "configure", "align", "preview", "editor_prepare"}
         if not isinstance(payload.get("mode", "tts"), str) or payload.get("mode", "tts") not in allowed:
             raise HTTPException(400, "不支持的任务类型")
         try:
@@ -89,6 +102,24 @@ def create_app(root=ROOT):
         except ValueError as exc:
             raise HTTPException(409, str(exc)) from exc
         return {"cancelled": True}
+
+
+    @app.post('/api/editor/plan')
+    def editor_plan(payload: dict):
+        from drama3_t8.studio_editor import preview_plan
+        try:
+            return preview_plan(app.state.studio,payload)
+        except (ValueError,FileNotFoundError,KeyError,TypeError) as exc:
+            raise HTTPException(400,str(exc)) from exc
+
+
+    @app.post('/api/editor/render')
+    def editor_render(payload: dict):
+        from drama3_t8.studio_editor import render_result
+        try:
+            return render_result(app.state.studio,payload)
+        except (ValueError,FileNotFoundError,KeyError,TypeError) as exc:
+            raise HTTPException(400,str(exc)) from exc
 
 
     async def store_upload(file, extensions):
@@ -126,6 +157,11 @@ def create_app(root=ROOT):
     def session_details(session_id: str):
         try:
             session = app.state.studio.get_session(session_id)
+            from drama3_t8.editor import output_duration
+            takes = [{"id":t.take_id,"text":t.transcript,"metadata":t.metadata,
+                      "duration":output_duration(t),
+                      "audio":f"/api/sessions/{session_id}/takes/{i}.wav"}
+                     for i,t in enumerate(session.takes)]
         except FileNotFoundError as exc:
             raise HTTPException(404, "工程存档不存在，请重新导入工程") from exc
         except SessionNotFound as exc:
@@ -134,9 +170,7 @@ def create_app(root=ROOT):
             raise HTTPException(400, f"无法读取工程：{exc}") from exc
         return {"session_id":session.session_id,"direction":session.direction,
                 "project":f"/api/files/session/{session.session_id}.safetensors",
-                "takes":[{"id":t.take_id,"text":t.transcript,"metadata":t.metadata,
-                          "duration":t.codes.shape[-1]*2048/44100,
-                          "audio":f"/api/sessions/{session_id}/takes/{i}.wav"} for i,t in enumerate(session.takes)]}
+                "takes":takes}
 
 
     @app.get("/api/sessions/{session_id}/takes/{index}.wav")
@@ -150,12 +184,14 @@ def create_app(root=ROOT):
 
 
     @app.post("/api/references")
-    async def reference(file: UploadFile, transcript: str = Form(""), name: str = Form("")):
+    async def reference(file: UploadFile, transcript: str = Form(""), name: str = Form(""),
+                        trim_silence: bool = Form(False),normalize: bool = Form(False)):
         path = await store_upload(file, AUDIO_SUFFIXES)
         input_id = path.name
         try:
             return {"job_id": app.state.studio.submit({"mode": "reference", "input_id": input_id,
-                                            "transcript": transcript, "name": name})}
+                                            "transcript": transcript, "name": name,
+                                            "trim_silence":trim_silence,"normalize":normalize})}
         except BaseException:
             path.unlink(missing_ok=True)
             raise

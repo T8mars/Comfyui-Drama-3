@@ -11,7 +11,7 @@
       ],
       "size": [
         370,
-        380
+        430
       ],
       "flags": {},
       "order": 0,
@@ -37,7 +37,12 @@
         "torch",
         "",
         "",
-        ""
+        "",
+        "",
+        "compact",
+        "auto",
+        true,
+        "ram"
       ]
     },
     {
@@ -86,7 +91,7 @@
       ],
       "size": [
         370,
-        380
+        540
       ],
       "flags": {},
       "order": 2,
@@ -126,7 +131,9 @@
         0.7,
         30,
         180,
-        ""
+        "",
+        0,
+        "custom"
       ]
     },
     {
@@ -176,7 +183,9 @@
       },
       "widgets_values": [
         -1,
-        false
+        false,
+        false,
+        0.75
       ]
     },
     {
@@ -202,7 +211,7 @@
       ],
       "outputs": [
         {
-          "name": "AUDIO",
+          "name": "audio",
           "type": "AUDIO",
           "links": []
         }

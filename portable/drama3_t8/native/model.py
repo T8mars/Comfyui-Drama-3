@@ -14,10 +14,13 @@ import comfy.model_prefetch
 import comfy.ops
 from comfy.ldm.flux.math import apply_rope1, rope
 from comfy.ldm.modules.attention import optimized_attention_for_device
-from comfy.text_encoders.llama import FixedKVBias, RMSNorm, moe_experts_forward
+from comfy.text_encoders.llama import moe_experts_forward
 from comfy.text_encoders.qwen35 import GatedAttention, GatedDeltaNet, LinearKV, Qwen35Transformer, Qwen35TransformerBlock
-from .offload import FP8Experts, experts_decode, gather_experts
+from .offload import experts_decode, gather_experts
+from .resident import ResidentFP8Experts as FP8Experts
 from .delta import DramaDeltaNet
+from .cache import LinearState, TowerKV as FixedKVBias
+from .norms import ZeroCenteredRMSNorm
 
 
 class SharedExpert(nn.Module):
@@ -31,6 +34,9 @@ class SharedExpert(nn.Module):
 
 
 class Experts(nn.Module):
+    _resident_controller = None
+    _supports_resident_policy = True
+
     def __init__(self, num_experts, hidden, intermediate, device=None, dtype=None, ops=None):
         super().__init__()
         self.num_experts = num_experts
@@ -38,6 +44,16 @@ class Experts(nn.Module):
         self.down_proj = ops.MoEExperts(num_experts, intermediate, hidden, bias=False, device=device, dtype=dtype)
 
     def forward(self, x, topk_idx, topk_weight):
+        if self._resident_controller is not None:
+            return self._resident_controller.forward(self, x, topk_idx, topk_weight, self._torch_forward)
+        return self._torch_forward(x, topk_idx, topk_weight)
+
+    def sync_free(self, device):
+        from .resident import _on_device
+        control = self._resident_controller
+        return control is not None and control.sync_free and control.device == device and _on_device(self, device)
+
+    def _torch_forward(self, x, topk_idx, topk_weight):
         if x.shape[0] > 1:
             return moe_experts_forward(x, topk_idx, topk_weight, self.num_experts, self.gate_up_proj, self.down_proj,
                                        comfy.ops._swiglu_eager)
@@ -81,9 +97,23 @@ class Drama3Block(Qwen35TransformerBlock):
             self.linear_attn = DramaDeltaNet(text, device=device, dtype=dtype, ops=ops)
         else:
             self.self_attn = GatedAttention(text, device=device, dtype=dtype, ops=ops)
+            self.self_attn.q_norm = ZeroCenteredRMSNorm(text.head_dim, eps=text.rms_norm_eps, device=device, dtype=dtype)
+            self.self_attn.k_norm = ZeroCenteredRMSNorm(text.head_dim, eps=text.rms_norm_eps, device=device, dtype=dtype)
         self.mlp = SparseMoeBlock(config, device=device, dtype=dtype, ops=ops)
-        self.input_layernorm = RMSNorm(text.hidden_size, eps=text.rms_norm_eps, add=True, device=device, dtype=dtype)
-        self.post_attention_layernorm = RMSNorm(text.hidden_size, eps=text.rms_norm_eps, add=True, device=device, dtype=dtype)
+        self.input_layernorm = ZeroCenteredRMSNorm(text.hidden_size, eps=text.rms_norm_eps, device=device, dtype=dtype)
+        self.post_attention_layernorm = ZeroCenteredRMSNorm(text.hidden_size, eps=text.rms_norm_eps, device=device, dtype=dtype)
+
+    def forward(self, x, attention_mask=None, freqs_cis=None, optimized_attention=None, past_key_value=None):
+        # Keep normalization stable across host blocks with different MLP APIs.
+        normalized = self.input_layernorm(x)
+        if self.layer_type == "linear_attention":
+            hidden, present = self.linear_attn(normalized, past_key_value=past_key_value)
+        else:
+            hidden, present = self.self_attn(normalized, attention_mask=attention_mask,
+                freqs_cis=freqs_cis, optimized_attention=optimized_attention, past_key_value=past_key_value)
+        x.add_(hidden)
+        x.add_(self.mlp(self.post_attention_layernorm(x)))
+        return x, present
 
 
 class Drama3Backbone(Qwen35Transformer):
@@ -93,9 +123,12 @@ class Drama3Backbone(Qwen35Transformer):
         self.config = text
         self.embed_tokens = ops.Embedding(text.vocab_size, text.hidden_size, device=device, dtype=dtype)
         self.layers = nn.ModuleList(Drama3Block(config, i, device=device, dtype=dtype, ops=ops) for i in range(text.num_hidden_layers))
-        self.norm = RMSNorm(text.hidden_size, eps=text.rms_norm_eps, add=True, device=device, dtype=dtype)
+        self.norm = ZeroCenteredRMSNorm(text.hidden_size, eps=text.rms_norm_eps, device=device, dtype=dtype)
 
     def init_caches(self, capacity, devices, dtype):
+        return self.init_layer_caches(capacity, list(self.layers), devices, dtype)
+
+    def init_layer_caches(self, capacity, layers, devices, dtype):
         """Per-layer decode state on each layer's device: DeltaNet conv and recurrent state, or a KV cache."""
         text = self.config
         conv_dim = 2 * text.linear_num_key_heads * text.linear_key_head_dim + text.linear_num_value_heads * text.linear_value_head_dim
@@ -105,14 +138,18 @@ class Drama3Backbone(Qwen35Transformer):
             if text.layer_types[index] == "linear_attention":
                 recurrent = torch.zeros((1, text.linear_num_value_heads, text.linear_key_head_dim, text.linear_value_head_dim), device=device, dtype=torch.float32)
                 conv = torch.zeros((1, conv_dim, text.conv_kernel_size - 1), device=device, dtype=dtype)
-                caches.append(LinearKV(conv, recurrent, 0, None, None))
+                caches.append(LinearState(conv, recurrent))
+            elif hasattr(layers[index].self_attn, "init_kv_cache"):
+                from .kitchen_compat import compatible_cache
+                caches.append(compatible_cache(layers[index].self_attn.init_kv_cache(
+                    1, capacity, device, dtype, shared.setdefault(device, {}))))
             else:
                 if device not in shared:
                     shared[device] = FixedKVBias.shared(capacity, device, dtype)
                 caches.append(FixedKVBias.zeros(1, text.num_key_value_heads, capacity, text.head_dim, device, dtype, shared[device]))
         return caches
 
-    def run_layers(self, x, caches, layers, devices):
+    def run_layers(self, x, caches, layers, devices,graphs=None,after_layer=None):
         """Hidden states [1, T, H] after `layers` (the whole stack, in order) for the rows `x` [1, T, H] continue,
         each layer on its device; the result is on the last one. Not final-normed.
 
@@ -126,11 +163,12 @@ class Drama3Backbone(Qwen35Transformer):
             while end < len(layers) and devices[end] == device:
                 end += 1
             with comfy.model_management.cuda_device_context(device):
-                x = self._segment(x.to(device), layers[start:end], caches[start:end], device, past_len)
+                service=(lambda index,start=start:after_layer(start+index)) if after_layer is not None else None
+                x = self._segment(x.to(device), layers[start:end], caches[start:end], device, past_len,graphs,service)
             start = end
         return x
 
-    def _segment(self, x, layers, caches, device, past_len):
+    def _segment(self, x, layers, caches, device, past_len,graphs=None,after_layer=None):
         seq_len = x.shape[1]
         positions = torch.arange(past_len, past_len + seq_len, device=device).unsqueeze(0)
         mask = None
@@ -139,15 +177,19 @@ class Drama3Backbone(Qwen35Transformer):
         freqs = self.compute_freqs_cis(positions, device)
         attention = optimized_attention_for_device(device, mask=mask is not None, small_input=True)
         queue = comfy.model_prefetch.make_prefetch_queue(list(layers), device, {"prefetch_dynamic_vbars": True})
-        for layer, cache in zip(layers, caches):
+        for index,(layer, cache) in enumerate(zip(layers, caches)):
             comfy.model_management.throw_exception_if_processing_interrupted()
             cache.prepare(seq_len)
 
             def core(layer=layer, cache=cache):
                 nonlocal x
-                x = layer(x, attention_mask=mask, freqs_cis=freqs, optimized_attention=attention, past_key_value=cache)[0]
+                if graphs is not None and seq_len==1:
+                    x=graphs.run(layer,cache,x,freqs,attention)
+                else:
+                    x = layer(x, attention_mask=mask, freqs_cis=freqs, optimized_attention=attention, past_key_value=cache)[0]
 
             comfy.model_prefetch.prefetch_queue_pop(queue, device, layer, x.dtype, core=core)
+            if after_layer is not None and seq_len==1:after_layer(index)
             cache.advance(seq_len)
         comfy.model_prefetch.prefetch_queue_pop(queue, device, None)
         return x
@@ -163,8 +205,8 @@ class TowerAttention(nn.Module):
         self.split = (q_width, q_width, kv_width, kv_width)
         self.wqkv = ops.Linear(cfg.dim, 2 * q_width + 2 * kv_width, bias=False, device=device, dtype=dtype)
         self.wo = ops.Linear(q_width, cfg.dim, bias=False, device=device, dtype=dtype)
-        self.q_norm = RMSNorm(cfg.head_dim, eps=cfg.norm_eps, add=True, device=device, dtype=dtype)
-        self.k_norm = RMSNorm(cfg.head_dim, eps=cfg.norm_eps, add=True, device=device, dtype=dtype)
+        self.q_norm = ZeroCenteredRMSNorm(cfg.head_dim, eps=cfg.norm_eps, device=device, dtype=dtype)
+        self.k_norm = ZeroCenteredRMSNorm(cfg.head_dim, eps=cfg.norm_eps, device=device, dtype=dtype)
 
     def rotate(self, x, freqs):
         width = self.cfg.rotary_dim
@@ -202,14 +244,14 @@ class TowerLayer(nn.Module):
     def __init__(self, cfg, device=None, dtype=None, ops=None):
         super().__init__()
         self.embedding = ops.Embedding(cfg.vocab_size, cfg.dim, device=device, dtype=dtype)
-        self.enorm = RMSNorm(cfg.dim, eps=cfg.norm_eps, add=True, device=device, dtype=dtype)
-        self.hnorm = RMSNorm(cfg.dim, eps=cfg.norm_eps, add=True, device=device, dtype=dtype)
+        self.enorm = ZeroCenteredRMSNorm(cfg.dim, eps=cfg.norm_eps, device=device, dtype=dtype)
+        self.hnorm = ZeroCenteredRMSNorm(cfg.dim, eps=cfg.norm_eps, device=device, dtype=dtype)
         self.eh_proj = ops.Linear(2 * cfg.dim, cfg.dim, bias=False, device=device, dtype=dtype)
         self.attention = TowerAttention(cfg, device=device, dtype=dtype, ops=ops)
-        self.attention_norm = RMSNorm(cfg.dim, eps=cfg.norm_eps, add=True, device=device, dtype=dtype)
-        self.ffn_norm = RMSNorm(cfg.dim, eps=cfg.norm_eps, add=True, device=device, dtype=dtype)
+        self.attention_norm = ZeroCenteredRMSNorm(cfg.dim, eps=cfg.norm_eps, device=device, dtype=dtype)
+        self.ffn_norm = ZeroCenteredRMSNorm(cfg.dim, eps=cfg.norm_eps, device=device, dtype=dtype)
         self.feed_forward = TowerMLP(cfg, device=device, dtype=dtype, ops=ops)
-        self.final_layernorm = RMSNorm(cfg.dim, eps=cfg.norm_eps, add=True, device=device, dtype=dtype)
+        self.final_layernorm = ZeroCenteredRMSNorm(cfg.dim, eps=cfg.norm_eps, device=device, dtype=dtype)
 
     def forward(self, hidden, codes, semantic, context, cache, shared_input=None):
         embedded = self.embedding(codes.clamp(0, self.embedding.num_embeddings - 1), out_dtype=hidden.dtype)
@@ -283,9 +325,10 @@ class Drama3Tower(nn.Module):
 
     def _layer(self, layer, index, hidden, codes, semantic, context, caches, shared_input=None):
         cache = caches[index]
-        cache.prepare(hidden.shape[1])
+        external=getattr(self,'external_cache_control',False)
+        if not external:cache.prepare(hidden.shape[1])
         out = layer(hidden, codes[None], semantic[None], context, cache, shared_input[None] if shared_input is not None else None)
-        cache.advance(hidden.shape[1])
+        if not external:cache.advance(hidden.shape[1])
         return out
 
     def step(self, main, hidden, frame, context, caches, sample):

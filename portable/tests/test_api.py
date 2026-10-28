@@ -8,7 +8,7 @@ import soundfile as sf
 from fastapi.testclient import TestClient
 from safetensors.torch import save_file
 
-import app as application
+from studio_app_loader import application
 
 
 @pytest.fixture

@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/T8mars/Comfyui-Drama-3",
+  "commit": "f838deaee67f2bce467ce6a76e9b3dc3de615a86",
+  "version": "0.1.11",
+  "node_schema_source_sha256": "68cef5c57004a41cc6000a2589607136bfe5f477719b33c679af4b689f3df8d1",
+  "notes": "Canvas files copied verbatim from the stated commit; node metadata exported with GET_NODE_INFO_V1 from its nodes.py, without executing inference.",
+  "files": {
+    "node-info-v1.json": "b7b53f108c25da7c0fdee4b7db1882ad269399edb28b170547e08988163bc32f",
+    "workflow_basic.json": "b76f850b1fde25d449c209beeddc9f93204a296d4113c2a5a47e9b0bb64aef96",
+    "workflow_infill.json": "2ab6628e7f9ae29366edb393aa1849d29141860772d4fb8c97c8ce762be692bb",
+    "workflow_live.json": "c4d298fd8908cac11cd820cafb67d8c9911acd8cd95539cd91430c4fe6376c4e",
+    "workflow_scene.json": "0fdc48fd5b049606c16c19453dc2678f259b091bb5e886f4d05629127c74357f",
+    "workflow_srt.json": "15b07676a6be6b5052daad0f971ff6f03f2186f817bce17855c9e0d98c864db9"
+  }
+}

@@ -12,13 +12,32 @@ from .engine import DramaEngine, Sampling
 from .state import Session, load_session, save_session
 from .batch import generate_srt
 from .model_paths import model_path as resolve_model_path
-from .audio import audio_waveform
+from .audio import audio_waveform, asr_waveforms
 
 EngineType = io.Custom("DRAMA3_T8_ENGINE")
 ReferencesType = io.Custom("DRAMA3_T8_REFERENCES")
 SessionType = io.Custom("DRAMA3_T8_SESSION")
 CodesType = io.Custom("DRAMA3_T8_CODES")
 CANVAS_SEED_MAX = 2**53 - 1
+
+
+class _NodeProgress:
+    """Expose Engine progress, committing its endpoint only after node success."""
+
+    def __init__(self, total):
+        from comfy.utils import ProgressBar
+        self.bar = ProgressBar(total)
+        self.total = total
+
+    def __call__(self, value, total):
+        self.total = total
+        # Engine may publish its endpoint before its last cancellation check.
+        # Keep that endpoint pending until result/NodeOutput construction works.
+        if value < total:
+            self.bar.update_absolute(value, total)
+
+    def complete(self):
+        self.bar.update_absolute(self.total, self.total)
 
 
 def sampling_seed(seed, seed_text=""):
@@ -65,10 +84,17 @@ class T8DramaLoader(io.ComfyNode):
                 io.String.Input("model_path", default="", optional=True),
                 io.String.Input("codec_path", default="", optional=True),
                 io.String.Input("text_head_path", default="", optional=True),
+                io.String.Input("line_head_path", default="", optional=True),
+                io.Combo.Input("scene_head_mode", options=["compact", "full"], default="compact", optional=True),
+                io.Combo.Input("moe_backend",options=["auto","torch","cuda"],default="auto",optional=True),
+                io.Boolean.Input("cuda_graph",default=True,optional=True),
+                io.Combo.Input("expert_placement",options=["ram","vram"],default="ram",optional=True,
+                    tooltip="ram: host experts with VRAM cache. vram: require all experts/body on one GPU; insufficient VRAM is an error."),
             ], outputs=[EngineType.Output()])
 
     @classmethod
-    def execute(cls, model, codec, expert_cache_gb=12, gdn_backend="torch", model_path="", codec_path="", text_head_path=""):
+    def execute(cls, model, codec, expert_cache_gb=12, gdn_backend="torch", model_path="", codec_path="", text_head_path="",
+                line_head_path="", scene_head_mode="compact",moe_backend="auto",cuda_graph=True,expert_placement="ram"):
         base = Path(folder_paths.models_dir)
         model = (resolve_model_path(model_path, base) if model_path.strip()
                  else folder_paths.get_full_path_or_raise("diffusion_models", model))
@@ -78,7 +104,10 @@ class T8DramaLoader(io.ComfyNode):
             if not Path(path).is_file():
                 raise FileNotFoundError(f"模型路径不存在：{path}")
         engine = DramaEngine(model, codec, expert_cache_gb, gdn_backend,
-                             text_head_path=resolve_model_path(text_head_path, base) if text_head_path.strip() else None)
+                             text_head_path=resolve_model_path(text_head_path, base) if text_head_path.strip() else None,
+                             line_head_path=resolve_model_path(line_head_path, base) if line_head_path.strip() else None,
+                             scene_head_mode=scene_head_mode,moe_backend=moe_backend,cuda_graph=cuda_graph,
+                             expert_placement=expert_placement)
         return io.NodeOutput(engine)
 
 
@@ -88,11 +117,14 @@ class T8DramaReference(io.ComfyNode):
         return io.Schema(node_id="T8DramaReference", display_name="T8 Drama 3 · 编码参考",
             category="T8/Drama3", inputs=[EngineType.Input("engine"), io.Audio.Input("audio"),
                 io.String.Input("transcript", multiline=True), io.String.Input("name", default=""),
-                ReferencesType.Input("previous", optional=True)], outputs=[ReferencesType.Output()])
+                ReferencesType.Input("previous", optional=True),
+                io.Boolean.Input("trim_silence",default=False,optional=True),
+                io.Boolean.Input("normalize",default=False,optional=True)], outputs=[ReferencesType.Output()])
 
     @classmethod
-    def execute(cls, engine, audio, transcript, name="", previous=None):
-        reference = engine.encode_reference(audio["waveform"], audio["sample_rate"], transcript, name)
+    def execute(cls, engine, audio, transcript, name="", previous=None,trim_silence=False,normalize=False):
+        options={key:value for key,value in {"trim_silence":trim_silence,"normalize":normalize}.items() if value}
+        reference = engine.encode_reference(audio["waveform"], audio["sample_rate"], transcript, name,**options)
         return io.NodeOutput((*tuple(previous or ()), reference))
 
 
@@ -120,26 +152,31 @@ class T8DramaGenerate(io.ComfyNode):
                 io.Int.Input("seed", default=42, min=0, max=CANVAS_SEED_MAX),
                 io.Float.Input("temperature", default=.7, min=.01, max=2, step=.05),
                 io.Float.Input("top_p", default=.7, min=.01, max=1, step=.05),
-                io.Int.Input("top_k", default=30, min=1),
-                io.Int.Input("max_frames", default=600, min=1, max=8192), exact_seed_input()],
+                io.Int.Input("top_k", default=30, min=0, tooltip="0 保留全部候选，其余值限制候选数量"),
+                io.Int.Input("max_frames", default=600, min=1, max=8192), exact_seed_input(),
+                io.Int.Input("opening_retries",default=0,min=0,max=1,optional=True),
+                io.Combo.Input("sampling_preset",options=["custom","stable","expressive"],default="custom",optional=True)],
             outputs=[SessionType.Output()])
 
     @classmethod
     def execute(cls, engine, mode, text, session=None, lookahead="", seed=42, temperature=.7,
-                top_p=.7, top_k=30, max_frames=600, chunk_bytes=300, seed_text=""):
-        sampling = Sampling(sampling_seed(seed, seed_text), temperature, top_k, top_p, max_frames)
+                top_p=.7, top_k=30, max_frames=600, chunk_bytes=300, seed_text="",opening_retries=0,sampling_preset="custom"):
+        sampling = Sampling(sampling_seed(seed, seed_text), temperature, top_k, top_p, max_frames,opening_retries).with_preset(sampling_preset)
         session = session or Session()
+        progress = _NodeProgress(max_frames)
         if mode == "speech":
-            result = engine.speak(text, session, sampling)
+            result = engine.speak(text, session, sampling, progress=progress)
         elif mode == "revision":
-            result = engine.revise(session, text, sampling)
+            result = engine.revise(session, text, sampling, progress=progress)
         elif mode == "long":
-            result = engine.long_form(text, session, sampling, chunk_bytes=chunk_bytes)
+            result = engine.long_form(text, session, sampling, chunk_bytes=chunk_bytes, progress=progress)
         elif mode == "stream":
-            result = engine.stream_text(text, lookahead, session, sampling)
+            result = engine.stream_text(text, lookahead, session, sampling, progress=progress)
         else:
             raise ValueError(f"Unknown generation mode {mode}")
-        return io.NodeOutput(result)
+        output = io.NodeOutput(result)
+        progress.complete()
+        return output
 
 
 class T8DramaScene(io.ComfyNode):
@@ -151,14 +188,34 @@ class T8DramaScene(io.ComfyNode):
                 io.String.Input("characters", default="", multiline=True),
                 ReferencesType.Input("references", optional=True),
                 io.Int.Input("seed", default=42, min=0, max=CANVAS_SEED_MAX),
-                io.Int.Input("max_frames", default=1200, min=1, max=8192), exact_seed_input()],
+                io.Int.Input("max_frames", default=1200, min=1, max=8192), exact_seed_input(),
+                io.Combo.Input('generation_mode',options=['together','per_line','per_line_context','per_speaker'],default='together',optional=True),
+                io.Boolean.Input('split_long_text',default=False,optional=True),
+                io.Int.Input('chunk_bytes',default=300,min=32,max=3000,optional=True),
+                io.Float.Input('temperature',default=.7,min=.01,max=2,step=.05,optional=True),
+                io.Float.Input('top_p',default=.7,min=.01,max=1,step=.05,optional=True),
+                io.Int.Input('top_k',default=30,min=0,optional=True,tooltip="0 保留全部候选，其余值限制候选数量"),
+                io.Int.Input('opening_retries',default=0,min=0,max=1,optional=True),
+                io.Combo.Input('sampling_preset',options=['custom','stable','expressive'],default='custom',optional=True),
+                SessionType.Input('session',optional=True)],
             outputs=[SessionType.Output()])
 
     @classmethod
-    def execute(cls, engine, script, scene="", characters="", references=None, seed=42, max_frames=1200, seed_text=""):
+    def execute(cls, engine, script, scene="", characters="", references=None, seed=42, max_frames=1200, seed_text="",generation_mode='together',split_long_text=False,chunk_bytes=300,
+                temperature=.7,top_p=.7,top_k=30,opening_retries=0,sampling_preset='custom',session=None):
         lines = [line for line in script.splitlines() if line.strip()]
-        return io.NodeOutput(engine.scene(lines, scene, characters, tuple(references or ()),
-                                         Sampling(seed=sampling_seed(seed, seed_text), max_frames=max_frames)))
+        sampling=Sampling(sampling_seed(seed,seed_text),temperature,top_k,top_p,max_frames,opening_retries).with_preset(sampling_preset)
+        sampling.validate()
+        options={} if session is None else {'session':session}
+        scene_references=(tuple(references or ()) if session is None else
+                          None if references is None else tuple(references))
+        progress = _NodeProgress(max_frames)
+        result = engine.scene(lines, scene, characters, scene_references,
+                              sampling,generation_mode=generation_mode,
+                              split_long_text=split_long_text,chunk_bytes=chunk_bytes,progress=progress,**options)
+        output = io.NodeOutput(result)
+        progress.complete()
+        return output
 
 
 class T8DramaInfill(io.ComfyNode):
@@ -171,17 +228,31 @@ class T8DramaInfill(io.ComfyNode):
                 io.Float.Input("end_seconds", default=1, min=0, step=.05),
                 io.Int.Input("duration_frames", default=0, min=0),
                 io.Int.Input("seed", default=42, min=0, max=CANVAS_SEED_MAX),
-                io.Int.Input("max_frames", default=300, min=1, max=8192), exact_seed_input()],
+                io.Int.Input("max_frames", default=300, min=1, max=8192), exact_seed_input(),
+                io.Combo.Input('target_speaker',options=['auto',*[str(i) for i in range(16)]],default='auto',optional=True),
+                io.String.Input('expected_view',default='',multiline=True,optional=True)],
             outputs=[SessionType.Output()])
 
     @classmethod
     def execute(cls, engine, session, target_transcript, start_seconds=0, end_seconds=1,
-                duration_frames=0, seed=42, max_frames=300, seed_text=""):
+                duration_frames=0, seed=42, max_frames=300, seed_text="",target_speaker='auto',expected_view=''):
         if not session.takes:
             raise ValueError("Connect a session containing the source take")
+        from .editor import json_object
+        if target_speaker not in ['auto',*[str(i) for i in range(16)]]:
+            raise ValueError('target_speaker must be auto or 0..15')
+        role=None if target_speaker=='auto' else int(target_speaker)
+        view=None if expected_view=='' else json_object(expected_view,'expected_view',maximum=10000)
+        options={}
+        if role is not None:options['target_speaker']=role
+        if view is not None:options['expected_view']=view
+        progress = _NodeProgress(max_frames)
         take = engine.infill(session.takes[-1], target_transcript, start_seconds, end_seconds,
-                             Sampling(seed=sampling_seed(seed, seed_text), max_frames=max_frames), duration_frames or None)
-        return io.NodeOutput(session.append(take))
+                             Sampling(seed=sampling_seed(seed, seed_text), max_frames=max_frames), duration_frames or None,
+                             progress=progress,**options)
+        output = io.NodeOutput(session.append(take))
+        progress.complete()
+        return output
 
 
 class T8DramaDecode(io.ComfyNode):
@@ -190,15 +261,26 @@ class T8DramaDecode(io.ComfyNode):
         return io.Schema(node_id="T8DramaDecode", display_name="T8 Drama 3 · 输出音频",
             category="T8/Drama3", inputs=[EngineType.Input("engine"), SessionType.Input("session"),
                 io.Int.Input("take_index", default=-1, min=-1),
-                io.Boolean.Input("all_takes", default=False)], outputs=[io.Audio.Output(), io.String.Output()])
+                io.Boolean.Input("all_takes", default=False),
+                io.Boolean.Input("shorten_long_pauses",default=False,optional=True),
+                io.Float.Input("max_pause_seconds",default=.75,min=0,max=60,step=.05,optional=True)], outputs=[io.Audio.Output(), io.String.Output()])
 
     @classmethod
-    def execute(cls, engine, session, take_index=-1, all_takes=False):
+    def execute(cls, engine, session, take_index=-1, all_takes=False,shorten_long_pauses=False,max_pause_seconds=.75):
         if not session.takes:
             raise ValueError("The session contains no audio take")
         chosen = session.takes if all_takes else (session.takes[take_index],)
         codes = torch.cat([take.codes for take in chosen], dim=1)
-        return io.NodeOutput(engine.decode(codes), "\n".join(take.transcript for take in chosen))
+        if any(t.metadata.get('audio_editor') or t.metadata.get('decode_sources') or 'scene_chunking' in t.metadata or 'render_infill' in t.metadata for t in chosen):
+            from .editor import decode_output
+            pieces=[decode_output(engine,t) for t in chosen]
+            audio={**pieces[0],'waveform':torch.cat([p['waveform'] for p in pieces],dim=-1)}
+        else:audio=engine.decode(codes)
+        if shorten_long_pauses:
+            from .audio_processing import shorten_pauses
+            wave,mapping=shorten_pauses(audio["waveform"][0],audio["sample_rate"],maximum=max_pause_seconds)
+            audio={**audio,"waveform":wave[None]}
+        return io.NodeOutput(audio, "\n".join(take.transcript for take in chosen))
 
 
 class T8DramaSaveSession(io.ComfyNode):
@@ -224,12 +306,13 @@ class T8DramaLoadSession(io.ComfyNode):
         return io.Schema(node_id="T8DramaLoadSession", display_name="T8 Drama 3 · 加载会话 / 音色",
             category="T8/Drama3", inputs=[
                 io.Combo.Input("session_file", options=folder_paths.get_filename_list("drama3_t8_sessions"))],
-            outputs=[SessionType.Output()])
+            outputs=[SessionType.Output(),ReferencesType.Output(display_name='references')])
 
     @classmethod
     def execute(cls, session_file):
         path = folder_paths.get_full_path_or_raise("drama3_t8_sessions", session_file)
-        return io.NodeOutput(load_session(path))
+        session=load_session(path)
+        return io.NodeOutput(session,session.references)
 
 
 class T8DramaBranch(io.ComfyNode):
@@ -254,18 +337,33 @@ class T8DramaTranscribe(io.ComfyNode):
                     if name.lower().endswith(".safetensors")] or ["<custom path>"]),
                 io.Audio.Input("audio"), io.Combo.Input("language", options=["auto", *LANGUAGES]),
                 io.String.Input("context", default="", multiline=True),
-                io.String.Input("model_path", default="", optional=True)],
+                io.String.Input("model_path", default="", optional=True),
+                io.Int.Input("max_new_tokens", default=4096, min=1, max=32768, optional=True,
+                    tooltip="Maximum output tokens per ASR segment; batch clips are transcribed in order.")],
             outputs=[io.String.Output(), io.String.Output()], is_output_node=True)
 
     @classmethod
-    def execute(cls, asr_model, audio, language="auto", context="", model_path=""):
-        from .qwen3_asr.asr import load_qwen3_asr, transcribe
-        waveform = audio_waveform(audio["waveform"], audio["sample_rate"])
+    def execute(cls, asr_model, audio, language="auto", context="", model_path="", max_new_tokens=4096):
+        from .qwen3_asr.asr import load_qwen3_asr, transcribe, validate_max_new_tokens
+        validate_max_new_tokens(max_new_tokens)
+        waveforms = asr_waveforms(audio["waveform"], audio["sample_rate"])
         path = (resolve_model_path(model_path, folder_paths.models_dir) if model_path.strip()
                 else folder_paths.get_full_path_or_raise("asr", asr_model))
         model = load_qwen3_asr(str(path))
-        text, found = transcribe(model, waveform, audio["sample_rate"],
-                                 None if language == "auto" else language, context)
+        results = [transcribe(model, waveform, audio["sample_rate"],
+                             None if language == "auto" else language, context,
+                             max_new_tokens=max_new_tokens) for waveform in waveforms]
+        if len(results) == 1:
+            text, found = results[0]
+        else:
+            text = "\n".join(item[0] for item in results)
+            languages = []
+            for _, detected in results:
+                for value in detected.split(","):
+                    value = value.strip()
+                    if value and value not in languages:
+                        languages.append(value)
+            found = ",".join(languages)
         return io.NodeOutput(text, found,ui=ui.PreviewText(text))
 
 
@@ -310,7 +408,8 @@ class T8DramaAlign(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         base=Path(folder_paths.models_dir)/"asr"
-        options=[p.name for p in base.iterdir() if p.is_dir() and (p/"config.json").exists()] if base.exists() else []
+        options=[p.name for p in base.iterdir() if (p.is_dir() and (p/"config.json").exists())
+                 or p.is_file() and p.suffix.lower()==".safetensors"] if base.exists() else []
         return io.Schema(node_id="T8DramaAlign",display_name="T8 Drama 3 · 词级时间对齐",category="T8/Drama3",
                          inputs=[io.Combo.Input("aligner",options=options or ["<custom path>"]),io.Audio.Input("audio"),io.String.Input("transcript",multiline=True),
                                  io.Combo.Input("language",options=["Chinese","English","Cantonese","Japanese","Korean","German","French","Spanish","Italian","Portuguese","Russian"]),
@@ -390,9 +489,62 @@ class T8DramaLive(io.ComfyNode):
         return io.NodeOutput(result,audio,json.dumps(chunk_paths,ensure_ascii=False))
 
 
+class T8DramaEditor(io.ComfyNode):
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(node_id='T8DramaEditor',display_name='T8 Drama 3 · 多轨后期剪辑',category='T8/Drama3',
+            inputs=[EngineType.Input('engine'),SessionType.Input('session'),
+                io.Int.Input('take_index',default=-1,min=-1,max=99999),
+                io.Boolean.Input('align_words',default=False),
+                io.String.Input('aligner_path',default='',optional=True,
+                    tooltip='可自定义单文件 .safetensors 或 Qwen3-ForcedAligner 目录'),
+                io.Combo.Input('language',options=['Chinese','English','Cantonese','Japanese','Korean','German','French','Spanish','Italian','Portuguese','Russian'],default='Chinese'),
+                io.String.Input('edits',default='{}',multiline=True,optional=True)],
+            outputs=[SessionType.Output(display_name='edited_session'),io.Audio.Output(),
+                io.String.Output(display_name='subtitle_srt'),io.String.Output(display_name='edit_metadata')],is_output_node=True)
+
+    @classmethod
+    def execute(cls,engine,session,take_index=-1,align_words=False,aligner_path='',language='Chinese',edits='{}'):
+        import soundfile as sf
+        from . import editor
+        if type(take_index) is not int or not session.takes or not -1<=take_index<len(session.takes):
+            raise ValueError('The requested take does not exist')
+        if type(align_words) is not bool:
+            raise ValueError('align_words must be a boolean')
+        index=take_index%len(session.takes)
+        aligner=resolve_model_path(aligner_path,folder_paths.models_dir) if align_words and aligner_path.strip() else None
+        if align_words and aligner is None:
+            raise ValueError('请选择对齐模型路径，再启用逐词字幕')
+        source,analysis,saved=editor.prepare(engine,session.takes[index],aligner=aligner,language=language)
+        request=editor.json_object(edits or '{}','edits')
+        # Validate even when this belongs to an earlier source; a malformed
+        # fingerprint is not a legitimate request to reset prior edits.
+        editor.parse_edits(request)
+        reset=False
+        if request.get('source') and request['source']!=analysis['source']:
+            # A new seed/input must never inherit a previous take's cuts.
+            request={};reset=True
+        chosen=editor.parse_edits(request,source=analysis['source'],duration=analysis['duration']) if request else saved
+        planned=editor.plan(analysis,chosen)
+        waveform=editor.render(source['waveform'][0],analysis,planned['pieces'],chosen)
+        result=editor.edited_session(session,index,analysis,chosen)
+        info=result.takes[index].metadata['audio_editor']
+        folder=Path(folder_paths.get_temp_directory())/'drama3_t8_editor'
+        folder.mkdir(parents=True,exist_ok=True)
+        identity=uuid.uuid4().hex
+        audio_name,analysis_name=f'{identity}.wav',f'{identity}.json'
+        sf.write(folder/audio_name,source['waveform'][0].T.numpy(),source['sample_rate'],subtype='FLOAT')
+        (folder/analysis_name).write_text(json.dumps(analysis,ensure_ascii=False,allow_nan=False),encoding='utf-8')
+        entry=dict(audio=audio_name,analysis=analysis_name,subfolder='drama3_t8_editor',type='temp',
+            edits=chosen,source=analysis['source'],edits_reset=reset)
+        return io.NodeOutput(result,{'waveform':waveform[None],'sample_rate':source['sample_rate']},
+            editor.subtitle_srt(info['captions']),json.dumps(info,ensure_ascii=False,allow_nan=False),
+            ui={'drama3_t8_editor':[entry]})
+
+
 NODES = [T8DramaLoader, T8DramaReference, T8DramaSession, T8DramaGenerate, T8DramaScene,
          T8DramaInfill, T8DramaDecode, T8DramaSaveSession, T8DramaLoadSession, T8DramaBranch, T8DramaTranscribe,
-         T8DramaCodecEncode,T8DramaCodecDecode,T8DramaSRT,T8DramaAlign,T8DramaLive,T8DramaR2T2Transcribe]
+         T8DramaCodecEncode,T8DramaCodecDecode,T8DramaSRT,T8DramaAlign,T8DramaLive,T8DramaR2T2Transcribe,T8DramaEditor]
 
 
 class Drama3Extension(ComfyExtension):
@@ -401,4 +553,6 @@ class Drama3Extension(ComfyExtension):
 
 
 async def comfy_entrypoint():
+    from .editor_routes import register_routes
+    register_routes()
     return Drama3Extension()

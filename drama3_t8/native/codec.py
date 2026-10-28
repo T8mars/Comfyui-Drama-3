@@ -15,6 +15,9 @@ from comfy.ldm.minimax_music.dav import Snake1d
 
 SAMPLE_RATE = 44100
 FRAME_LENGTH = 2048
+DECODE_WINDOW = 256
+DECODE_CONTEXT = 320
+DECODE_FRAME_BYTES = int(5.3 * 1024 ** 2)
 
 
 class CausalConv1d(nn.Module):
@@ -286,4 +289,11 @@ class Drama3Codec(nn.Module):
 
     def decode(self, codes, dtype):
         """Codes [B, 10, frames] -> audio [B, frames * 2048]."""
-        return self.decoder(self.quantizer.decode(codes, dtype))[:, 0]
+        pieces = []
+        for start in range(0, codes.shape[-1], DECODE_WINDOW):
+            first = max(0, start - DECODE_CONTEXT)
+            audio = self.decoder(self.quantizer.decode(codes[..., first:start + DECODE_WINDOW], dtype))[:, 0]
+            pieces.append(audio[:, (start - first) * FRAME_LENGTH:])
+        if not pieces:
+            raise ValueError("Cannot decode empty DRAMA codes")
+        return torch.cat(pieces, dim=-1)

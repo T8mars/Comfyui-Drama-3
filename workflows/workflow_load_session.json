@@ -1,6 +1,6 @@
 {
-  "last_node_id": 6,
-  "last_link_id": 4,
+  "last_node_id": 8,
+  "last_link_id": 6,
   "nodes": [
     {
       "id": 1,
@@ -11,7 +11,7 @@
       ],
       "size": [
         370,
-        380
+        430
       ],
       "flags": {},
       "order": 0,
@@ -22,7 +22,8 @@
           "name": "DRAMA3_T8_ENGINE",
           "type": "DRAMA3_T8_ENGINE",
           "links": [
-            1
+            1,
+            3
           ]
         }
       ],
@@ -36,7 +37,12 @@
         "torch",
         "",
         "",
-        ""
+        "",
+        "",
+        "compact",
+        "auto",
+        true,
+        "ram"
       ]
     },
     {
@@ -58,6 +64,11 @@
         {
           "name": "DRAMA3_T8_SESSION",
           "type": "DRAMA3_T8_SESSION",
+          "links": []
+        },
+        {
+          "name": "references",
+          "type": "DRAMA3_T8_REFERENCES",
           "links": [
             2
           ]
@@ -69,18 +80,18 @@
       "widgets_values": [
         ""
       ],
-      "title": "选择已保存的会话 / Select a saved session"
+      "title": "选择已存音色 / Select saved voice references"
     },
     {
       "id": 3,
-      "type": "T8DramaDecode",
+      "type": "T8DramaScene",
       "pos": [
         480,
         60
       ],
       "size": [
-        370,
-        260
+        410,
+        600
       ],
       "flags": {},
       "order": 2,
@@ -92,38 +103,49 @@
           "link": 1
         },
         {
+          "name": "references",
+          "type": "DRAMA3_T8_REFERENCES",
+          "link": 2
+        },
+        {
           "name": "session",
           "type": "DRAMA3_T8_SESSION",
-          "link": 2
+          "link": null
         }
       ],
       "outputs": [
         {
-          "name": "AUDIO",
-          "type": "AUDIO",
-          "links": [
-            3
-          ]
-        },
-        {
-          "name": "STRING",
-          "type": "STRING",
+          "name": "DRAMA3_T8_SESSION",
+          "type": "DRAMA3_T8_SESSION",
           "links": [
             4
           ]
         }
       ],
       "properties": {
-        "Node name for S&R": "T8DramaDecode"
+        "Node name for S&R": "T8DramaScene"
       },
       "widgets_values": [
-        -1,
-        false
+        "Anna: Ready?\nBen: Always.",
+        "Two friends begin a journey.",
+        "- Anna: a calm young woman.\n- Ben: a cheerful young man.",
+        44,
+        "fixed",
+        180,
+        "",
+        "together",
+        false,
+        300,
+        0.7,
+        0.7,
+        30,
+        0,
+        "custom"
       ]
     },
     {
       "id": 4,
-      "type": "SaveAudio",
+      "type": "T8DramaDecode",
       "pos": [
         900,
         60
@@ -137,14 +159,66 @@
       "mode": 0,
       "inputs": [
         {
-          "name": "audio",
-          "type": "AUDIO",
+          "name": "engine",
+          "type": "DRAMA3_T8_ENGINE",
           "link": 3
+        },
+        {
+          "name": "session",
+          "type": "DRAMA3_T8_SESSION",
+          "link": 4
         }
       ],
       "outputs": [
         {
           "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            5
+          ]
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaDecode"
+      },
+      "widgets_values": [
+        -1,
+        false,
+        false,
+        0.75
+      ]
+    },
+    {
+      "id": 5,
+      "type": "SaveAudio",
+      "pos": [
+        1320,
+        60
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
           "type": "AUDIO",
           "links": []
         }
@@ -157,10 +231,10 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "type": "PreviewAny",
       "pos": [
-        480,
+        900,
         520
       ],
       "size": [
@@ -168,13 +242,13 @@
         260
       ],
       "flags": {},
-      "order": 4,
+      "order": 5,
       "mode": 0,
       "inputs": [
         {
           "name": "source",
           "type": "*",
-          "link": 4
+          "link": 6
         }
       ],
       "outputs": [
@@ -191,18 +265,18 @@
       "title": "生成台词 / Generated transcript"
     },
     {
-      "id": 6,
+      "id": 7,
       "type": "Note",
       "pos": [
-        900,
-        520
+        480,
+        980
       ],
       "size": [
         370,
         260
       ],
       "flags": {},
-      "order": 5,
+      "order": 6,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -210,7 +284,31 @@
         "Node name for S&R": "Note"
       },
       "widgets_values": [
-        "先运行 workflow_save_session.json；刷新 ComfyUI 后，在加载会话节点选择已保存的文件。\nRun workflow_save_session.json first, refresh ComfyUI, then select the saved session file.\n本示例不附带用户会话或参考音频。\nNo user sessions or reference audio are distributed."
+        "先在 workflow_reference.json 编码并保存参考音色，刷新后选择含 references 的会话。第 1 个输出 References 接 Scene，按转写 speaker 标签复用；name 不参与绑定。\nSave references with workflow_reference.json, refresh, then select that voice-library session. Output 1 (References) feeds Scene; transcript speaker tags bind voices, not names.\n输出 0 仍是完整 Session，可接旧 Generate / Decode / Editor 连线。纯音色会话没有 take，不应直接接 Decode。\nOutput 0 remains Session for existing Generate/Decode/Editor links. Reference-only archives have no take to decode.\n本画布不附带私人音频或会话。\nNo private audio or sessions are distributed."
+      ],
+      "title": "使用说明 / Instructions"
+    },
+    {
+      "id": 8,
+      "type": "Note",
+      "pos": [
+        1320,
+        980
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "seed 数字控件支持 JavaScript 安全整数；更大的 uint64 种子请填 seed_text 十进制文本。\nUse decimal seed_text for larger uint64 seeds; leave it blank to use the numeric seed widget."
       ],
       "title": "使用说明 / Instructions"
     }
@@ -227,24 +325,40 @@
     [
       2,
       2,
-      0,
+      1,
       3,
+      1,
+      "DRAMA3_T8_REFERENCES"
+    ],
+    [
+      3,
+      1,
+      0,
+      4,
+      0,
+      "DRAMA3_T8_ENGINE"
+    ],
+    [
+      4,
+      3,
+      0,
+      4,
       1,
       "DRAMA3_T8_SESSION"
     ],
     [
-      3,
-      3,
-      0,
+      5,
       4,
+      0,
+      5,
       0,
       "AUDIO"
     ],
     [
+      6,
       4,
-      3,
       1,
-      5,
+      6,
       0,
       "STRING"
     ]

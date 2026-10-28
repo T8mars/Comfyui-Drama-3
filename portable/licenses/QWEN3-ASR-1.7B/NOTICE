@@ -1,0 +1,10 @@
+Qwen3-ASR-ComfyUI
+
+Qwen3-ASR-1.7B, Qwen3-ASR-0.6B and Qwen3-ForcedAligner-0.6B, Copyright 2026 The Alibaba Qwen team, licensed under
+the Apache License 2.0 (see LICENSE). https://huggingface.co/Qwen/Qwen3-ASR-1.7B ·
+https://huggingface.co/Qwen/Qwen3-ASR-0.6B · https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B
+
+Changes made by PedroMarinhoDev with tools/convert.py from https://github.com/PedroMarinhoDev/ComfyUI-Drama3:
+the checkpoints' tensors are stored unchanged in one file per model, renamed (thinker.audio_tower. to audio_tower.,
+thinker.model. to decoder.model.), without the LM head, which equals the embedding table, and with the model
+config in the file's metadata. Qwen3-ForcedAligner-0.6B keeps its timestamp head, renamed timestamp_head.weight.

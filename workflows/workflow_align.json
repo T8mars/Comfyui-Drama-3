@@ -68,10 +68,10 @@
         "Node name for S&R": "T8DramaAlign"
       },
       "widgets_values": [
-        "qwen-aligner",
+        "qwen3_forced_aligner_0.6b_bf16.safetensors",
         "你好，这是本地语音测试。",
         "Chinese",
-        ""
+        "asr/qwen3_forced_aligner_0.6b_bf16.safetensors"
       ]
     },
     {
@@ -128,7 +128,7 @@
         "Node name for S&R": "Note"
       },
       "widgets_values": [
-        "在 LoadAudio 上传或选择本地音频；运行后，在文字预览节点中查看结果。\nUpload or select audio in LoadAudio; after Run, read the results in the Preview as Text nodes.\ntranscript 必须与音频中实际说出的文字对应。\nReplace transcript with the words actually spoken in the audio."
+        "在 LoadAudio 上传或选择本地音频；运行后，在文字预览节点中查看结果。\nUpload or select audio in LoadAudio; after Run, read the results in the Preview as Text nodes.\ntranscript 必须与音频中实际说出的文字对应。\nReplace transcript with the words actually spoken in the audio.\nmodel_path 默认演示单文件 asr/qwen3_forced_aligner_0.6b_bf16.safetensors（相对 models）；也可填写原版模型目录的绝对路径。\nThe custom path accepts a native single-file aligner or the original model directory."
       ],
       "title": "使用说明 / Instructions"
     }

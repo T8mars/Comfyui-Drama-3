@@ -6,11 +6,14 @@ import logging
 from comfy.text_encoders.qwen35 import GatedDeltaNet as BaseDeltaNet
 
 from .delta_reference import chunk_gated_delta_rule, recurrent_gated_delta_rule
+from .norms import GatedRMSNorm
 
 
 class DramaDeltaNet(BaseDeltaNet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.norm = GatedRMSNorm(self.value_head_dim, self.norm.eps,
+                                 device=self.norm.weight.device, dtype=self.norm.weight.dtype)
         self.backend = "torch"
         self.backend_calls = {"torch": 0, "fla": 0}
         self.fallback_reason = None

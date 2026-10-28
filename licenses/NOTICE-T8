@@ -11,6 +11,30 @@ T8 changes: complete control-token output head, multimodal prompt builders,
 stateful director revision, infill, text/audio streaming, local application,
 portable packaging and native ComfyUI workflow integration.
 
+Additional adaptations from the same repository at
+8cb3c64379d4988b9693cae9f3436b8fd54b22ad:
+- native/kernels.py and native/offload_accelerated.py: NVRTC host expert
+  kernels, GPU cache scheduling and INT8 CPU/GPU cooperation (GPL-3.0).
+- Windowed codec decoding and compact control-head extraction remain
+  subject to the Fish Audio Materials license noted in NOTICE-UPSTREAM.
+- qwen3_asr/align.py: single-file forced alignment (Apache-2.0).
+- Shared editor UI and silence planning (GPL-3.0); see
+  NOTICE-DRAMA3-EDITOR for the source and T8 modifications.
+T8 additions include old/new host cache adapters, static graph orchestration,
+quantized checkpoint materialization, failure cleanup, shared script cache,
+four dialogue modes and immutable source-bound editor sessions. These
+adaptations do not replace the original base revision recorded above.
+
+The T8-owned native/kitchen_compat.py DLPack boundary interoperates with
+Comfy-Org/comfy-kitchen 0.2.40, source revision
+f8b7e97a1418d2e529bd5405fbf86312be198ae6. It retains the installed host's
+official Python attention function and CUDA extension; it does not bundle
+or replace that implementation. The fixed-stride binding contract is in
+comfy_kitchen/backends/cuda/dlpack_bindings.cpp in that source revision.
+Host compatibility checks also use ComfyUI at
+0b05cd8a3683cbf0c291b1472bb8b64da41de9ae; the bundled engine stays pinned
+to the revision below.
+
 Bundled ComfyUI model engine originates from Comfy-Org/ComfyUI,
 commit e0a32bce84f4603f2b61b16b50f8958e68fd6171, under GPL-3.0.
 Fish Audio Drama 3 original weights and configuration originate from

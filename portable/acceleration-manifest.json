@@ -24,6 +24,7 @@
   },
   "model_validation": {
     "status": "passed",
+    "scope": "Published 0.1.11 Torch/FLA baseline only; does not validate the new MoE, Graph or quantized paths",
     "benchmark": "acceptance-report.json",
     "default_backend": "torch",
     "torch_decode_fps": [
@@ -34,5 +35,39 @@
     "conclusion": "No clear FLA end-to-end benefit on this RAM-expert configuration"
   },
   "full_attention_backend": "SDPA",
-  "cuda_graph": "not_enabled"
+  "moe_acceleration": {
+    "status": "implemented_under_acceptance",
+    "choices": [
+      "auto",
+      "torch",
+      "cuda"
+    ],
+    "default": "auto",
+    "formats": [
+      "fp8",
+      "int8_convrot",
+      "w6a8",
+      "w4a8"
+    ],
+    "requirements": "Supported NVRTC CUDA kernels, pinned host memory and sufficient RAM; otherwise Torch with a recorded reason",
+    "cpu_cooperation": "Single-GPU INT8 experts only",
+    "end_to_end_validation": "In progress; no general speed or content-quality claim",
+    "quantized_numerical_tests": {
+      "passed": 10,
+      "date": "2026-10-26",
+      "scope": "INT8/W6/W4 packed operators, cache, Graph replay and 4-layer INT8 CPU/GPU handoff; not whole-model acceptance"
+    }
+  },
+  "cuda_graph": {
+    "status": "implemented_under_acceptance",
+    "default_requested": true,
+    "requires": "Synchronization-free expert backend on one CUDA device, compatible host lifecycle",
+    "kernel_state_rng_tests": {
+      "passed": 9,
+      "date": "2026-10-26",
+      "scope": "Kernel/state/RNG tests including first-replay cross-stream race; not full model or canvas certification"
+    },
+    "recoverable_failure": "Record capture rejection and run the operation eagerly when capture_end completed safely",
+    "invalidated_process": "Reject further inference; restart the host and disable cuda_graph for that configuration"
+  }
 }

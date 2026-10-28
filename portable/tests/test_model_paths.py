@@ -48,7 +48,7 @@ def test_bad_paths_do_not_replace_working_settings_or_engine(tmp_path):
     studio.apply_settings(model_settings(tmp_path))
     previous, saved = studio.engine, studio.settings_path.read_bytes()
     with pytest.raises(FileNotFoundError):
-        studio.apply_settings({"r2t2_projector": str(tmp_path / "missing.gguf")})
+        studio.apply_settings({"codec": str(tmp_path / "missing.safetensors")})
     assert studio.engine is previous
     assert studio.settings_path.read_bytes() == saved
     with pytest.raises(ValueError):
@@ -59,3 +59,15 @@ def test_relative_and_environment_paths(tmp_path, monkeypatch):
     monkeypatch.setenv("DRAMA_TEST_MODELS", str(tmp_path / "外置"))
     assert model_path("%DRAMA_TEST_MODELS%/a.gguf", tmp_path) == (tmp_path / "外置/a.gguf").resolve()
     assert resolve_models(DEFAULT_PATHS, tmp_path)["model"] == tmp_path / DEFAULT_PATHS["model"]
+
+
+def test_single_file_aligner_and_compact_head_can_replace_legacy_directories(tmp_path):
+    settings=model_settings(tmp_path)
+    aligner=tmp_path/'native-aligner.safetensors'
+    aligner.touch()
+    settings['aligner']=str(aligner)
+    Path(settings['text_head']).unlink()
+    paths=resolve_models(settings,tmp_path,check=True)
+    assert paths['aligner']==aligner and paths['line_head'].is_file()
+    with pytest.raises(FileNotFoundError):
+        resolve_models({**settings,'scene_head_mode':'full'},tmp_path,check=True)
