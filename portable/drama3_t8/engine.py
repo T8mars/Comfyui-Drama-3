@@ -138,9 +138,10 @@ class DramaEngine:
             width, hidden = state["weight"].shape
             projection = comfy.ops.manual_cast.Linear(hidden, width, bias=False, dtype=torch.bfloat16, device="meta")
             projection.load_state_dict(state, assign=True)
-            self.text_head = torch.nn.Sequential(projection)
-            self.text_head_patcher = comfy.model_patcher.ModelPatcher(self.text_head, load_device=mm.get_torch_device(),
-                                                                   offload_device=mm.unet_offload_device())
+            head = torch.nn.Sequential(projection)
+            patcher = comfy.model_patcher.ModelPatcher(head, load_device=mm.get_torch_device(),
+                                                       offload_device=mm.unet_offload_device())
+            self.text_head, self.text_head_patcher = head, patcher
         self._load_drama((self.text_head_patcher,))
         return self.text_head, tuple(range(self.text_head[0].out_features))
 
@@ -201,9 +202,10 @@ class DramaEngine:
             projection.load_state_dict({"weight":weight},assign=True)
             # ModelPatcher resolves leaf parameters by a nonempty module path;
             # match the full-head wrapper so this weight is named '0.weight'.
-            self.line_head=torch.nn.Sequential(projection)
-            self.line_head_patcher=comfy.model_patcher.ModelPatcher(self.line_head,
+            head=torch.nn.Sequential(projection)
+            patcher=comfy.model_patcher.ModelPatcher(head,
                 load_device=mm.get_torch_device(),offload_device=mm.unet_offload_device())
+            self.line_head,self.line_head_patcher=head,patcher
         self._load_drama((self.line_head_patcher,))
         audio_head=drama.parts()[3]
         def combined(hidden):
@@ -562,13 +564,34 @@ class DramaEngine:
         chunks = split_text(text, max_bytes=int(chunk_bytes))
         if not chunks:
             raise ValueError("Long-form text is empty")
+        voice_references = session.references
+        anchor = None
         with self.generation_session():
             for index, chunk in enumerate(chunks):
-                # Keep the complete archive while bounding inference context to the first and latest take.
-                history = session.takes if len(session.takes) < 3 else (session.takes[0], session.takes[-1])
-                context = replace(session, takes=history)
+                if index == 0:
+                    # The first new chunk retains the original bounded conversation.
+                    history = session.takes if len(session.takes) < 3 else (session.takes[0], session.takes[-1])
+                    context = replace(session, takes=history)
+                else:
+                    # Inference view only: explicit user references take priority;
+                    # otherwise anchor once to the first new chunk, never the latest.
+                    if not voice_references:
+                        voice_references = (Reference(anchor.prompt_text, anchor.codes),)
+                    context = replace(session, references=voice_references, takes=())
                 generated = self.speak(chunk, context, replace(sampling, seed=(sampling.seed + index) % 2**64), on_codes, progress)
-                session = session.append(generated.takes[-1])
+                take = generated.takes[-1]
+                if index == 0:
+                    anchor = take
+                else:
+                    take = replace(take, metadata={**take.metadata, "long_context": {
+                        "version": 1,
+                        "policy": "explicit_references" if session.references else "first_new_take_reference",
+                        "source_take_id": None if session.references else anchor.take_id,
+                        "explicit_reference_count": len(session.references),
+                        "completed_history_turns": 0,
+                    }})
+                # Keep the full persistent archive and its original references.
+                session = session.append(take)
         return session
 
     def stream_text(self, text, lookahead="", session=None, sampling=None, on_codes=None, progress=None):
@@ -584,8 +607,38 @@ class DramaEngine:
 
     def unload(self):
         experts=getattr(self.drama,'experts',None)
-        if hasattr(experts,'close'):experts.close()
-        mm.unload_all_models()
+        close=getattr(experts,'close',None)
+        failure=None
+        if close is not None:
+            try:
+                close()
+            except BaseException as exc:
+                # An active store intentionally rejects destruction. Keep its
+                # owning engine and every resource intact in that case.
+                if getattr(experts,'cache',None) is not None or getattr(experts,'active',False):
+                    raise
+                failure=exc
+        experts=close=None
+
+        def cleanup(operation):
+            nonlocal failure
+            try:
+                operation()
+            except BaseException as exc:
+                if failure is None:
+                    failure=exc
+                else:
+                    # Preserve the primary error; diagnostics cannot replace it.
+                    try:
+                        import logging
+                        logging.warning('Drama 3 secondary unload cleanup failed: %s: %s',
+                                        type(exc).__name__,str(exc))
+                    except BaseException:
+                        pass
+            finally:
+                operation=None
+
+        cleanup(mm.unload_all_models)
         self.drama = None
         self.codec = None
         self.asr = None
@@ -593,7 +646,13 @@ class DramaEngine:
         self.text_head_patcher = None
         self.line_head = None
         self.line_head_patcher = None
-        gc.collect()
-        from .native.acceleration import release_unused_pinned_memory
-        release_unused_pinned_memory()
-        mm.soft_empty_cache()
+        cleanup(gc.collect)
+
+        def release_pins():
+            from .native.acceleration import release_unused_pinned_memory
+            release_unused_pinned_memory()
+
+        cleanup(release_pins)
+        cleanup(mm.soft_empty_cache)
+        if failure is not None:
+            raise failure

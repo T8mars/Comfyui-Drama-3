@@ -330,13 +330,25 @@ def test_all_prompt_consumers_use_matching_actual_sources_with_global_roles(monk
     engine.scene(['A: next scene'],session=result,references=result.references)
     engine.long_form('Long text now. More text next. '*4,result,Sampling(),chunk_bytes=40)
     expected=(sources[0].frames,sources[-1].frames)
-    for segments in observed:
+    assert len(observed) > 4  # ordinary/stream/Scene + first Long + later Long
+    for segments in observed[:4]:
         history=[item.values for item in segments if isinstance(item,prompts.FrameRows)]
         assert history and not any(torch.equal(frames,take.frames) for frames in history)
-    for segments in observed[:3]:
+    for segments in observed[:4]:
         history=[item.values for item in segments if isinstance(item,prompts.FrameRows)]
         assert len(history)==2 and all(torch.equal(a,b) for a,b in zip(history,expected))
         assert sources[-1].prompt_text in segments
+
+    for segments in observed[4:]:
+        assert not any(isinstance(item,prompts.FrameRows) for item in segments)
+        refs=[item for item in segments if torch.is_tensor(item)]
+        assert len(refs)==len(result.references)
+        assert all(item is ref.codes for item,ref in zip(refs,result.references))
+        strings=[item for item in segments if isinstance(item,str)]
+        assert strings.count('<|im_start|>user\n')==1
+        assert strings.count(prompts.GENERATION_START)==1
+        for index,ref in enumerate(result.references,1):
+            assert f'\n\n[Reference {index}]\nText: {ref.transcript}\nSpeech: ' in strings
 
 
 def test_default_editor_pcm_fingerprint_subtitles_and_saved_postproduction_on_chunked_sources(tmp_path):

@@ -180,17 +180,28 @@ def test_long_form_maximum_seed_wraps_and_archive_keeps_all_takes(monkeypatch):
     engine = DramaEngine("model", "codec")
     engine.generation_session=contextlib.nullcontext
     observed = []
+    reference_contexts = []
     monkeypatch.setattr(module, "split_text", lambda *a, **k: ["a", "b", "c", "d"])
     def speak(text, session, sampling, *args):
         # The real Torch generator is the external seed contract, no model is mocked here.
         torch.Generator(device="cpu").manual_seed(sampling.seed)
         observed.append((sampling.seed, tuple(t.take_id for t in session.takes)))
+        reference_contexts.append(session.references)
         return session.append(take())
     engine.speak = speak
     result = engine.long_form("a b c d", sampling=Sampling(seed=2**64-1))
     assert [s for s, _ in observed] == [2**64-1, 0, 1, 2]
     assert len(result.takes) == 4
-    assert observed[-1][1] == (result.takes[0].take_id, result.takes[2].take_id)
+    assert observed[0][1] == () and all(history == () for _, history in observed[1:])
+    assert reference_contexts[0] == ()
+    anchor = reference_contexts[1]
+    assert len(anchor) == 1 and anchor[0].transcript == result.takes[0].prompt_text
+    assert torch.equal(anchor[0].codes, result.takes[0].codes)
+    assert all(refs is anchor for refs in reference_contexts[1:])
+    for generated in result.takes[1:]:
+        assert generated.metadata['long_context']['source_take_id'] == result.takes[0].take_id
+        assert generated.metadata['long_context']['policy'] == 'first_new_take_reference'
+        assert generated.metadata['long_context']['completed_history_turns'] == 0
 
 
 def test_srt_maximum_seed_and_audio_achieved_timing_are_consistent():

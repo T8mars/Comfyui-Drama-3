@@ -1,8 +1,9 @@
 torch>=2.8
 torchaudio>=2.8
 safetensors>=0.8
-tokenizers>=0.22,<0.24
-transformers>=4.57.1,<6
+tokenizers==0.22.2
+transformers==4.57.1
+huggingface-hub==0.36.2
 einops>=0.8
 scipy
 soundfile>=0.13

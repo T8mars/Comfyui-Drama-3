@@ -153,18 +153,18 @@ def kernel_bank(weight):
     return None
 
 
-def quantized_gemv(kind, xq, xscale, ids, plan, took_over, late, slot_fields, host_fields, rows, codebook):
+def quantized_gemv(kind, xq, xscale, ids, plan, took_over, late, slot_fields, host_fields, rows, codebook, *, compute_dtype=None):
     """[k, rows]: a decode row's experts in an int8, W4A8 or W6A8 bank (see kernels.gemv_int8 / gemv_codes)."""
     if kind == "int8":
-        return kernels.gemv_int8(xq, xscale, ids, plan, took_over, late, slot_fields, host_fields, rows)
-    return kernels.gemv_codes(xq, xscale, ids, plan, slot_fields, host_fields, codebook, int(kind[1]), rows)
+        return kernels.gemv_int8(xq, xscale, ids, plan, took_over, late, slot_fields, host_fields, rows, bf16=compute_dtype == torch.bfloat16)
+    return kernels.gemv_codes(xq, xscale, ids, plan, slot_fields, host_fields, codebook, int(kind[1]), rows, bf16=compute_dtype == torch.bfloat16)
 
 
-def quantized_grouped(kind, xq, xscale, groups, slot_fields, host_fields, rows, codebook):
+def quantized_grouped(kind, xq, xscale, groups, slot_fields, host_fields, rows, codebook, *, compute_dtype=None):
     """quantized_gemv for a prompt's rows (see kernels.grouped_int8 / grouped_codes)."""
     if kind == "int8":
-        return kernels.grouped_int8(xq, xscale, groups, slot_fields, host_fields, rows)
-    return kernels.grouped_codes(xq, xscale, groups, slot_fields, host_fields, codebook, int(kind[1]), rows)
+        return kernels.grouped_int8(xq, xscale, groups, slot_fields, host_fields, rows, bf16=compute_dtype == torch.bfloat16)
+    return kernels.grouped_codes(xq, xscale, groups, slot_fields, host_fields, codebook, int(kind[1]), rows, bf16=compute_dtype == torch.bfloat16)
 
 
 _RESIDENT_MIXTURE_WORK_BYTES = 4 * 1024 ** 2
@@ -188,6 +188,26 @@ def _resident_weighted_sum(values, weights, output_dtype):
     return result
 
 
+def _resident_bf16_weighted_sum(values, weights):
+    """BF16 cast, BF16 product and sum, without a full-prompt product.
+
+    Keep the required [T, H] output and bound explicit values/product, weights
+    cast and reduction work together to 4 MiB (or one token row). The private
+    copy is necessary even for BF16 input; neither input may be modified.
+    """
+    tokens, top_k, hidden = values.shape
+    row_bytes = max(1, (top_k * hidden + top_k + hidden) * 2)
+    chunk = max(1, _RESIDENT_MIXTURE_WORK_BYTES // row_bytes)
+    result = torch.empty((tokens, hidden), device=values.device, dtype=torch.bfloat16)
+    for start in range(0, tokens, chunk):
+        end = min(tokens, start + chunk)
+        mixed = values[start:end].to(dtype=torch.bfloat16, copy=True)
+        mixed.mul_(weights[start:end].to(dtype=torch.bfloat16).unsqueeze(-1))
+        result[start:end].copy_(mixed.sum(1))
+        # Release this chunk before allocating the next private values copy.
+        del mixed
+    return result
+
 def resident_decode(x, ids, weights, banks, rows, kind, codebooks):
     """One row x [1, H] through experts `ids` [k] of banks held whole on the GPU (fields laid out like the slot cache's,
     expert e in slot e, `rows` per expert; a codebook per bank for W4A8) with the decode kernels: each expert read in
@@ -201,10 +221,12 @@ def resident_decode(x, ids, weights, banks, rows, kind, codebooks):
         return _resident_weighted_sum(out.unsqueeze(0), weights[:, 0].unsqueeze(0), x.dtype)
     # no expert is left to the CPU (took_over 0); the quantizer always runs (1)
     took_over, always = torch.arange(2, dtype=torch.int32, device=x.device).split(1)
-    xq, xscale = kernels.rotate_quantize(x.float(), always)
-    hidden = quantized_gemv(kind, xq, xscale, ids, plan, took_over, False, gate_up, gate_up, gate_up_rows, codebooks[0])
-    hq, hscale = kernels.rotate_quantize(hidden, always, swiglu=True)
-    out = quantized_gemv(kind, hq, hscale, ids, plan, took_over, False, down, down, down_rows, codebooks[1])
+    xq, xscale = kernels.rotate_quantize(x.float(), always, bf16=x.dtype == torch.bfloat16)
+    hidden = quantized_gemv(kind, xq, xscale, ids, plan, took_over, False, gate_up, gate_up, gate_up_rows, codebooks[0], compute_dtype=x.dtype)
+    hq, hscale = kernels.rotate_quantize(hidden, always, swiglu=True, bf16=x.dtype == torch.bfloat16)
+    out = quantized_gemv(kind, hq, hscale, ids, plan, took_over, False, down, down, down_rows, codebooks[1], compute_dtype=x.dtype)
+    if x.dtype == torch.bfloat16:
+        return (out.to(x.dtype) * weights.to(x.dtype)).sum(0, keepdim=True)
     return _resident_weighted_sum(out.unsqueeze(0), weights[:, 0].unsqueeze(0), x.dtype)
 
 
@@ -214,10 +236,10 @@ def grouped_experts(sorted_x, groups, slot_banks, host_banks, rows, kind, codebo
     if kind == "fp8":
         gate, up = kernels.grouped_fp8(sorted_x.float(), groups, slot_banks[0], host_banks[0], rows[0]).chunk(2, dim=-1)
         return kernels.grouped_fp8(nn.functional.silu(gate) * up, groups, slot_banks[1], host_banks[1], rows[1])
-    xq, xscale = kernels.rotate_quantize(sorted_x.float(), always)
-    hidden = quantized_grouped(kind, xq, xscale, groups, slot_banks[0], host_banks[0], rows[0], codebooks[0])
-    hq, hscale = kernels.rotate_quantize(hidden, always, swiglu=True)
-    return quantized_grouped(kind, hq, hscale, groups, slot_banks[1], host_banks[1], rows[1], codebooks[1])
+    xq, xscale = kernels.rotate_quantize(sorted_x.float(), always, bf16=sorted_x.dtype == torch.bfloat16)
+    hidden = quantized_grouped(kind, xq, xscale, groups, slot_banks[0], host_banks[0], rows[0], codebooks[0], compute_dtype=sorted_x.dtype)
+    hq, hscale = kernels.rotate_quantize(hidden, always, swiglu=True, bf16=sorted_x.dtype == torch.bfloat16)
+    return quantized_grouped(kind, hq, hscale, groups, slot_banks[1], host_banks[1], rows[1], codebooks[1], compute_dtype=sorted_x.dtype)
 
 
 def resident_prefill(x, topk_idx, topk_weight, banks, rows, kind, codebooks, num_experts):
@@ -231,6 +253,8 @@ def resident_prefill(x, topk_idx, topk_weight, banks, rows, kind, codebooks, num
     sorted_out = grouped_experts(x[order // top_k], groups.to(x.device), banks, banks, rows, kind, codebooks, always)
     out = torch.empty_like(sorted_out)
     out[order] = sorted_out
+    if x.dtype == torch.bfloat16 and kind != "fp8":
+        return _resident_bf16_weighted_sum(out.view(num_tokens, top_k, -1), topk_weight)
     return _resident_weighted_sum(out.view(num_tokens, top_k, -1), topk_weight, x.dtype)
 
 
@@ -541,13 +565,15 @@ class ExpertStore:
 
         def experts(xq, xscale, late):
             hidden = quantized_gemv(kind, xq, xscale, ids, plan, cache.took_over, late, slots_gate_up, gate_up.fields,
-                                    gate_up.rows("_qdata"), gate_up.codebook(x.device))
-            hq, hscale = kernels.rotate_quantize(hidden, cache.took_over if late else cache.always, swiglu=True)
+                                    gate_up.rows("_qdata"), gate_up.codebook(x.device), compute_dtype=x.dtype)
+            hq, hscale = kernels.rotate_quantize(hidden, cache.took_over if late else cache.always, swiglu=True, bf16=x.dtype == torch.bfloat16)
             out = quantized_gemv(kind, hq, hscale, ids, plan, cache.took_over, late, slots_down, down.fields,
-                                 down.rows("_qdata"), down.codebook(x.device))
+                                 down.rows("_qdata"), down.codebook(x.device), compute_dtype=x.dtype)
+            if x.dtype == torch.bfloat16:
+                return (out.to(x.dtype) * weights.to(x.dtype)).sum(0, keepdim=True)
             return (out * weights).sum(0, keepdim=True)
 
-        xq, xscale = kernels.rotate_quantize(x.float(), cache.always)
+        xq, xscale = kernels.rotate_quantize(x.float(), cache.always, bf16=x.dtype == torch.bfloat16)
         if side is None:
             return experts(xq, xscale, False).to(x.dtype)
         # the CPU reads the same rotated, quantized row; its experts run there while the GPU runs the others

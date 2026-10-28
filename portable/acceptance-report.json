@@ -1,38 +1,24 @@
 {
   "schema": "drama3.release-acceptance.v1",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "status": "passed",
   "validation_scope": "current_release",
-  "tested_runtime_parent": {
-    "archive_id": "direction-and-node-progress-source-freeze-r19b.json",
-    "sha256": "c7d958e942e5560acffa9367c5c83c36c3e7006d23345f3149d65d77fd4dadc8",
-    "files": 395,
-    "documentation_files_in_parent": 4,
-    "fresh_non_README_files": 391,
-    "scope": "Actual tested R19b runtime parent with two full1322 CPU suites and fixed model/UI cases. The final child changes only release tooling/developer fixtures and documentation, qualified separately below.",
-    "unchanged_in_final_non_README_files": 387,
-    "release_and_developer_test_changes": [
-      "tools/build_public_release.py",
-      "tests/test_packaging.py",
-      "tests/test_infill_system_protocol.py",
-      "tests/test_canvas_workflows.py"
-    ]
-  },
+  "prepared_utc": "2026-10-28T13:23:27.090307+00:00",
   "source_sha256": {
-    "README.md": "cfad61ca5801667704633c4b57edb36b6c01b3f31a7e246c4428e72c5e494e14",
-    "README.zh-CN.md": "a766ad699721aafa0dd4aabe7fba34fb77ad3047ef23b239960e39c013326e14",
+    "README.md": "10e8f9e60e83d9ea1f356c9618f2ff91725585dec44a82cacebf53c513f36798",
+    "README.zh-CN.md": "9ac5fc7837930c288c5c389d2aab893748212ab7133b3bdfda95be1dff9fe8cd",
     "Start-Drama3.cmd": "b09da463b292919b34df5bb6f874a9b3bc47f5c7bece12aa9f49b8a093b09c33",
     "Update-Drama3.cmd": "04ffb55ed48866119883a802f91f64181bcf4c5519600463d6258a7664bdb502",
     "acceleration-manifest.json": "8338e0a28494d6261840c0a6d4e8694af63a201a3c209340d1ad17e915d12a45",
     "acceleration-requirements.txt": "440811e0d471b8cf19e1b5f640ab2ffa20d2706c654592e0c920161894954b55",
-    "app.py": "c240648a0a43a93c5bf7ad22df2b46ff7033453f954b2dc2ad78b251e72ba2e1",
+    "app.py": "6ddc913a83c7baa9bff3700130a1681be0e96e398e673a3d9de927753c2eafbc",
     "comfyui-drama3-T8/.comfyignore": "ca666c2741b19a51cd80d5f103ed410ceda82da184828814ff9954752a78ee15",
     "comfyui-drama3-T8/.gitignore": "2cff18067a488a2789c8c124551235da98a2b40762fb57b8b1f28154498ada46",
     "comfyui-drama3-T8/LICENSE": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db",
-    "comfyui-drama3-T8/README.md": "cfad61ca5801667704633c4b57edb36b6c01b3f31a7e246c4428e72c5e494e14",
-    "comfyui-drama3-T8/README.zh-CN.md": "a766ad699721aafa0dd4aabe7fba34fb77ad3047ef23b239960e39c013326e14",
+    "comfyui-drama3-T8/README.md": "10e8f9e60e83d9ea1f356c9618f2ff91725585dec44a82cacebf53c513f36798",
+    "comfyui-drama3-T8/README.zh-CN.md": "9ac5fc7837930c288c5c389d2aab893748212ab7133b3bdfda95be1dff9fe8cd",
     "comfyui-drama3-T8/__init__.py": "f4918b89e4eb9ab3308a8550ad0861f2548ec56d420e1dd00f62b3ed24bd9bb4",
-    "comfyui-drama3-T8/drama3_t8/__init__.py": "5487f3938293b239c239ef62be390faa79df95b84e8f66df42c409ae1a7cbb45",
+    "comfyui-drama3-T8/drama3_t8/__init__.py": "0087217236c583cb0af664fe1d340cdc3322b595547d434843cce19346a1a7ce",
     "comfyui-drama3-T8/drama3_t8/alignment.py": "38603b9a4e35c944cecd84de9b048df5d9ef6360da5044111f8a3d00d83a4540",
     "comfyui-drama3-T8/drama3_t8/audio.py": "bbc88a53ab5f90cdfaa92f7a09980dca1adbdb0a7a0a681d175c241c48c37246",
     "comfyui-drama3-T8/drama3_t8/audio_processing.py": "eb498e750306a45539ee38e319a22b690437d088b59b4010c39b1cdb57a32570",
@@ -40,11 +26,11 @@
     "comfyui-drama3-T8/drama3_t8/dialogue.py": "dc8333594fdadbc753cf7ba7348e3015fcebaf439946c75fbf4dbf72c5bb9dcc",
     "comfyui-drama3-T8/drama3_t8/editor.py": "e52faf7bb488f8c998afe64537bcb91fd31d23392cdcec164631fe8ba1bad9a8",
     "comfyui-drama3-T8/drama3_t8/editor_routes.py": "7681c7359265d3841a98d66d28a46be19cf1c92e0a4ae3b8cb77c622e2cb07b3",
-    "comfyui-drama3-T8/drama3_t8/engine.py": "45bd029d955e50b28bf4b08e7845582ee88df0fe709ce7beb8cfaf5bd01c98e1",
+    "comfyui-drama3-T8/drama3_t8/engine.py": "f0af3ab2db610829bf90e94633cc8e1bd00181036ada08526fe7273a0e98d0ef",
     "comfyui-drama3-T8/drama3_t8/live_audio.py": "6e77be1ab39de558f0acf02ae0e38915618864f3340170680a0d279a950819ec",
     "comfyui-drama3-T8/drama3_t8/model_paths.py": "f5e066c61a76c70084243c55ee0b7c8d6822fcf8b8c532e2acfbaa2a5525ab39",
     "comfyui-drama3-T8/drama3_t8/native/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "comfyui-drama3-T8/drama3_t8/native/acceleration.py": "066e600950f5acd9966410b3b1e9ebd90e2339c7c152768d11f464ea29460619",
+    "comfyui-drama3-T8/drama3_t8/native/acceleration.py": "35aaa81b021140d85f4551c7048baf35ebcc601781bc88d22efd2be7b384a241",
     "comfyui-drama3-T8/drama3_t8/native/cache.py": "afa9be6e53e8e45838d911392a9940a3389c99d2f612d7862b027e1a12a74a83",
     "comfyui-drama3-T8/drama3_t8/native/checkpoint_ownership.py": "8aec637942299490c8ac9768f9e78b7e8c33480a6b61ff5e4e00c5d32db4447d",
     "comfyui-drama3-T8/drama3_t8/native/checkpoint_reader.py": "c7052c4a3e07b87c057d986cc00692e8fc201a02ffc5a057997a42b5143a37f9",
@@ -58,13 +44,13 @@
     "comfyui-drama3-T8/drama3_t8/native/fish/tokenizer.json": "2da260680bf5558e8167d407d7cc92fbb243deecc4e8f0d0ccd2a09f319205ca",
     "comfyui-drama3-T8/drama3_t8/native/generate.py": "4e8490812dd625018b295af38fa6fc8e460183ef1414cf804e4ea304dd358e59",
     "comfyui-drama3-T8/drama3_t8/native/graphs.py": "2dae7bf8041fd5495166fb969a8f1b7d1f3fd2f12f6036c167699c1c5082bd01",
-    "comfyui-drama3-T8/drama3_t8/native/kernels.py": "727832b3c9127b020dd1aa02227fd246e483c9a7c38b567d5aa2030aeccd4012",
+    "comfyui-drama3-T8/drama3_t8/native/kernels.py": "fa7894201425cd0506982dae5c721a724c41cef83ef5c0286b3eae381e5f71d7",
     "comfyui-drama3-T8/drama3_t8/native/kitchen_compat.py": "ad089272fcf5849a4971e17dc705bca9b002552f6a12933828db83338e35e6d5",
     "comfyui-drama3-T8/drama3_t8/native/loader.py": "64ea5be10c05fd56496b6bb07690b320a7fcd2e6d981304cc25bc89515f69609",
     "comfyui-drama3-T8/drama3_t8/native/model.py": "00da0b893405d79214b165e62e88bbd97f0844551320910e9b417214e081e90e",
     "comfyui-drama3-T8/drama3_t8/native/norms.py": "f4efaaf302519e13300b470fdd2fd74c6b96c0e9b8a474d556954d84af76a8f4",
     "comfyui-drama3-T8/drama3_t8/native/offload.py": "c1066e48e13e3786e5e8d6647eb196e94e6a76784f0b1d1026b055fd7080aecd",
-    "comfyui-drama3-T8/drama3_t8/native/offload_accelerated.py": "38859918c41aa9eb56e32bf2faee77ff2f5a91a045d05fe7b5b2f8109f2611fd",
+    "comfyui-drama3-T8/drama3_t8/native/offload_accelerated.py": "c650e6f0682c4149f6c17da809daafe58c997dd9edc5dc0c6b9d9ab2b58e2b05",
     "comfyui-drama3-T8/drama3_t8/native/prompt.py": "721c9c39025410f8f215057b362316f88237cc1ae01c058cd878e2773a600537",
     "comfyui-drama3-T8/drama3_t8/native/resident.py": "fa0090a9951b00c72fc9db7f8f186b32dbf129e927dc0affea0071d4dcdb9564",
     "comfyui-drama3-T8/drama3_t8/native/scene_boundary.py": "61b03977c4242cfe9201ac1c3e3964934d384fbd4a1e09c39f22086eea9c7b9a",
@@ -128,9 +114,9 @@
     "comfyui-drama3-T8/native-source/NOTICE.md": "b623247f7c153192c8ed77ef36644fb827e3b423ce2fdc8d27868e2605f37be9",
     "comfyui-drama3-T8/native-source/README.md": "5fc519a126372a452244045350d395aa10333d46a5234c62bcea72c8a5197cf9",
     "comfyui-drama3-T8/native-source/native_ext.cpp": "39867cf597a6fcfdb083ebb1b197da2fda75f526045349d0d19968102d6d9667",
-    "comfyui-drama3-T8/pyproject.toml": "992c8c34a21d1b76f86722159f560567d0127c9da46d0aadaf869009499e0b66",
+    "comfyui-drama3-T8/pyproject.toml": "7f6aca7e6c3ebfb6099f55e3ae6aebe0fea24429777e934f2e894b4afdd5c866",
     "comfyui-drama3-T8/r2t2-runtime.json": "4a5c7085be79fe588d2c3d54e1c6b34c9c6ded2e42182af0228189c44a72c046",
-    "comfyui-drama3-T8/requirements.txt": "79edcb7723590b5fec49ad11fc3135d6690b49e4c2004c44b2d459ac12b34aa0",
+    "comfyui-drama3-T8/requirements.txt": "2e26adb5270ccab740109295fa7ccd4a6bb6b41afede0615a248ad371211a181",
     "comfyui-drama3-T8/upstream-lock.json": "2e8657c5bfce8fd5acdf7a43a812c4f1678c3edbc3ebc7acf653b6a95dab9b03",
     "comfyui-drama3-T8/web/drama3_editor.js": "ac90c58eb6e261823d59e610a0f70d98a733db35ddca4b7190744e61a60b18ec",
     "comfyui-drama3-T8/web/editor_core.js": "31ccb27abfdd1e013ae342d1e8fb8b362a4991c58290fe53c1b1e21a49ae6bea",
@@ -152,7 +138,7 @@
     "comfyui-drama3-T8/workflows/workflow_scene.json": "231d51e15ec2ff948ef1859c686b5d133626ca1ed82fd1a8c51ef8c3d267bba1",
     "comfyui-drama3-T8/workflows/workflow_srt.json": "cbf34aa07b17328c4bc54a939a87152055f78ca3be2095a3188a9123c740955f",
     "comfyui-drama3-T8/workflows/workflow_stream.json": "0036818d757817410d9a1bc8fa8e0f382b7d628a94e7c223d9114522712e5106",
-    "drama3_t8/__init__.py": "5487f3938293b239c239ef62be390faa79df95b84e8f66df42c409ae1a7cbb45",
+    "drama3_t8/__init__.py": "0087217236c583cb0af664fe1d340cdc3322b595547d434843cce19346a1a7ce",
     "drama3_t8/alignment.py": "38603b9a4e35c944cecd84de9b048df5d9ef6360da5044111f8a3d00d83a4540",
     "drama3_t8/audio.py": "bbc88a53ab5f90cdfaa92f7a09980dca1adbdb0a7a0a681d175c241c48c37246",
     "drama3_t8/audio_processing.py": "eb498e750306a45539ee38e319a22b690437d088b59b4010c39b1cdb57a32570",
@@ -161,11 +147,11 @@
     "drama3_t8/dialogue.py": "dc8333594fdadbc753cf7ba7348e3015fcebaf439946c75fbf4dbf72c5bb9dcc",
     "drama3_t8/editor.py": "e52faf7bb488f8c998afe64537bcb91fd31d23392cdcec164631fe8ba1bad9a8",
     "drama3_t8/editor_routes.py": "7681c7359265d3841a98d66d28a46be19cf1c92e0a4ae3b8cb77c622e2cb07b3",
-    "drama3_t8/engine.py": "45bd029d955e50b28bf4b08e7845582ee88df0fe709ce7beb8cfaf5bd01c98e1",
+    "drama3_t8/engine.py": "f0af3ab2db610829bf90e94633cc8e1bd00181036ada08526fe7273a0e98d0ef",
     "drama3_t8/live_audio.py": "6e77be1ab39de558f0acf02ae0e38915618864f3340170680a0d279a950819ec",
     "drama3_t8/model_paths.py": "f5e066c61a76c70084243c55ee0b7c8d6822fcf8b8c532e2acfbaa2a5525ab39",
     "drama3_t8/native/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "drama3_t8/native/acceleration.py": "066e600950f5acd9966410b3b1e9ebd90e2339c7c152768d11f464ea29460619",
+    "drama3_t8/native/acceleration.py": "35aaa81b021140d85f4551c7048baf35ebcc601781bc88d22efd2be7b384a241",
     "drama3_t8/native/cache.py": "afa9be6e53e8e45838d911392a9940a3389c99d2f612d7862b027e1a12a74a83",
     "drama3_t8/native/checkpoint_ownership.py": "8aec637942299490c8ac9768f9e78b7e8c33480a6b61ff5e4e00c5d32db4447d",
     "drama3_t8/native/checkpoint_reader.py": "c7052c4a3e07b87c057d986cc00692e8fc201a02ffc5a057997a42b5143a37f9",
@@ -179,13 +165,13 @@
     "drama3_t8/native/fish/tokenizer.json": "2da260680bf5558e8167d407d7cc92fbb243deecc4e8f0d0ccd2a09f319205ca",
     "drama3_t8/native/generate.py": "4e8490812dd625018b295af38fa6fc8e460183ef1414cf804e4ea304dd358e59",
     "drama3_t8/native/graphs.py": "2dae7bf8041fd5495166fb969a8f1b7d1f3fd2f12f6036c167699c1c5082bd01",
-    "drama3_t8/native/kernels.py": "727832b3c9127b020dd1aa02227fd246e483c9a7c38b567d5aa2030aeccd4012",
+    "drama3_t8/native/kernels.py": "fa7894201425cd0506982dae5c721a724c41cef83ef5c0286b3eae381e5f71d7",
     "drama3_t8/native/kitchen_compat.py": "ad089272fcf5849a4971e17dc705bca9b002552f6a12933828db83338e35e6d5",
     "drama3_t8/native/loader.py": "64ea5be10c05fd56496b6bb07690b320a7fcd2e6d981304cc25bc89515f69609",
     "drama3_t8/native/model.py": "00da0b893405d79214b165e62e88bbd97f0844551320910e9b417214e081e90e",
     "drama3_t8/native/norms.py": "f4efaaf302519e13300b470fdd2fd74c6b96c0e9b8a474d556954d84af76a8f4",
     "drama3_t8/native/offload.py": "c1066e48e13e3786e5e8d6647eb196e94e6a76784f0b1d1026b055fd7080aecd",
-    "drama3_t8/native/offload_accelerated.py": "38859918c41aa9eb56e32bf2faee77ff2f5a91a045d05fe7b5b2f8109f2611fd",
+    "drama3_t8/native/offload_accelerated.py": "c650e6f0682c4149f6c17da809daafe58c997dd9edc5dc0c6b9d9ab2b58e2b05",
     "drama3_t8/native/prompt.py": "721c9c39025410f8f215057b362316f88237cc1ae01c058cd878e2773a600537",
     "drama3_t8/native/resident.py": "fa0090a9951b00c72fc9db7f8f186b32dbf129e927dc0affea0071d4dcdb9564",
     "drama3_t8/native/scene_boundary.py": "61b03977c4242cfe9201ac1c3e3964934d384fbd4a1e09c39f22086eea9c7b9a",
@@ -208,7 +194,7 @@
     "drama3_t8/scene_chunks.py": "732c3a815662453873c74256fa1797b15003cc0c966c88b33a7a05776ec6d73e",
     "drama3_t8/scene_conditioning.py": "4da47e4dd738be3dd7e27165b7c9bf798d6aad58ba8eb4e0c5e8f060dc544854",
     "drama3_t8/state.py": "9d58339d4ae05bdc7801d22840850488f1bd1f47c5be90bf53820d9bec1e4a40",
-    "drama3_t8/studio.py": "85f3f0f63db14172dbda108479c6bc8cf7e72681a94d903c575c82a388abcce4",
+    "drama3_t8/studio.py": "8264c4bceba15816fbcf551c98420610913f9dd757ad7187d3e078c614cb4c44",
     "drama3_t8/studio_editor.py": "9715698ecdb49167aee8dbc95253a722fa944f9015baeb788b2f63589782be6c",
     "drama3_t8/subtitles.py": "94f3ebffee710f682c131cbae2507feceb72783b1f7e68dbca51319055c83d64",
     "drama3_t8/transcript.py": "54c6e0b1d3e57bfa53c971e252338c422dd3538533c122353adeb1d6932d01af",
@@ -246,159 +232,12 @@
     "licenses/QWEN3-ASR-1.7B/LICENSE": "a54c8553df5d4313d293d1aef3bf2f13952bda8b7c7a1fdd729b2bbe27ee6015",
     "licenses/QWEN3-ASR-1.7B/NOTICE": "cb01dd6b59eba1b29e956db4e1c378a39642f1eb4d7cfac1d8b33661880d5ca8",
     "requirements.txt": "3ca831e29176f441363c23d6efec65dd7c6f2eacfe82c3c60be6abe1e6adef86",
-    "tests/editor_core.test.mjs": "e1b543649a8efbc1de2f2ecfb2bbbd1945f4486da554d5459f204814d2df41ed",
-    "tests/fixtures/asr-node-v0.1.11/SOURCE.json": "30dbffa01f044f771f6f88034939f61c9a7cef1b0d17d1eb181c0a29c9a692b5",
-    "tests/fixtures/asr-node-v0.1.11/transcribe.py": "ea7dd1bdd8b1ba31fceb260c1598f31dbb9a8f7efd7a70522aded6b7b2629812",
-    "tests/fixtures/fim-system-protocol/fixture.json": "534e6fdbb46773f48b576833af59485420784bdd36d5c17c5ac8237b340b4857",
-    "tests/fixtures/fim-system-protocol/original-speaker1-prompt.safetensors": "b61c4ec393069b75e6e1b5352e2c97f41304063a4139230e9150fec7584ed67f",
-    "tests/fixtures/load-session-output0-editor.json": "47b3930516325d097d6d070662ca78c4e7c3df8ef5af81c9fdfcf4fcf27d8e60",
-    "tests/fixtures/public-v0.1.11-updater/SOURCE.json": "ef92d316c376d6e2c4d80270ef719538d19a2dd16b5b6b9a71d0d2ca540b07d4",
-    "tests/fixtures/public-v0.1.11-updater/updater.py": "34e7208432950730398fd507da2c9419fe49f9414800cd9092aefbfa82b13f62",
-    "tests/fixtures/scene-before-chunk-controls.json": "8b3c26bc2a2d6b611d3c53a61ce897dd2103a7c04a314b8031efd026cf6aa9ee",
-    "tests/fixtures/scene-before-sampling-controls-SOURCE.json": "07c1c68d81d5d0e704b0bb4e0f03745d238270de30caf64f0fd4ccfa9979fe40",
-    "tests/fixtures/scene-before-sampling-controls.json": "b3b0a9426136227f3cf9d2531620c6ce8142b2d7596f9b384c4118185e35eb49",
-    "tests/fixtures/scene-before-sampling-controls.py": "8a8a62642a6ebc4a6cec68023036dac8f8f46e8069f8387fa399af985f33e294",
-    "tests/fixtures/scene-chunks-v1.json": "2d7aced540c200c20299fc3052790bd90fa7c376250c688669db3de7c3e1d565",
-    "tests/fixtures/scene-chunks-v2.json": "1f0c25ff6286863191721422f93699bb34915ce413458d17fc49618a9dcc0940",
-    "tests/fixtures/seed-workflows-v0.1.11/SOURCE.json": "017ab26ca022b6405f0da89af584a08aea1c70a43ca8e65e90d746b2e28bdff2",
-    "tests/fixtures/seed-workflows-v0.1.11/node-info-v1.json": "b7b53f108c25da7c0fdee4b7db1882ad269399edb28b170547e08988163bc32f",
-    "tests/fixtures/seed-workflows-v0.1.11/workflow_basic.json": "b76f850b1fde25d449c209beeddc9f93204a296d4113c2a5a47e9b0bb64aef96",
-    "tests/fixtures/seed-workflows-v0.1.11/workflow_infill.json": "2ab6628e7f9ae29366edb393aa1849d29141860772d4fb8c97c8ce762be692bb",
-    "tests/fixtures/seed-workflows-v0.1.11/workflow_live.json": "c4d298fd8908cac11cd820cafb67d8c9911acd8cd95539cd91430c4fe6376c4e",
-    "tests/fixtures/seed-workflows-v0.1.11/workflow_scene.json": "0fdc48fd5b049606c16c19453dc2678f259b091bb5e886f4d05629127c74357f",
-    "tests/fixtures/seed-workflows-v0.1.11/workflow_srt.json": "15b07676a6be6b5052daad0f971ff6f03f2186f817bce17855c9e0d98c864db9",
-    "tests/frontend_canvas_oracle.mjs": "5242fa5432e68f54d22853f6754b0e2a8000a379f65db9050a64b6afdb0cd206",
-    "tests/infill_options.test.mjs": "ec4864f13b1c7c0906b1c3d6fe86ce1aa9a959c73db82f090602304bf4c6bac8",
-    "tests/runtime_settings.test.mjs": "6e324f80d879b7562dd394728dcf6c7e812d221b716fb1500ca74fbd5d7b675f",
-    "tests/scene_options.test.mjs": "600a3e56d2dd1ae77eda0de43351aff9eda7621e5a9437b32449efdd6a1504bd",
-    "tests/studio_app_loader.py": "940ff2e0d824fb3733ca87f41a6cde2ed788d418fc85b1ff8c27f76c2ccd5cc0",
-    "tests/test_api.py": "e0baa92bf4bf372a93c19afd376e4f393c5b3a2ed95878315b0e750b39911c97",
-    "tests/test_asr_batch.py": "ab0af46b4bc88b1614fb3f8bb68ffc0468843fee76a5d67eb7e1eb23344888f6",
-    "tests/test_audio_editor.py": "a9bd33edfbd636bdc499fcfd2b303eb6dae762394f95119b81eef1e7b5a097ea",
-    "tests/test_audio_editor_engine_contract.py": "1ce08038386234f1da3708656078515c7f21a320e9109c97f9a9b70ed86a64b4",
-    "tests/test_audio_editor_integration.py": "469db4d5b9e52e195080cd7711b305555256bfe342900a7377650b9fadada3b0",
-    "tests/test_audit3_core.py": "fb07d9bf4eb6ff4b221a2b85d0278d6415c98599c233e8da08c2986a820fc1b2",
-    "tests/test_audit3_workspace.py": "ea5765b4ab5d8d4c64cbdc92e72d564d6ed2c36e9e58e7e539f00878b8f15afe",
-    "tests/test_audit4_core.py": "1a3bfe444536e0c94e9c94973b1d119bac54cf581deb563c6b0c81b2a97b114e",
-    "tests/test_audit4_workspace.py": "16e183a9d254df989bfb1ee9094aa22e7dffa2710b3570f2834b89436eecf56f",
-    "tests/test_audit5_core.py": "c200d511551bbadf18a666eeaaf511c01799eaff85031b4be50f26769a3c147d",
-    "tests/test_audit5_cross.py": "3cc79742af6ff42c487d84253d27105518bd0027ec6b44640573e114a2debf06",
-    "tests/test_audit5_workspace.py": "d4dfa81d8fb40a51f5455b8807c2057bd46957ce68669213b85bb45b7f3bed25",
-    "tests/test_audit7_core.py": "a0dd097fd2804213142585bba0100c87bf9eb514f08033fd75e83c80925e954e",
-    "tests/test_audit7_workspace.py": "00fa4d3bfd56a167ef40b9ee01ef23afe806f7b30b82ff912bf38d7a26d3967e",
-    "tests/test_backbone_host_compat.py": "7e57887995c2abb253c2ca07c2167b5c82cb22957ef84031d2156d751c52e1b9",
-    "tests/test_canvas_seed.py": "91f7a414b0bb6691a16a9d453782d77e5eae178d32e9e9f5a5aeca7ef70c0e1d",
-    "tests/test_canvas_workflows.py": "e2b84b259461ca97c8ec1519ae084d48a1340d23729f1058e9942f3105520a36",
-    "tests/test_checkpoint_ownership.py": "7ac746f6611272d727ab4b88c7a4d365c85075dfb55c05d33ab379e8a1eabf9e",
-    "tests/test_checkpoint_ownership_cuda.py": "f24fb9d735771ea05446649ea074112a644dc60721637370542e6588afea16d7",
-    "tests/test_checkpoint_ownership_namespace.py": "fdb35ea86fd08cd80bebe15df9b66506997911b3f55c662a1d8b06984421f26b",
-    "tests/test_checkpoint_reader.py": "ef2760a2be9b350fa8f4624c013929b7aac20c46085181adbeaec38fceffed58",
-    "tests/test_checkpoint_reader_cuda.py": "e866a3ee329a5ca3f52763019b26fec0911cbc891840551bca302a5edc0103e7",
-    "tests/test_core_boundaries.py": "8f012ea6335d4aefd2c42bc6f58950cbab1301b6f4314e7bc75893c428d4898b",
-    "tests/test_cuda_cpu_experts.py": "092359eb7bd7020a03c87d549cc0f58d64e71f0d186df5fe48a73c2dea936621",
-    "tests/test_cuda_experts.py": "b82d85c13bb334b68bc219f772b0ef5a51be438780dfd5e2f4a9792a8bc2976e",
-    "tests/test_cuda_graphs.py": "885c76a6c7ae1ae2f989508f41f240cfb5eab6edef0e56e17b30e65a34a38c08",
-    "tests/test_cuda_kitchen_compat.py": "42591b295920fd88c1fc61fedd1e0bbc747dd78ca5ae5a3cfc9fad0dceb2e84d",
-    "tests/test_cuda_native_host_attention.py": "c73cd42bbb6dc22f9cf941451d67bd429815aa52e85a72632146ce2c6a2df2f2",
-    "tests/test_cuda_quantized_experts.py": "67398025760c40d0a32d1ac1e8fda9b2d3f31f47b3a9ff8a66960def6979c752",
-    "tests/test_delta_state.py": "691adb49d3c5fafe42990e8e762c092816e43fbb36cc42de3723f1bbd634065e",
-    "tests/test_dialogue_modes.py": "dacd3432874982802f1c756449eb6d6e2dab9f1caaf5ef8e8e64302e221a788c",
-    "tests/test_expert_math.py": "51548d949e1b868b50c6dd743d3ecd19c93bb159306e28a6a665c0b76982358a",
-    "tests/test_expert_placement.py": "64d05ab68be732e1e3f7e2ca5ef608094601d7baa49dc157e3f9d89b5e75de95",
-    "tests/test_expert_session_cleanup.py": "70dbd824215c6c2f82ab03b6c55a43b36b4f7f0497b1a236d38aabdd39406052",
-    "tests/test_infill_system_protocol.py": "ef74095abd5f6f4f45a0809bcecb8c91cc53fd8a7bdb344752cc5174ed44e6de",
-    "tests/test_kitchen_compat.py": "8a0a7c4068920ed4678878234fbd738ed1de7adb7bf6b781a96b574a4fb67583",
-    "tests/test_legacy_expert_memory.py": "dd3cc2385a26b7e06672252148a0886ea789b77412a27b391dd93dbb51e7687f",
-    "tests/test_legacy_update_quantize.py": "d3cb42c069401c5841ff2b0f264b1114dc3a04aa9031a2fdc2f2bb559eb34218",
-    "tests/test_loader_pin_rollback.py": "155e24eea1a2888017fe2fd5e16c9b825bd9a99c948b6d55824f827acc2e664e",
-    "tests/test_model_paths.py": "d8a49d989de79f1a0e3eb335047a7f24195389881982a5f203db792c7c6ba680",
-    "tests/test_native_norm_precision.py": "84d180fd7dd843ca8f92a419edacefeb8bc663a53083b9ebdf7ac4dd8b8c6c8f",
-    "tests/test_native_norm_precision_cuda.py": "bc7a6a919ff377be5d00717bbeea7fda9fadab4ca34e2ab398fcbd9074386979",
-    "tests/test_native_upgrade.py": "26791eb7de12fdcd94e7761c77119a2ed85fa9add94bbb075025b4b29c8d81e5",
-    "tests/test_node_installer.py": "f6026141cfdf32050ccd891cd34671b1e838a2b3429577b36e4a1d8eff20c04a",
-    "tests/test_node_progress.py": "2cac516c8d492fc54eb91c90fd873c586d9dc251e13ec4c70cf0aa6ed7c52a39",
-    "tests/test_opening_retry.py": "1ca84933e73ef60d61835708ed100df442254cf847b9bd87c4bb29c542fa0a0f",
-    "tests/test_optional_model_settings.py": "bc801d42ec8dd3f1e50c66e9a9552957730cec039e8a90a59b0ebdd47ae6d87b",
-    "tests/test_packaging.py": "c8904f21d96cce713f99792b0c69cff59484f27d04bb77b895d598562f7afb3e",
-    "tests/test_pinned_expert_memory.py": "6dcef75cac866940ded229b8e96c8001eba33ded6b47d42cc84e4aa3a9947a5e",
-    "tests/test_prompt_direction_order.py": "831168b37666d490961d0ec5191c6c9a2cedb31c8d075187ba274532295f0979",
-    "tests/test_quantized_loading.py": "92c8aadf988b6a2b8436a777978a956a950b4748a8e6b374946530bd3b67e3e1",
-    "tests/test_r2t2.py": "4aa285cde1f54347b07bf5e599317c390442c8e0221fd88c70a4d53139a4074d",
-    "tests/test_render_consumers.py": "5e8230dfca037fb300e13d6266ec9a4fa9c1eaa7a3ee5aaccea918cc14a8bb6d",
-    "tests/test_resident_cuda.py": "e56674f8e0abafcd84c3815aeb3a7bbd0c6ad55a7c2f8a7c2ec0b95307576f43",
-    "tests/test_resident_experts.py": "a335dc4663e88e2a1b12d41c4533092d070dd3a83f0b9ef3fa30f6bbf9986a6b",
-    "tests/test_resident_mixture.py": "774d61178bc2e27f79c52f510025b358750f3ba379920e1a90244ae8db6ef599",
-    "tests/test_resident_real_weights.py": "2f87693fc1875fba8850d45b8f652ee49d76faa0cf1a0315bfff09394e369f45",
-    "tests/test_saved_reference_nodes.py": "c38218431eda37ecd9e2e570002b834c31997e21d6297733cf7bcfd300239bd9",
-    "tests/test_scene_boundary_policy.py": "78cb80d3c29f66ce81517c410e681bdc44394363ead3d0f2b924534db4669508",
-    "tests/test_scene_cast.py": "94d63e0dae265067ec047b515be698926f186f637a89732c5ef5dd0ef8f5b5c4",
-    "tests/test_scene_chunk_body.py": "8134542cd806458a860053a78f4249d4e282a8dfa62fefed844f822beeb5f733",
-    "tests/test_scene_chunks.py": "45914b0d4ff55b028f5ba6e283d6401f20f598f32f851c5eafe93fac9a56e695",
-    "tests/test_scene_decode_runtime.py": "1b17b2b748615786f37011596cf1da4ef655f133df5ca62ee601b9dfa4af52f7",
-    "tests/test_scene_head_patcher.py": "158548064367694a44f30e10854d871f2c449b7994f27842417904834c513769",
-    "tests/test_scene_planner_v3.py": "0a2714f59c41dfd678c54461a7f82f53aff0fd76b77527a4024e797ae68aee8f",
-    "tests/test_scene_revision_protocol.py": "631330ffab725536bc94f503c0cc8aaf4eebfb8e472d5b1059d691047c333fee",
-    "tests/test_scene_sampling_controls.py": "707ac9b94876be4a14912681ff9da6d301e3321ef0241349cf2b30c4a32ed392",
-    "tests/test_scene_session_input.py": "4adf9f2a02cc8ca49ede4a9369065e581bc9434bde6a9fe3af48d57a46d691ed",
-    "tests/test_session_commit_locks.py": "83f5e9a119bdece4c4b25c6773d7060604fd98711d3a18b7b392f6d5fc5a6d0f",
-    "tests/test_source_aware_infill.py": "8cb0ae80b070a59404830a38c17dff690dd697e4e03c109aa708531c7579db4e",
-    "tests/test_speech_output_policy.py": "39feb5f92cf4f4927a768fa8aebe7b971b4fb3de5c7022aacbd31eac36683e4f",
-    "tests/test_studio.py": "3b9ba7a1a039972dac9479aca7a28885ce43cc237bfc9d68329e33c943112d98",
-    "tests/test_studio_asr_languages.py": "012c274f3f5590c7c4bf9cac99f2e331b27c5f248293b5bbc0147ecc688691f7",
-    "tests/test_studio_form_sampling.py": "93b99e12c59928c5afc73a9c171040d0c2d4d09b3a3390b727a67abcbec8c6c3",
-    "tests/test_subtitles.py": "e7fed1638abffdd92fff48fbd79a8bdf6f87df40c76df380c095c7e6e0b19501",
-    "tests/test_take_duration.py": "7e46b998f4701f2edd244bdad3aec69d813e6d252a8a38e20631537d3b26b5fa",
-    "tests/test_tasks.py": "6bb6dad0f3fa4ac70ce40b9d392829391c5e23a0ddabcb048e7e00e824500d6d",
-    "tests/test_transformers_compat.py": "c70087e9c72a421d4c7bd286ca3effe4c2108c93981d800e61857f28b6c49546",
-    "tests/test_typed_archive.py": "a5086ce1516f4c1063bcc89eaf554bad2faa6f49586b937547fdf635d44edc95",
-    "tests/test_updater.py": "e1fef20399cf4f77797369eef0d5db67aa154c896ace6640dfc0b913bbbd407e",
-    "tests/test_weight_writer.py": "5776c35909a8c43626a7cf9059659149c973797050d2799ff944428554702ed4",
-    "tests/test_workflow_public_inventory.py": "3095dc12e1af2b1760ef6514b2204696dfab4c5fedbc31c23fc4c31c061d1720",
-    "tests/test_workspace.py": "a6a3aedb99926756a8000c611684ec85f89dc72c3afd853660e845e90e3e8250",
-    "tests/test_workspace_history.py": "4bca9a1379cac74006b25058af1c348083fae3bc63f9bc7dedf836fc3218784c",
-    "tests/transcribe_languages.test.mjs": "159f6d97807dd7fd76828b755c80dedb54bfc4bf424c5ab9c8a6e6104b36705d",
-    "tools/audit_release_audio.py": "9957c4f9fb292a5f1b0e392426c3afc35d162ef154a14eed7d5ff3fdcf558c73",
-    "tools/benchmark_model.py": "c0fd25adb2da2b2d265767713a262c748f039bf04cdc7c64e9988920fc98b75f",
-    "tools/build_node_package.py": "bbb2af7226a2347793df0768a8fa7ac68462389486475c3b7d176b1b28d90c0b",
-    "tools/build_patch.py": "07f5ce0108dafd69779921537ba0d3560f87a7255a07f481b5cd591196106223",
-    "tools/build_portable.py": "4d899ec088a99617584f6799db4a0001e5113f400872002bdeaffce9beda9db1",
-    "tools/build_public_release.py": "98d8ea3194e102e87b2f2d84548090a0d471afcca85ddacba42d5f27e4b81f78",
-    "tools/build_r2t2_native.ps1": "a0a222dceaf34a5d34fe470510cfe3e55392857f62ec5c73967a54b21ae46383",
     "tools/check_runtime.py": "d0175269cff79ca56d6335f382d6c32349c41649b52a3d3c1bd68faf730309fd",
     "tools/convert_model.py": "44a3308cb60bd6e764f1ec41e75fccd4a2b557e2b4c65fe45622186b9f1ad0eb",
-    "tools/create_test_reference.ps1": "878fa09f7eeb07558e9ce9a66f628a3a162dac32169e7fdc06c7095b729cf606",
     "tools/download_models.py": "cad3f9b1149a1d8e4de525b6f2806027c41ca6b0148d4266f0efa4b6ee07281b",
-    "tools/extend_ui.py": "b6afff3770290c2fd90dacecaf6522cb963dc0b72a145418190d25ad9ec9f56d",
     "tools/extract_text_head.py": "f559d66b2e395d2c37aaa11dc8daa5d33f96d08f44dfa5628761dafc1f8bf463",
-    "tools/finalize_manifest.py": "cdfa08efc549a6f4bae84fdf4a8601a9344d6693f1338ab22127357dd3a21857",
-    "tools/make_workflows.py": "56a7e2e5dff90838804aba393e5c1699a7498f138a31f70e75040a44944299f7",
-    "tools/preview_ui.cjs": "a7bacc9ffbda0eb63c55c7c591297fa6bcde6ddf154861f0ef515a1777825003",
-    "tools/quantize_converted.py": "95e2c3f2a1f697a38cd063e0b3c42526b122536837cf085b85fc08695484f90f",
     "tools/safetensors_stream.py": "574b33e227935eed15b88e9b8d09f50fa9a70647f97a3174641156409e3b7018",
-    "tools/test_acceleration.py": "926afc13c4189ac92c7be3e6fe11aae0f3e2d1d37f01227a9f861f422c6cc8a2",
-    "tools/test_aligner.py": "e880002552ca732b5cb3fe25cb4185345cce3961a548fc51597158e56d8b9af3",
-    "tools/test_asr.py": "caa6d04e9f1893deb0b064cfcdb7b7c7f06168cfcb6ff106cd052e33a99d7ff6",
-    "tools/test_audit3_browser.cjs": "cdbadca4c779eb5ed6e6dc3d6c100a564f0ea09fb05bd4085e6591879c06afb2",
-    "tools/test_audit4_browser.cjs": "f8c7501e5317c62f7e6578a0446d3484ea1ed757594d53056e925e5a58572cd1",
-    "tools/test_audit5_browser.cjs": "71b9800286333ebbc6c02538acb4b8c51c04446b4e1978ea410d593fc77552df",
-    "tools/test_codec.py": "7d1187a7a470738f9dbf8b7b949ce4e5cb6da3af69e9a6ae1c7790e15a8ac8d1",
-    "tools/test_comfy_extended.py": "9920b7ad41830cd9c7336f8869c36cbc3785b0dce3f63579f49f9b7857679d5d",
-    "tools/test_comfy_features.py": "f37b21605976e4536fd141a5a42b70a1449d2786597356e22688252b40cf8077",
-    "tools/test_comfy_workflow.py": "2fb1b30c0cc4eac5f452d406d9a7104ccdc3033f97fa4413484f57f7eb2f03a3",
-    "tools/test_features.py": "b7b569d2e2e951da9352ec883cbfec9b052889ed00ab0c4cf3ebf9ad30b139b6",
-    "tools/test_live_audio.py": "fd9fd8899ca78c1b1e510f1ad6515c608f49dc2c36293e6c388e0be84b5baf2e",
-    "tools/test_model.py": "b1fda404a83dc7df1f78a131b883ca984fecfb3aa95270dc7225ce16cffecddb",
-    "tools/test_portable_workflows.py": "d96214f8a0bae87025c5dd9ace9b59073cf63153dbbfb34a9f84367bb04b30ba",
-    "tools/test_relocated.py": "04cecab6b2a2e13699ad997fc23b107a6a0eb7c6523636504d8aed03a2d6c6ff",
-    "tools/test_scene_logits.py": "7708af16fabc18e81125afe5cd25f14ebccd94fe025d75a4b55f28aa81524f8b",
-    "tools/test_scene_revision.py": "88a610c3bbfcaccec7a53bedad7225557ba3c134640f3a9255f01c021ffbbb3d",
-    "tools/test_workspace_browser.cjs": "7ebc547a5ecc6e8387a8b435ae40abbc8142114ce2d86738c15b627392e4c369",
-    "tools/test_workspace_browser_edges.cjs": "4861a0d79ac77f59b847ae2301dd8d0b9a69955daa8dd06de8fc99d75000e3dc",
     "tools/update_portable.py": "db5dc06f5117b42a474ba99a7603e07ba270013baffca29702c9ecd7532c58d5",
-    "tools/verify_comfy_canvas.cjs": "1669c8cfad74ceb144ebaa45b70c5e53cef1fc5de0e9d9d648f4be7f20a19a72",
-    "tools/verify_comfy_live_browser.cjs": "049c1f67b801d62f735b11a1d14efd450f4dfcfb823ff77f3a368d11382727b8",
-    "tools/verify_feature_audio.py": "a09b6fa2f94824104253ae5b4cdfda43495d4b21699d38fe92cf0957ff666bb6",
-    "tools/verify_release_package.py": "839f4ab88420d05f758fe5db9e9d8f889e1f1833c713de90bc43e47b3c8870fd",
     "upstream-lock.json": "2e8657c5bfce8fd5acdf7a43a812c4f1678c3edbc3ebc7acf653b6a95dab9b03",
     "web/app.js": "2747bf3fd9045a19a3072d963ebdcb132194c5a5215785cd62c95a94b3fd77b0",
     "web/drama3_editor.js": "ac90c58eb6e261823d59e610a0f70d98a733db35ddca4b7190744e61a60b18ec",
@@ -413,2885 +252,337 @@
     "web/studio-extras.css": "8ee8a60e41a48e8baf1c1feef1c004f5a34a00fa5acb776c7561453c6b0d5e04",
     "web/styles.css": "266140153916f6594997c8ee041e3a00728b170558853ce9c9a06f8e5ab9c2eb",
     "web/transcribe.js": "d16c94481b28236cba4d66511a6d2a0bbf571b26f1d7adfe8c3ec6461a1896ab",
-    "web/workspace-tools.js": "5e45705e9449a252698c45ded7b4c93fb9038ac90f3f87bf5eb1c8f9bbc4c22e",
-    "tests/fixtures/fim-system-protocol/original-speaker1-prompt.json": "b16459d4c391cfd84df13bfe02a00be0c0fb49538353017115ab204bd6da20c3"
-  },
-  "source_hash_scope": "396 actual current sources/documents, excluding acceptance itself. Relative to the tested R19b395 parent:387 old non-README entries are byte-identical; one release builder and three developer-test files have scoped verified fixes; four README files are final docs; one exact I64 JSON test fixture is added. Final397 freeze includes acceptance after validation. All inference, UI and native DLL source bytes remain tested-parent identical.",
-  "current_scoped_acceptance": {
-    "execution_method": {
-      "canvas": "Actual browser file chooser import and Run clicks; not direct prompt-API submission.",
-      "studio": "Actual Studio controls and Generate click; original long96 payload unchanged.",
-      "ASR": "One actual20clip R2 process and one actual20clip Qwen process, explicitly mapped to cases. Per-case scores are batch views, not separately run original requests.",
-      "strict_normalization": "NFKC then alphanumeric retention and casefold; no synonyms, word deletion or target hints."
-    },
-    "interface": {
-      "native_V3_nodes": 18,
-      "canvas_examples": 16,
-      "scope": "16 real canvas JSON templates. Fixed actually executed cases below do not certify every template/parameter combination."
-    },
-    "cpu_regressions": {
-      "status": "passed_current_runtime_parent",
-      "transformers": "4.57.1",
-      "tokenizers": "0.22.2",
-      "huggingface_hub": "0.36.2",
-      "hosts": [
-        {
-          "host": "bundled",
-          "comfy_kitchen": "0.2.37",
-          "passed": 1322,
-          "skipped": 5,
-          "GPU_deselected": 1,
-          "actual_exit": 0,
-          "CUDA_initialized": false
-        },
-        {
-          "host": "latest",
-          "comfy_kitchen": "0.2.40",
-          "passed": 1322,
-          "skipped": 5,
-          "GPU_deselected": 1,
-          "actual_exit": 0,
-          "CUDA_initialized": false
-        }
-      ],
-      "evidence": [
-        {
-          "archive_id": "direction-progress-two-full-CPU-terminal-r19b.json",
-          "sha256": "dba63f58ba419ad484cd4f7bcba7b25d0f00dd7d46bb7a5f13fa963a36c7a5ca",
-          "availability": "author_local_archive_not_shipped_with_release"
-        }
-      ],
-      "scope": "Two actual R19b inference-runtime-parent TF4.57.1 CPU dependency environments (Kitchen0.2.37/0.2.40), each1322passed/5skipped/1GPUdeselected, CUDAFalse. Final release-tool/developer-fixture-only changes received the separate115passed/2skipped canonical focused run. No new full suite or TF5.19 run is claimed for the final child."
-    },
-    "fixed_content": {
-      "status": "strict_fixed_cases_passed_both_recognizers",
-      "R2_exact": 20,
-      "Qwen17_exact": 20,
-      "total_per_recognizer": 20,
-      "per_case": {
-        "complex": {
-          "R2_exact": 12,
-          "Qwen17_exact": 12,
-          "total_per_recognizer": 12,
-          "content_passed": true,
-          "separately_run_original_request": false
-        },
-        "joint": {
-          "R2_exact": 4,
-          "Qwen17_exact": 4,
-          "total_per_recognizer": 4,
-          "content_passed": true,
-          "separately_run_original_request": false
-        },
-        "studio": {
-          "R2_exact": 4,
-          "Qwen17_exact": 4,
-          "total_per_recognizer": 4,
-          "content_passed": true,
-          "separately_run_original_request": false
-        }
-      },
-      "normalization": "NFKC + isalnum + casefold",
-      "evidence": [
-        {
-          "archive_id": "strict-content-score.json",
-          "sha256": "f16761d71c46172236c6707efede038888d14ac9019af6cf0a951a05426a2fc3",
-          "availability": "author_local_archive_not_shipped_with_release"
-        }
-      ],
-      "complex": {
-        "actual_UI_prompt_id": "65f92ac9-023c-48ed-8612-3ae44e47b582",
-        "takes": 3,
-        "mode": "per_line_context",
-        "chunk_bytes": 48,
-        "seed": 516,
-        "each_stage_request_seeds": [
-          516,
-          517,
-          518,
-          519,
-          520,
-          521
-        ],
-        "stable_sampling": [
-          0.7,
-          0.7,
-          30
-        ],
-        "max_frames": 300,
-        "opening_retries": 0,
-        "reference_frames": [
-          85,
-          103
-        ],
-        "prior_take_and_reference_prefixes_preserved": true,
-        "evidence": [
-          {
-            "archive_id": "terminal-and-audio-gate.json",
-            "sha256": "a792f491ce9a68785e5efebb761125dc114c6834dd0aee3a79136a447393c9cf",
-            "availability": "author_local_archive_not_shipped_with_release"
-          }
-        ]
-      },
-      "joint": {
-        "actual_UI_prompt_id": "583284b6-a81e-450a-9eac-e0123725bcdb",
-        "mode": "together",
-        "split_long_text": false,
-        "line_frames": [
-          36,
-          46,
-          40
-        ],
-        "original_line2_opening_我_recognized_by_both": true,
-        "evidence": [
-          {
-            "archive_id": "terminal-and-audio-gate.json",
-            "sha256": "1249739d2b292dc0d47e0e8a34c25903121ebaf879937338ecd0c354584f5038",
-            "availability": "author_local_archive_not_shipped_with_release"
-          }
-        ]
-      },
-      "studio": {
-        "actual_UI_job": "8047db689695431ba131936ffe1452bf",
-        "original_long96_payload_exact": true,
-        "audio_frames_per_chunk": [
-          126,
-          93,
-          77
-        ],
-        "samples": 606208,
-        "original_58frame_reference_bytes_exact": true,
-        "evidence": [
-          {
-            "archive_id": "prepared.json",
-            "sha256": "c80032e0cc4a444c17c78759fac44de3aec01f55d658e36ce0ca6b2023f06e12",
-            "availability": "author_local_archive_not_shipped_with_release"
-          }
-        ]
-      },
-      "limit": "Fixed text/order checks, not voice likeness, emotion/accent, all-prompt quality or speed scores."
-    },
-    "strict48_replay": {
-      "actual_UI_prompt_id": "d36c2a7d-4bc2-44a5-869c-d32f9b2f8f1a",
-      "mode": "per_speaker",
-      "chunk_bytes": 48,
-      "status": "accepted_prior_dual_ASR_reused_only_after_exact_codes_and_decoded_saved_PCM",
-      "reused_R2_exact": 4,
-      "reused_Qwen17_exact": 4,
-      "new_ASR_executed": false,
-      "evidence": [
-        {
-          "archive_id": "15-terminal-and-audio-gate-r19.json",
-          "sha256": "d59f6bddeb4a49c75a58fb31a10652a7a55d905509283ad5602c554038dfea7f",
-          "availability": "author_local_archive_not_shipped_with_release"
-        }
-      ]
-    },
-    "actual_canvas_progress": {
-      "node": "4",
-      "midway_value": 900,
-      "midway_total": 1800,
-      "midway_percent": 50,
-      "actual_WS_and_page_verified": true,
-      "scope": "This original strict48 Scene run only.",
-      "evidence": [
-        {
-          "archive_id": "16-visible-node-progress-gate-r19.json",
-          "sha256": "4be181efb8239b30e1ff1b87f6e0309fd4ea872986ed444f16071940a7f288a8",
-          "availability": "author_local_archive_not_shipped_with_release"
-        }
-      ]
-    },
-    "portable": {
-      "same_version_R19_refresh_integrity": "passed_private_scope_not_cross_version_update",
-      "own_Python_CPU_reopen": {
-        "actual_exit": 0,
-        "native_schemas": 18,
-        "transformers": "4.57.1",
-        "CUDA_initialized": false,
-        "stat_preserved_files": 53820,
-        "service_UI_or_model_generation": false
-      },
-      "evidence": [
-        {
-          "archive_id": "fullclean-r19-refresh-independent-terminal-review-r1.json",
-          "sha256": "aa45ee6928a83a20131b6b742a4c7a12ee487edd47cb2afd837f81a9cdeb2a5d",
-          "availability": "author_local_archive_not_shipped_with_release"
-        },
-        {
-          "archive_id": "fullclean-r19-own-runtime-CPU-independent-terminal-review-r1.json",
-          "sha256": "5cdec1c952562396364ab6171950ad8c899892153b243e7a4341c4290618bd32",
-          "availability": "author_local_archive_not_shipped_with_release"
-        }
-      ],
-      "cross_version_scope": "Older real physical-copy0.1.11 updater evidence belongs to r11. No newly repeated R19 cross-version transaction is claimed."
-    },
-    "canvas_host_scope": {
-      "old_host": "actualComfyUI0.40.0source withKitchen0.2.40/frontend1.57.1; originalstrict48/complex/Joint visible Runs",
-      "new_host": "actualComfyUI0.42.0source withKitchen0.2.40/frontend1.57.1; originalJoint only, onevisibleRun, newoutput and freshdual4/4",
-      "evidence_mapping": "gates.canvas_old_host and gates.canvas_new_host"
-    },
-    "release_only_increment": {
-      "status": "passed",
-      "changed_existing_files": [
-        "tools/build_public_release.py",
-        "tests/test_packaging.py",
-        "tests/test_infill_system_protocol.py",
-        "tests/test_canvas_workflows.py"
-      ],
-      "added_fixture": "tests/fixtures/fim-system-protocol/original-speaker1-prompt.json",
-      "inference_UI_native_DLLs_unchanged": true,
-      "canonical_focused": {
-        "passed": 115,
-        "skipped": 2,
-        "collected": 117,
-        "actual_exit": 0,
-        "CUDA_initialized": false,
-        "evidence": {
-          "path": "validation/development-20261027/canonical-release-and-fixture-focused-root-terminal-r20b.json",
-          "bytes": 2003,
-          "sha256": "1d64b0a90efe3cdb78d877c709dc682c605a77094bbbb6c72447033856c0ba3f"
-        }
-      },
-      "export_source_checks": {
-        "JSON_protocol_passed": 35,
-        "Git_LF_canvas_frontend_passed": 26,
-        "CUDA_initialized": false,
-        "evidence": {
-          "path": "validation/development-20261027/export-fixture-results-and-HF-adoption-independent-review-r20-r1.json",
-          "bytes": 9724,
-          "sha256": "190274923bb610293c4ee4080f56ca3a0ee2870f2bc04cea6161fff11ad99b42"
-        }
-      },
-      "actual_native_archive_reuse": {
-        "path": "validation/development-20261027/release-native-license-fix-r20/actual-native-reuse-candidate/receipt.json",
-        "bytes": 1381,
-        "sha256": "feb64085855d9b8b948210ca5c7c51068a197ac1ff4b42961d7406cec64f1555"
-      },
-      "scope": "Three license regression cases failed on the old collector and passed on the reviewed candidate; actual canonical focused tests passed after adoption. Developer fixtures retain exact tensor/content identity. No new full1322 run or model/UI inference is claimed for this tool/test-only increment.",
-      "final_source_export_increment": {
-        "status": "passed",
-        "passed": 54,
-        "skipped": 2,
-        "collected": 56,
-        "actual_exit": 0,
-        "CUDA_initialized": false,
-        "evidence": {
-          "path": "validation/development-20261027/canonical-source-export-packaging-root-terminal-r20c.json",
-          "bytes": 2008,
-          "sha256": "a613d1e15c9040aa7bc7084588467dc674e02aa6c49f516e1b0ff40871bc4f98"
-        },
-        "scope": "Developer publisher is exported as Git source only. It stays outside the unchanged legacy code-update whitelist and full portable runtime. Native collector function and all inference/UI/native sources are unchanged from prior qualified checks."
-      }
-    }
-  },
-  "known_limits": [
-    {
-      "id": "formats",
-      "status": "incomplete_beyond_fixed_W4",
-      "detail": "Fixed current content passes used W4. Earlier FP8 cat/English spelling disagreements remain historical failures. W6/INT8 whole-model coverage is incomplete; tiny numerical tests are not whole-model qualification."
-    },
-    {
-      "id": "memory",
-      "status": "limited_hardware",
-      "detail": "Windows RTX5090Laptop24GB VRAM/64GB RAM, fixedW4 expert cache8GiB. Full-model single-GPU VRAM residency is not qualified. Real available-RAM guards may refuse loading or record fallback."
-    },
-    {
-      "id": "FLA",
-      "status": "optional_historical_evidence",
-      "detail": "Torch remains default GDN. Earlier FLA results do not establish current-source end-to-end speed benefit."
-    },
-    {
-      "id": "ASR",
-      "status": "not_general_accuracy",
-      "detail": "Prior actual Qwen1.7 canvas 您好 versus originaltarget你好 remains a strict word mismatch; no synonym substitution. Fixed20clip accuracy does not certify all transcription."
-    },
-    {
-      "id": "subjective",
-      "status": "not_scored",
-      "detail": "No universal voice similarity, emotion, accent, expressive-style or performance score."
-    },
-    {
-      "id": "multi_GPU",
-      "status": "excluded_by_requested_scope",
-      "detail": "Multi-GPU execution was excluded from this work scope."
-    }
-  ],
-  "evidence_availability": "Evidence paths and hashes identify author-held local validation archives. These archives are not Release downloads and are intentionally excluded from GitHub. Local evidence references may be relative to the author workspace; no public URL is implied.",
-  "historical_evidence_scope": {
-    "version": "0.1.11",
-    "original_raw_sha256": "9f62e8f09deabb8b4284cdd102ff20c3d77d0fdc2d3397abb819b20421ddb41d",
-    "retention": "The complete original JSON object is preserved unchanged below. Its paths refer to local historical archives not shipped in Release. Historical479 counts and5.19 runs do not become current0.2.0 results."
-  },
-  "historical_releases": {
-    "0.1.11": {
-      "version": "0.1.11",
-      "validation_scope": "Historical published 0.1.11 Torch/FLA and canvas evidence. The development upgrade is still under acceptance; these historical passes do not certify new MoE/Graph, quantized models, dialogue modes, compact head, editor, or rebuilt packages.",
-      "machine": "RTX5090 Laptop 24GB VRAM / 64GB RAM",
-      "tests": {
-        "passed": 479,
-        "skipped": 1,
-        "skip_reason": "Windows symlink creation privilege unavailable",
-        "report": "validation/tf4-tests-4571-final.log"
-      },
-      "original_tts": {
-        "text": "你好，这是本地语音测试。",
-        "language": "Chinese",
-        "elapsed_seconds": 24.398630799994862
-      },
-      "voice_clone": {
-        "text": "Good morning. Let us give this story a voice.",
-        "language": "English",
-        "elapsed_seconds": 22.918195999998716
-      },
-      "features": {
-        "revision-1": {
-          "status": "passed",
-          "metadata": {
-            "seed": 41,
-            "sampling": {
-              "seed": 41,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 160
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 81.50742739999987,
-            "first_frame_seconds": 47.89880410000478,
-            "duration_seconds": 3.7151927437641725,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 2430
-          },
-          "frames": 80
-        },
-        "revision-2": {
-          "status": "passed",
-          "metadata": {
-            "seed": 42,
-            "sampling": {
-              "seed": 42,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 160
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 40.99340700000175,
-            "first_frame_seconds": 14.835108999999647,
-            "duration_seconds": 3.4829931972789114,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 4710
-          },
-          "frames": 75
-        },
-        "revision-3": {
-          "status": "passed",
-          "metadata": {
-            "seed": 43,
-            "sampling": {
-              "seed": 43,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 160
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 41.23152480000135,
-            "first_frame_seconds": 14.264750800000911,
-            "duration_seconds": 4.2260317460317465,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 7470
-          },
-          "frames": 91
-        },
-        "infill-replace": {
-          "status": "passed",
-          "metadata": {
-            "seed": 45,
-            "sampling": {
-              "seed": 45,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 100
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 60.80481179999333,
-            "first_frame_seconds": 50.13193179999507,
-            "duration_seconds": 0.6965986394557823,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 480,
-            "source_take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
-            "edit_start_frame": 24,
-            "edit_end_frame": 47,
-            "original_frames": 77,
-            "inserted_frames": 15,
-            "preserved_prefix_suffix_codes": true
-          },
-          "frames": 69
-        },
-        "text-stream-1": {
-          "status": "passed",
-          "metadata": {
-            "seed": 46,
-            "sampling": {
-              "seed": 46,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 120
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 57.90454200000386,
-            "first_frame_seconds": 35.4538429000022,
-            "duration_seconds": 1.4396371882086167,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 960,
-            "task": "text_stream",
-            "lookahead": "The story begins here."
-          },
-          "frames": 31
-        },
-        "text-stream-2": {
-          "status": "passed",
-          "metadata": {
-            "seed": 47,
-            "sampling": {
-              "seed": 47,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 160
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 33.29378870000073,
-            "first_frame_seconds": 13.30205389999901,
-            "duration_seconds": 1.7182766439909296,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 1140,
-            "task": "text_stream",
-            "lookahead": ""
-          },
-          "frames": 37
-        },
-        "scene": {
-          "status": "passed",
-          "metadata": {
-            "seed": 44,
-            "sampling": {
-              "seed": 44,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 180
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 68.5706438000052,
-            "first_frame_seconds": 39.362108200002695,
-            "duration_seconds": 2.414875283446712,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 1680,
-            "expected_segments": 2,
-            "actual_segments": 2,
-            "task": "scene",
-            "output_controls": [
-              "Ċ",
-              "<|audio_separator|>",
-              "Ċ"
-            ]
-          },
-          "frames": 55
-        },
-        "aligned-replace": {
-          "status": "passed",
-          "metadata": {
-            "seed": 45,
-            "sampling": {
-              "seed": 45,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 120
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 54.01583830000163,
-            "first_frame_seconds": 48.997701399996004,
-            "duration_seconds": 0.46439909297052157,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 330,
-            "source_take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
-            "edit_start_frame": 41,
-            "edit_end_frame": 52,
-            "original_frames": 77,
-            "inserted_frames": 10,
-            "preserved_prefix_suffix_codes": true
-          },
-          "frames": 76
-        },
-        "aligned-insert": {
-          "status": "passed",
-          "metadata": {
-            "seed": 49,
-            "sampling": {
-              "seed": 49,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 120
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 19.517392100002326,
-            "first_frame_seconds": 13.754539300003671,
-            "duration_seconds": 0.603718820861678,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 750,
-            "source_take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
-            "edit_start_frame": 41,
-            "edit_end_frame": 41,
-            "original_frames": 77,
-            "inserted_frames": 13,
-            "preserved_prefix_suffix_codes": true
-          },
-          "frames": 90
-        },
-        "aligned-delete": {
-          "status": "passed",
-          "metadata": {
-            "seed": 50,
-            "sampling": {
-              "seed": 50,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 120
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 13.022705399998813,
-            "first_frame_seconds": 12.214297999998962,
-            "duration_seconds": 0.09287981859410431,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 840,
-            "source_take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
-            "edit_start_frame": 41,
-            "edit_end_frame": 52,
-            "original_frames": 77,
-            "inserted_frames": 2,
-            "preserved_prefix_suffix_codes": true
-          },
-          "frames": 68
-        }
-      },
-      "audio_content": [
-        {
-          "name": "live_recovery",
-          "expected": "你好，这是实时试听测试。",
-          "recognized": "你好。这是实时试听测试。",
-          "match": true
-        },
-        {
-          "name": "srt",
-          "expected": "Hello. Goodbye.",
-          "recognized": "Hello. Goodbye.",
-          "match": true
-        },
-        {
-          "name": "long_context",
-          "expected": "Good morning. The story begins here.",
-          "recognized": "Good morning. The story begins here.",
-          "match": true
-        },
-        {
-          "name": "two_reference_direction",
-          "expected": "Come closer. This is our little secret.",
-          "recognized": "Come closer. This is our little secret.",
-          "match": true
-        },
-        {
-          "name": "infill",
-          "expected": "你好，这是新的语音测试。",
-          "recognized": "你好，这是新的语音测试。",
-          "match": true
-        },
-        {
-          "name": "stream_context",
-          "expected": "Good morning. The story begins here.",
-          "recognized": "Good morning. The story begins here.",
-          "match": true
-        },
-        {
-          "name": "benchmark_fla",
-          "expected": "你好，这是本地语音测试。",
-          "recognized": "你好，这是本地语音测试。",
-          "match": true
-        },
-        {
-          "name": "scene_revision",
-          "expected": "Ready? Always.",
-          "recognized": "Ready. Always.",
-          "match": true
-        }
-      ],
-      "portable_workflows": {
-        "settings": {
-          "message": "运行设置已保存",
-          "settings": {
-            "model": "drama3-t8-fp8.safetensors",
-            "codec": "drama3-codec.safetensors",
-            "expert_cache_gb": 12,
-            "gdn_backend": "fla"
-          }
-        },
-        "project_import_preview": {
-          "audio": "/api/sessions/cc628a2367e3407f9cc835bada6aac6d/takes/0.wav",
-          "session_id": "cc628a2367e3407f9cc835bada6aac6d",
-          "transcript": "你好，这是本地语音测试。",
-          "metrics": {
-            "seed": 42,
-            "sampling": {
-              "seed": 42,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 140
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 104.9513111999986,
-            "first_frame_seconds": 77.72243100000196,
-            "duration_seconds": 3.575873015873016,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "torch",
-            "gdn_calls": 2340
-          },
-          "project": "/api/files/session/cc628a2367e3407f9cc835bada6aac6d.safetensors"
-        },
-        "alignment": {
-          "alignment": [
-            {
-              "text": "你",
-              "start": 0,
-              "end": 0.16
-            },
-            {
-              "text": "好",
-              "start": 0.16,
-              "end": 0.56
-            },
-            {
-              "text": "这",
-              "start": 1.6,
-              "end": 1.76
-            },
-            {
-              "text": "是",
-              "start": 1.76,
-              "end": 1.92
-            },
-            {
-              "text": "本",
-              "start": 1.92,
-              "end": 2.16
-            },
-            {
-              "text": "地",
-              "start": 2.16,
-              "end": 2.4
-            },
-            {
-              "text": "语",
-              "start": 2.4,
-              "end": 2.56
-            },
-            {
-              "text": "音",
-              "start": 2.56,
-              "end": 2.72
-            },
-            {
-              "text": "测",
-              "start": 2.72,
-              "end": 2.96
-            },
-            {
-              "text": "试",
-              "start": 2.96,
-              "end": 3.44
-            }
-          ],
-          "session_id": "cc628a2367e3407f9cc835bada6aac6d",
-          "take_id": "2f6d4fc9c6864b6289525d6ac585b26c",
-          "metadata": "/api/files/output/c9515e4d6a304a7bb94b74c1bc12ec8a.alignment.json"
-        },
-        "queued_cancel": {
-          "status": "cancelled"
-        },
-        "running_cancel": {
-          "status": "cancelled"
-        },
-        "live_recovery": {
-          "first_packet": {
-            "seconds": 117.1685748000018,
-            "job_status": "running"
-          },
-          "chunks": 3,
-          "result": {
-            "audio": "/api/files/output/8e690578928e4a26b8baaeb7a44d864e.wav",
-            "metadata": "/api/files/output/8e690578928e4a26b8baaeb7a44d864e.json",
-            "session_id": "31aace49c87c4f11b85b297be37bcc75",
-            "take_id": "0135a50b3e7e4c15830be233c8f34f91",
-            "transcript": "你好，这是实时试听测试。",
-            "metrics": {
-              "seed": 62,
-              "sampling": {
-                "seed": 62,
-                "temperature": 0.7,
-                "top_k": 30,
-                "top_p": 0.7,
-                "max_frames": 160
-              },
-              "model": "drama3-t8-fp8.safetensors",
-              "elapsed_seconds": 156.4282877000005,
-              "first_frame_seconds": 87.08991439999954,
-              "duration_seconds": 4.31891156462585,
-              "length_limit_reached": false,
-              "finish_reason": "eos",
-              "gdn_backend": "fla",
-              "gdn_calls": 2820,
-              "output_duration_seconds": 4.31891156462585
-            },
-            "subtitle": null,
-            "project": "/api/files/session/31aace49c87c4f11b85b297be37bcc75.safetensors"
-          }
-        },
-        "srt": {
-          "actual_srt": "1\r\n00:00:00,000 --> 00:00:00,650\r\nHello.\r\n\r\n2\r\n00:00:03,000 --> 00:00:03,743\r\nGoodbye.\r\n",
-          "result": {
-            "audio": "/api/files/output/8a02060e7a534286afaadd0adf5e8ac9.wav",
-            "metadata": "/api/files/output/8a02060e7a534286afaadd0adf5e8ac9.json",
-            "session_id": "000d16158eb3451b8c845c9594221708",
-            "take_id": "2761fbf681fe477299dc803d49a181b5",
-            "transcript": "1\n00:00:00,000 --> 00:00:02,000\nHello.\n\n2\n00:00:03,000 --> 00:00:05,000\nGoodbye.\n",
-            "metrics": {
-              "seed": 56,
-              "sampling": {
-                "seed": 56,
-                "temperature": 0.7,
-                "top_k": 30,
-                "top_p": 0.7,
-                "max_frames": 160
-              },
-              "model": "drama3-t8-fp8.safetensors",
-              "elapsed_seconds": 33.04120569999941,
-              "first_frame_seconds": 9.008134199997585,
-              "duration_seconds": 3.7430385487528346,
-              "length_limit_reached": false,
-              "finish_reason": "eos",
-              "gdn_backend": "fla",
-              "gdn_calls": 510,
-              "output_duration_seconds": 3.7430385487528346,
-              "chunk_count": 2,
-              "chunks": [
-                {
-                  "seed": 55,
-                  "sampling": {
-                    "seed": 55,
-                    "temperature": 0.7,
-                    "top_k": 30,
-                    "top_p": 0.7,
-                    "max_frames": 160
-                  },
-                  "model": "drama3-t8-fp8.safetensors",
-                  "elapsed_seconds": 15.967177600003197,
-                  "first_frame_seconds": 7.048141400002351,
-                  "duration_seconds": 0.6501587301587302,
-                  "length_limit_reached": false,
-                  "finish_reason": "eos",
-                  "gdn_backend": "fla",
-                  "gdn_calls": 450
-                },
-                {
-                  "seed": 56,
-                  "sampling": {
-                    "seed": 56,
-                    "temperature": 0.7,
-                    "top_k": 30,
-                    "top_p": 0.7,
-                    "max_frames": 160
-                  },
-                  "model": "drama3-t8-fp8.safetensors",
-                  "elapsed_seconds": 17.074028099996212,
-                  "first_frame_seconds": 9.008134199997585,
-                  "duration_seconds": 0.7430385487528345,
-                  "length_limit_reached": false,
-                  "finish_reason": "eos",
-                  "gdn_backend": "fla",
-                  "gdn_calls": 510
-                }
-              ]
-            },
-            "subtitle": "/api/files/output/8a02060e7a534286afaadd0adf5e8ac9.srt",
-            "project": "/api/files/session/000d16158eb3451b8c845c9594221708.safetensors"
-          }
-        },
-        "long_context": {
-          "audio": "/api/files/output/455d4b93ace14a47af13e2df64e145f1.wav",
-          "metadata": "/api/files/output/455d4b93ace14a47af13e2df64e145f1.json",
-          "session_id": "f3c87ab488bd4a079b02d2580d97cad8",
-          "take_id": "025efc7e2e3d4ce5addbba66aba60af5",
-          "transcript": "Good morning. The story begins here.",
-          "metrics": {
-            "seed": 65,
-            "sampling": {
-              "seed": 65,
-              "temperature": 0.7,
-              "top_k": 30,
-              "top_p": 0.7,
-              "max_frames": 160
-            },
-            "model": "drama3-t8-fp8.safetensors",
-            "elapsed_seconds": 43.38112479999836,
-            "first_frame_seconds": 10.691127300000517,
-            "duration_seconds": 2.693514739229025,
-            "length_limit_reached": false,
-            "finish_reason": "eos",
-            "gdn_backend": "fla",
-            "gdn_calls": 1170,
-            "output_duration_seconds": 2.693514739229025,
-            "chunk_count": 2,
-            "chunks": [
-              {
-                "seed": 64,
-                "sampling": {
-                  "seed": 64,
-                  "temperature": 0.7,
-                  "top_k": 30,
-                  "top_p": 0.7,
-                  "max_frames": 160
-                },
-                "model": "drama3-t8-fp8.safetensors",
-                "elapsed_seconds": 17.384967300000426,
-                "first_frame_seconds": 5.983812099999341,
-                "duration_seconds": 0.9287981859410431,
-                "length_limit_reached": false,
-                "finish_reason": "eos",
-                "gdn_backend": "fla",
-                "gdn_calls": 630
-              },
-              {
-                "seed": 65,
-                "sampling": {
-                  "seed": 65,
-                  "temperature": 0.7,
-                  "top_k": 30,
-                  "top_p": 0.7,
-                  "max_frames": 160
-                },
-                "model": "drama3-t8-fp8.safetensors",
-                "elapsed_seconds": 25.996157499997935,
-                "first_frame_seconds": 10.691127300000517,
-                "duration_seconds": 1.7647165532879818,
-                "length_limit_reached": false,
-                "finish_reason": "eos",
-                "gdn_backend": "fla",
-                "gdn_calls": 1170
-              }
-            ]
-          },
-          "subtitle": null,
-          "project": "/api/files/session/f3c87ab488bd4a079b02d2580d97cad8.safetensors"
-        }
-      },
-      "benchmark": [
-        {
-          "backend": "torch",
-          "run": 0,
-          "method": "one warmup, ordered Torch/FLA/Torch, codec resident",
-          "total_seconds": 29.81903980000061,
-          "peak_vram_bytes": 21118642688,
-          "frames": 77,
-          "seed": 42,
-          "sampling": {
-            "seed": 42,
-            "temperature": 0.7,
-            "top_k": 30,
-            "top_p": 0.7,
-            "max_frames": 160
-          },
-          "model": "drama3-t8-fp8.safetensors",
-          "elapsed_seconds": 29.72122649999801,
-          "first_frame_seconds": 6.308827400003793,
-          "duration_seconds": 3.575873015873016,
-          "length_limit_reached": false,
-          "finish_reason": "eos",
-          "gdn_backend": "torch",
-          "gdn_calls": 2340,
-          "decode_frames_per_second": 3.246143194270884
-        },
-        {
-          "backend": "fla",
-          "run": 1,
-          "method": "one warmup, ordered Torch/FLA/Torch, codec resident",
-          "total_seconds": 23.278005899999698,
-          "peak_vram_bytes": 21112349696,
-          "frames": 54,
-          "seed": 42,
-          "sampling": {
-            "seed": 42,
-            "temperature": 0.7,
-            "top_k": 30,
-            "top_p": 0.7,
-            "max_frames": 160
-          },
-          "model": "drama3-t8-fp8.safetensors",
-          "elapsed_seconds": 23.04447490000166,
-          "first_frame_seconds": 6.292443500002264,
-          "duration_seconds": 2.507755102040816,
-          "length_limit_reached": false,
-          "finish_reason": "eos",
-          "gdn_backend": "fla",
-          "gdn_calls": 1650,
-          "decode_frames_per_second": 3.1637954069261065
-        },
-        {
-          "backend": "torch",
-          "run": 2,
-          "method": "one warmup, ordered Torch/FLA/Torch, codec resident",
-          "total_seconds": 28.282654900001944,
-          "peak_vram_bytes": 21118642688,
-          "frames": 77,
-          "seed": 42,
-          "sampling": {
-            "seed": 42,
-            "temperature": 0.7,
-            "top_k": 30,
-            "top_p": 0.7,
-            "max_frames": 160
-          },
-          "model": "drama3-t8-fp8.safetensors",
-          "elapsed_seconds": 28.16860330000054,
-          "first_frame_seconds": 6.166616999995313,
-          "duration_seconds": 3.575873015873016,
-          "length_limit_reached": false,
-          "finish_reason": "eos",
-          "gdn_backend": "torch",
-          "gdn_calls": 2340,
-          "decode_frames_per_second": 3.4542335843551517
-        }
-      ],
-      "native_workflows": {
-        "asr": {
-          "prompt_id": "ecbe4dd6-63a3-4d3f-ad47-28787039e1c7",
-          "seconds": 18.419223500000953,
-          "status": "success",
-          "first_packet_seconds": null,
-          "packet_count": null
-        },
-        "align": {
-          "prompt_id": "f5a67090-8e18-4baa-9a85-b3b84610707c",
-          "seconds": 20.734758200000215,
-          "status": "success",
-          "first_packet_seconds": null,
-          "packet_count": null
-        },
-        "scene": {
-          "prompt_id": "994187fd-720f-4c78-bdc6-6ee44ba6e1e8",
-          "seconds": 111.35362170000008,
-          "status": "success",
-          "first_packet_seconds": null,
-          "packet_count": null
-        },
-        "srt": {
-          "prompt_id": "f51eb659-8c79-4fb7-9d27-b142af48363a",
-          "seconds": 53.116173100002925,
-          "status": "success",
-          "first_packet_seconds": null,
-          "packet_count": null
-        },
-        "live": {
-          "prompt_id": "ca428f57-83d0-4171-a274-631918ecc2fa",
-          "seconds": 41.93256810000457,
-          "status": "success",
-          "first_packet_seconds": 29.322570800002723,
-          "packet_count": 2
-        }
-      },
-      "native_extended": {
-        "codec": "success",
-        "two_reference_direction": "success",
-        "infill": "success",
-        "stream_context": "success",
-        "branch_restore": "success"
-      },
-      "native_browser_live": {
-        "errors": [],
-        "events": [
-          {
-            "time": 118128.09999999404,
-            "data": {
-              "node_id": "3",
-              "filename": "00000.wav",
-              "subfolder": "drama3_live/a3503ad592f646a693ebd401cc7dd62f",
-              "type": "output",
-              "preview": true
-            }
-          },
-          {
-            "time": 130837.79999999702,
-            "data": {
-              "node_id": "3",
-              "filename": "00001.wav",
-              "subfolder": "drama3_live/a3503ad592f646a693ebd401cc7dd62f",
-              "type": "output",
-              "preview": true
-            }
-          },
-          {
-            "time": 136907.09999999404,
-            "data": {
-              "node_id": "3",
-              "filename": "00002.wav",
-              "subfolder": "drama3_live/a3503ad592f646a693ebd401cc7dd62f",
-              "type": "output",
-              "preview": true
-            }
-          }
-        ],
-        "plays": [
-          {
-            "time": 118180.69999999553,
-            "duration": 1.4860625
-          },
-          {
-            "time": 130858.39999999851,
-            "duration": 1.4860625
-          },
-          {
-            "time": 136922,
-            "duration": 0.5572708333333334
-          }
-        ],
-        "start": 8249.59999999404
-      },
-      "scene_revision": "success",
-      "limitations": [
-        "24GB RAM-expert offload is slower than audio realtime",
-        "FA2 model dispatch not enabled",
-        "CUDA Graph not enabled"
-      ],
-      "r2t2_and_custom_paths": {
-        "external_files_and_restart_persistence": "passed",
-        "native_comfyui": "passed",
-        "long_audio_seconds": 38.3221875,
-        "long_transcription_seconds": 7.729011099996569,
-        "utterances_recognized": 12,
-        "segments": 13,
-        "short_warm_seconds": 1.8254120999990846,
-        "reference_auto_transcribe": "passed",
-        "real_external_model_codec_generation": "passed",
-        "external_scene_text_head": "passed",
-        "optional_qwen_external_file": "passed",
-        "cancel_and_queue_recovery": "passed",
-        "invalid_path_preserves_settings": true,
-        "browser": {
-          "errors": [],
-          "path_fields": 8,
-          "reference_transfer": true,
-          "overflow": false
-        },
-        "execution": "in_process_native_no_worker",
-        "native_asr_to_reference": "passed",
-        "python312_no_torch_native": "passed",
-        "native_canvas": "passed",
-        "gpu_memory": {
-          "baseline_gpu_MiB": 1374.4140625,
-          "peak_gpu_MiB": 4760.4140625,
-          "peak_increment_MiB": 3386,
-          "after_gpu_MiB": 1374.4140625,
-          "method": "NVML whole GPU sampling every 20ms; other apps included in baseline",
-          "elapsed_seconds": 1.9119763999988209,
-          "text": "这是移动目录后的整合包测试。"
-        }
-      },
-      "prior_release_feature_evidence": "Existing feature, acceleration, and long-audio results below are retained from 0.1.0/0.1.1; current audit checks are recorded separately.",
-      "audit_012": {
-        "date": "2026-10-15",
-        "independent_agent_rounds": 20,
-        "agent_report": "validation/audit-20-agent.md",
-        "regressions": 61,
-        "browser": {
-          "pending_asr_audio_binding": true,
-          "history_asr_audio_binding": true,
-          "preview_without_metadata": true,
-          "new_job_shows_its_own_result": true,
-          "late_result_status_response_discarded": true,
-          "stale_alignment_not_applied": true,
-          "preview_keeps_selected_take": true,
-          "one_settings_poll_loop": true,
-          "last_stream_chunk_not_lost": true,
-          "transient_chunk_failure_retries": true,
-          "stale_stream_request_discarded": true,
-          "settings_poll_preserves_edit": true,
-          "mobile_no_overflow": true,
-          "page_errors": []
-        },
-        "browser_method": "Real Edge frontend with mocked API timing and AudioContext; no claim of real audible playback from these regression checks.",
-        "real_tts_asr_session": {
-          "tts": {
-            "audio": "/api/files/output/12d56108076e4aa4ac20208eed24bb15.wav",
-            "metadata": "/api/files/output/12d56108076e4aa4ac20208eed24bb15.json",
-            "session_id": "7b93e96e307646b780e68da484844b01",
-            "take_id": "a9c83e99d7454379a39c607c9c52cd01",
-            "transcript": "交叉检查后的本地语音测试。",
-            "metrics": {
-              "seed": 271,
-              "sampling": {
-                "seed": 271,
-                "temperature": 0.7,
-                "top_k": 30,
-                "top_p": 0.7,
-                "max_frames": 180
-              },
-              "model": "drama3-t8-fp8.safetensors",
-              "elapsed_seconds": 56.67254099999991,
-              "first_frame_seconds": 30.24707800000033,
-              "duration_seconds": 2.507755102040816,
-              "length_limit_reached": false,
-              "finish_reason": "eos",
-              "gdn_backend": "torch",
-              "requested_gdn_backend": "torch",
-              "actual_gdn_backends": [
-                "torch"
-              ],
-              "acceleration_fallback": null,
-              "gdn_calls_by_backend": {
-                "torch": 1650,
-                "fla": 0
-              },
-              "gdn_calls": 1650,
-              "output_duration_seconds": 2.507755102040816
-            },
-            "subtitle": null,
-            "project": "/api/files/session/7b93e96e307646b780e68da484844b01.safetensors"
-          },
-          "asr": {
-            "text": "交叉检查后的本地语音测试",
-            "language": "Chinese",
-            "truncated": false,
-            "finish_reason": "stop",
-            "model": "Confucius4-R2T2-Q8_0.gguf",
-            "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "mode_executed": "offline",
-            "segments": [],
-            "backend": "r2t2",
-            "duration_seconds": 2.50775,
-            "elapsed_seconds": 15.859006800004863,
-            "input_gain": 1,
-            "timing_method": "segment_estimate",
-            "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
-            "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
-            "execution": "in_process_native",
-            "model_released": true,
-            "transcript": "交叉检查后的本地语音测试",
-            "source_audio": "/api/files/input/7b4a272a52d2438ab1dd883190e31faa.wav",
-            "source_name": "cross-check.wav",
-            "text_file": "/api/files/output/bd96b54ce87a403aacc5fb597db738cb.txt",
-            "metadata": "/api/files/output/bd96b54ce87a403aacc5fb597db738cb.asr.json"
-          },
-          "session_reload": true
-        },
-        "process_startup": [
-          {
-            "port": 7864,
-            "exit": 0,
-            "probe_status": "running",
-            "already_running_message": true,
-            "busy_lock_message": false
-          },
-          {
-            "port": 7867,
-            "exit": 3,
-            "probe_status": "running",
-            "already_running_message": false,
-            "busy_lock_message": true
-          }
-        ],
-        "native_short_gpu": "validation/audit-agent-gpu.json",
-        "scope": "Bug fixes for ownership, queue cancellation, relocation, input validation, frontend async state, native ASR parsing/backends/segmentation, and shared ComfyUI ASR registry caches. No new all-feature or cross-platform benchmark claimed.",
-        "comfyui": {
-          "node_count": 17,
-          "canvas_workflows": [
-            "basic",
-            "live",
-            "r2t2"
-          ],
-          "real_native_asr_graph": "passed",
-          "reports": [
-            "validation/audit-comfy-canvas.json",
-            "validation/audit-comfy-native.json"
-          ]
-        },
-        "runtime_dependencies": {
-          "compatible": 139,
-          "report": "validation/audit-dependencies.log"
-        }
-      },
-      "audit_013": {
-        "date": "2026-10-15",
-        "independent_agent_rounds": 20,
-        "agent_report": "validation/audit2-20-agent.md",
-        "regressions": 114,
-        "new_browser_checks": {
-          "preview_completion_keeps_new_selection": true,
-          "preview_submission_keeps_new_selection": true,
-          "audio_result_outside_history": true,
-          "asr_result_outside_history": true,
-          "alignment_outside_history": true,
-          "settings_result_outside_history": true,
-          "live_completion_outside_history": true,
-          "selection_stops_old_live_audio": true,
-          "uint64_seed_preserves_decimal": true,
-          "import_discards_old_preview": true,
-          "page_errors": []
-        },
-        "previous_browser_regressions": "23 total behavior assertions including 10 new scenarios; no page errors. Real Edge with mocked API timing/AudioContext, not a real audio fidelity test.",
-        "fixed": "Project import identity; jobs beyond recent history; preview selection lifetimes; uint64 seeds; session integer/metadata validation; atomic save cleanup; audio batch/numeric contracts; infill timing; reserved prompt control fields.",
-        "real_pipeline": {
-          "tts": {
-            "audio": "/api/files/output/acb2fe9d80824a12ba9b5991efd3af35.wav",
-            "metadata": "/api/files/output/acb2fe9d80824a12ba9b5991efd3af35.json",
-            "session_id": "f34ae60845d84664b4c221c303dbbe92",
-            "take_id": "57c536dc15944c0b96bc40d12848c5f0",
-            "transcript": "这是第二轮本地语音测试。",
-            "metrics": {
-              "seed": 18446744073709552000,
-              "sampling": {
-                "seed": 18446744073709552000,
-                "temperature": 0.7,
-                "top_k": 30,
-                "top_p": 0.7,
-                "max_frames": 220
-              },
-              "model": "drama3-t8-fp8.safetensors",
-              "elapsed_seconds": 54.66052640000271,
-              "first_frame_seconds": 28.520477900005062,
-              "duration_seconds": 1.8575963718820863,
-              "length_limit_reached": false,
-              "finish_reason": "eos",
-              "gdn_backend": "torch",
-              "requested_gdn_backend": "torch",
-              "actual_gdn_backends": [
-                "torch"
-              ],
-              "acceleration_fallback": null,
-              "gdn_calls_by_backend": {
-                "torch": 1230,
-                "fla": 0
-              },
-              "gdn_calls": 1230,
-              "output_duration_seconds": 1.8575963718820863
-            },
-            "subtitle": null,
-            "project": "/api/files/session/f34ae60845d84664b4c221c303dbbe92.safetensors"
-          },
-          "project_copy_preserves_original": true,
-          "r2t2": {
-            "text": "这是第二轮本地语音测试。",
-            "language": "Chinese",
-            "truncated": false,
-            "finish_reason": "stop",
-            "model": "Confucius4-R2T2-Q8_0.gguf",
-            "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "mode_executed": "offline",
-            "segments": [],
-            "backend": "r2t2",
-            "duration_seconds": 1.857625,
-            "elapsed_seconds": 5.446365899995726,
-            "input_gain": 1,
-            "timing_method": "segment_estimate",
-            "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
-            "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
-            "execution": "in_process_native",
-            "model_released": true,
-            "transcript": "这是第二轮本地语音测试。",
-            "source_audio": "/api/files/input/cac9f331d5084793854b9e948b1176df.wav",
-            "source_name": "audit2-real.wav",
-            "text_file": "/api/files/output/5138b3b88920424d8a68c2535538e02f.txt",
-            "metadata": "/api/files/output/5138b3b88920424d8a68c2535538e02f.asr.json"
-          },
-          "qwen": {
-            "text": "这是第二轮本地语音测试。",
-            "language": "Chinese",
-            "backend": "qwen",
-            "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
-            "duration_seconds": 1.8575963718820863,
-            "elapsed_seconds": 5.399885799997719,
-            "transcript": "这是第二轮本地语音测试。",
-            "source_audio": "/api/files/input/4c0e047ff5ab4daeb721a7ff21db1990.wav",
-            "source_name": "audit2-qwen.wav",
-            "text_file": "/api/files/output/0dc5fe86857a45eba835ec524960602a.txt",
-            "metadata": "/api/files/output/0dc5fe86857a45eba835ec524960602a.asr.json"
-          },
-          "alignment": {
-            "alignment": [
-              {
-                "text": "这",
-                "start": 0,
-                "end": 0.08
-              },
-              {
-                "text": "是",
-                "start": 0.08,
-                "end": 0.24
-              },
-              {
-                "text": "第",
-                "start": 0.24,
-                "end": 0.32
-              },
-              {
-                "text": "二",
-                "start": 0.32,
-                "end": 0.48
-              },
-              {
-                "text": "轮",
-                "start": 0.48,
-                "end": 0.64
-              },
-              {
-                "text": "本",
-                "start": 0.64,
-                "end": 0.8
-              },
-              {
-                "text": "地",
-                "start": 0.8,
-                "end": 1.04
-              },
-              {
-                "text": "语",
-                "start": 1.04,
-                "end": 1.12
-              },
-              {
-                "text": "音",
-                "start": 1.12,
-                "end": 1.28
-              },
-              {
-                "text": "测",
-                "start": 1.28,
-                "end": 1.52
-              },
-              {
-                "text": "试",
-                "start": 1.52,
-                "end": 1.76
-              }
-            ],
-            "session_id": "a0040d6aaa534ea4bc0d3a3602ce2ccc",
-            "take_id": "57c536dc15944c0b96bc40d12848c5f0",
-            "metadata": "/api/files/output/b24d397517a441aebf0da3d552a5f266.alignment.json"
-          },
-          "preview_same_length": true,
-          "reference": {
-            "reference_id": "82a2643135be484587224bef2b74ec23",
-            "name": "Audit2 codec validation",
-            "frames": 40
-          }
-        },
-        "runtime_dependencies": {
-          "compatible": 139,
-          "report": "validation/audit2-dependencies.log"
-        },
-        "real_comfyui_graph": {
-          "nodes": 17,
-          "qwen_asr": "passed",
-          "forced_alignment": "passed",
-          "r2t2": "passed",
-          "report": "validation/audit2-comfy-native.json"
-        }
-      },
-      "audit_014": {
-        "date": "2026-10-15",
-        "independent_agent_rounds": 20,
-        "agent_report": "validation/audit3-20-agent.md",
-        "regressions": 187,
-        "new_browser_checks": {
-          "committing_job_has_no_cancel_button": true,
-          "committing_job_is_labeled": true,
-          "queued_job_remains_cancelable": true,
-          "page_errors": []
-        },
-        "scope": "Saving commit boundary, accurate cancellation status, configuration failure rollback, queue survival after decoder/log/JSON faults; history controls, stream resource cleanup, multilingual chunks, short ASR and fractional segmentation.",
-        "artifact_format": "Source overlay for unchanged 0.1.3 full portable package; full independent node ZIP. Models/runtime/native DLLs unchanged.",
-        "real_pipeline": {
-          "real_live_cancel_without_project": true,
-          "tts": {
-            "audio": "/api/files/output/ae88f576900644bf8d78f26a76e0c8df.wav",
-            "metadata": "/api/files/output/ae88f576900644bf8d78f26a76e0c8df.json",
-            "session_id": "5812c2bc6ae74bd1919317172dd0a03b",
-            "take_id": "f8409367cb6d4e7db19edde4b83702e0",
-            "transcript": "这是第三轮本地语音测试。",
-            "metrics": {
-              "seed": 18446744073709552000,
-              "sampling": {
-                "seed": 18446744073709552000,
-                "temperature": 0.7,
-                "top_k": 30,
-                "top_p": 0.7,
-                "max_frames": 220
-              },
-              "model": "drama3-t8-fp8.safetensors",
-              "elapsed_seconds": 20.673142200001166,
-              "first_frame_seconds": 5.839329099995666,
-              "duration_seconds": 1.9969160997732427,
-              "length_limit_reached": false,
-              "finish_reason": "eos",
-              "gdn_backend": "torch",
-              "requested_gdn_backend": "torch",
-              "actual_gdn_backends": [
-                "torch"
-              ],
-              "acceleration_fallback": null,
-              "gdn_calls_by_backend": {
-                "torch": 1320,
-                "fla": 0
-              },
-              "gdn_calls": 1320,
-              "output_duration_seconds": 1.9969160997732427
-            },
-            "subtitle": null,
-            "project": "/api/files/session/5812c2bc6ae74bd1919317172dd0a03b.safetensors"
-          },
-          "streaming_chunks": {
-            "count": 2,
-            "frames": 88064,
-            "final_length_matches": true
-          },
-          "project_copy_preserves_original": true,
-          "r2t2": {
-            "text": "这是第三轮本地语音",
-            "language": "Chinese",
-            "truncated": false,
-            "finish_reason": "stop",
-            "model": "Confucius4-R2T2-Q8_0.gguf",
-            "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "mode_executed": "offline",
-            "segments": [],
-            "backend": "r2t2",
-            "duration_seconds": 1.9969375,
-            "elapsed_seconds": 4.079312299989397,
-            "input_gain": 1,
-            "timing_method": "segment_estimate",
-            "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
-            "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
-            "execution": "in_process_native",
-            "model_released": true,
-            "transcript": "这是第三轮本地语音",
-            "source_audio": "/api/files/input/5a338b95ad354e24b5bd9fafb9ece7c1.wav",
-            "source_name": "audit3-real-fixed.wav",
-            "text_file": "/api/files/output/2795ec2237354bf0b71716523635aed5.txt",
-            "metadata": "/api/files/output/2795ec2237354bf0b71716523635aed5.asr.json"
-          },
-          "r2t2_sample_exact_match": false,
-          "r2t2_previous_sample": {
-            "text": "这是第二轮本地语音测试。",
-            "language": "Chinese",
-            "truncated": false,
-            "finish_reason": "stop",
-            "model": "Confucius4-R2T2-Q8_0.gguf",
-            "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "mode_executed": "offline",
-            "segments": [],
-            "backend": "r2t2",
-            "duration_seconds": 1.857625,
-            "elapsed_seconds": 1.7282204999937676,
-            "input_gain": 1,
-            "timing_method": "segment_estimate",
-            "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
-            "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
-            "execution": "in_process_native",
-            "model_released": true,
-            "transcript": "这是第二轮本地语音测试。",
-            "source_audio": "/api/files/input/bef3e21d614d4368be78e04fbf983a49.wav",
-            "source_name": "audit3-r2t2-known.wav",
-            "text_file": "/api/files/output/9fbb5aac1de94065ad59a19ae1bee18e.txt",
-            "metadata": "/api/files/output/9fbb5aac1de94065ad59a19ae1bee18e.asr.json"
-          },
-          "qwen": {
-            "text": "这是第三轮本地语音测试。",
-            "language": "Chinese",
-            "backend": "qwen",
-            "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
-            "duration_seconds": 1.9969160997732427,
-            "elapsed_seconds": 15.068264999994426,
-            "transcript": "这是第三轮本地语音测试。",
-            "source_audio": "/api/files/input/7137c68395e14e5eaaf12d34a44bbfa5.wav",
-            "source_name": "audit3-qwen.wav",
-            "text_file": "/api/files/output/4e6526dd68aa4284a533edba64bb6c52.txt",
-            "metadata": "/api/files/output/4e6526dd68aa4284a533edba64bb6c52.asr.json"
-          },
-          "qwen_five_ms_input": {
-            "text": "嗯。",
-            "language": "Chinese",
-            "backend": "qwen",
-            "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
-            "duration_seconds": 0.004988662131519274,
-            "elapsed_seconds": 0.5163973000016995,
-            "transcript": "嗯。",
-            "source_audio": "/api/files/input/e295359f69e94aa590514976794289d8.wav",
-            "source_name": "audit3-five-ms.wav",
-            "text_file": "/api/files/output/b86eb0761d5e46109c25976210ad80d3.txt",
-            "metadata": "/api/files/output/b86eb0761d5e46109c25976210ad80d3.asr.json"
-          },
-          "alignment": {
-            "alignment": [
-              {
-                "text": "这",
-                "start": 0,
-                "end": 0.08
-              },
-              {
-                "text": "是",
-                "start": 0.08,
-                "end": 0.24
-              },
-              {
-                "text": "第",
-                "start": 0.24,
-                "end": 0.4
-              },
-              {
-                "text": "三",
-                "start": 0.4,
-                "end": 0.64
-              },
-              {
-                "text": "轮",
-                "start": 0.64,
-                "end": 0.8
-              },
-              {
-                "text": "本",
-                "start": 0.8,
-                "end": 0.96
-              },
-              {
-                "text": "地",
-                "start": 0.96,
-                "end": 1.2
-              },
-              {
-                "text": "语",
-                "start": 1.2,
-                "end": 1.28
-              },
-              {
-                "text": "音",
-                "start": 1.28,
-                "end": 1.44
-              },
-              {
-                "text": "测",
-                "start": 1.44,
-                "end": 1.68
-              },
-              {
-                "text": "试",
-                "start": 1.68,
-                "end": 1.92
-              }
-            ],
-            "session_id": "c05a438509894b54b3450bf1dc7153e7",
-            "take_id": "f8409367cb6d4e7db19edde4b83702e0",
-            "metadata": "/api/files/output/984f74d025064e39acae2857637c1585.alignment.json"
-          },
-          "preview_same_length": true,
-          "reference": {
-            "reference_id": "3e27c0a5069644e387f6c9828afa656d",
-            "name": "Audit3 codec validation",
-            "frames": 43
-          }
-        },
-        "asr_accuracy_limitation": {
-          "input": "这是第三轮本地语音测试。",
-          "r2t2": "这是第三轮本地语音",
-          "qwen": "这是第三轮本地语音测试。",
-          "raw_report": "validation/audit3-asr-diagnose.json",
-          "note": "Terminal protocol pipe cleaned. R2T2 omitted final words and auto-detected English; no words or language fabricated. Previous second-round sample still recognized exactly by both backends."
-        },
-        "browser": {
-          "previous_13": {
-            "pending_asr_audio_binding": true,
-            "history_asr_audio_binding": true,
-            "preview_without_metadata": true,
-            "new_job_shows_its_own_result": true,
-            "late_result_status_response_discarded": true,
-            "stale_alignment_not_applied": true,
-            "preview_keeps_selected_take": true,
-            "one_settings_poll_loop": true,
-            "last_stream_chunk_not_lost": true,
-            "transient_chunk_failure_retries": true,
-            "stale_stream_request_discarded": true,
-            "settings_poll_preserves_edit": true,
-            "mobile_no_overflow": true,
-            "page_errors": []
-          },
-          "boundary_10": {
-            "preview_completion_keeps_new_selection": true,
-            "preview_submission_keeps_new_selection": true,
-            "audio_result_outside_history": true,
-            "asr_result_outside_history": true,
-            "alignment_outside_history": true,
-            "settings_result_outside_history": true,
-            "live_completion_outside_history": true,
-            "selection_stops_old_live_audio": true,
-            "uint64_seed_preserves_decimal": true,
-            "import_discards_old_preview": true,
-            "page_errors": []
-          },
-          "new_3": {
-            "committing_job_has_no_cancel_button": true,
-            "committing_job_is_labeled": true,
-            "queued_job_remains_cancelable": true,
-            "page_errors": []
-          },
-          "scope": "Real Edge with controlled API/AudioContext; not audible playback proof."
-        },
-        "runtime_dependencies": {
-          "compatible": 139,
-          "report": "validation/audit3-dependencies.log"
-        },
-        "real_comfyui_graph": {
-          "nodes": 17,
-          "qwen_asr": "passed",
-          "forced_alignment": "passed",
-          "r2t2": "passed",
-          "sample": "Unmodified second-round known Chinese clip",
-          "report": "validation/audit3-comfy-native.json"
-        }
-      },
-      "audit_015": {
-        "date": "2026-10-15",
-        "independent_agent_rounds": 20,
-        "agent_report": "validation/audit4-20-agent.md",
-        "new_core_cases": 30,
-        "new_workspace_cases": 19,
-        "browser_behavior_checks": 32,
-        "browser_reports": [
-          "validation/audit4-browser.json",
-          "validation/audit4-browser-previous.json",
-          "validation/audit4-browser-edges.json",
-          "validation/audit4-browser-saving.json"
-        ],
-        "regressions": 236,
-        "real_pipeline": {
-          "real_live_cancel_without_project": true,
-          "tts": {
-            "audio": "/api/files/output/f5ea68d503604f118901bcd4ce8f5ff7.wav",
-            "metadata": "/api/files/output/f5ea68d503604f118901bcd4ce8f5ff7.json",
-            "session_id": "1b945929dfc44f4583d08d86e8cd8411",
-            "take_id": "7cc444d5d2d54b9a9871e261a6cee1b3",
-            "transcript": "这是第二轮本地语音测试。",
-            "metrics": {
-              "seed": 18446744073709552000,
-              "sampling": {
-                "seed": 18446744073709552000,
-                "temperature": 0.7,
-                "top_k": 30,
-                "top_p": 0.7,
-                "max_frames": 220
-              },
-              "model": "drama3-t8-fp8.safetensors",
-              "elapsed_seconds": 19.98408959999506,
-              "first_frame_seconds": 5.2230981000029715,
-              "duration_seconds": 1.8575963718820863,
-              "length_limit_reached": false,
-              "finish_reason": "eos",
-              "gdn_backend": "torch",
-              "requested_gdn_backend": "torch",
-              "actual_gdn_backends": [
-                "torch"
-              ],
-              "acceleration_fallback": null,
-              "gdn_calls_by_backend": {
-                "torch": 1230,
-                "fla": 0
-              },
-              "gdn_calls": 1230,
-              "output_duration_seconds": 1.8575963718820863
-            },
-            "subtitle": null,
-            "project": "/api/files/session/1b945929dfc44f4583d08d86e8cd8411.safetensors"
-          },
-          "streaming_chunks": {
-            "count": 2,
-            "frames": 81920,
-            "final_length_matches": true
-          },
-          "project_copy_preserves_original": true,
-          "r2t2": {
-            "text": "这是第二轮本地语音测试。",
-            "language": "Chinese",
-            "truncated": false,
-            "finish_reason": "stop",
-            "model": "Confucius4-R2T2-Q8_0.gguf",
-            "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "mode_executed": "offline",
-            "segments": [],
-            "backend": "r2t2",
-            "duration_seconds": 1.857625,
-            "elapsed_seconds": 5.003938499998185,
-            "input_gain": 1,
-            "timing_method": "segment_estimate",
-            "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
-            "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
-            "execution": "in_process_native",
-            "model_released": true,
-            "transcript": "这是第二轮本地语音测试。",
-            "source_audio": "/api/files/input/8a49264a0e17453fbd12111ecc3fc10b.wav",
-            "source_name": "audit4-real.wav",
-            "text_file": "/api/files/output/e7706180e2bd4824b182af1fd318932f.txt",
-            "metadata": "/api/files/output/e7706180e2bd4824b182af1fd318932f.asr.json"
-          },
-          "qwen": {
-            "text": "这是第二轮本地语音测试。",
-            "language": "Chinese",
-            "backend": "qwen",
-            "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
-            "duration_seconds": 1.8575963718820863,
-            "elapsed_seconds": 3.396101999998791,
-            "transcript": "这是第二轮本地语音测试。",
-            "source_audio": "/api/files/input/d822d53c75814aa98729c57ebe3cbef6.wav",
-            "source_name": "audit4-qwen.wav",
-            "text_file": "/api/files/output/cfb1dcb31cc54e0b9e82a8b832d6a1eb.txt",
-            "metadata": "/api/files/output/cfb1dcb31cc54e0b9e82a8b832d6a1eb.asr.json"
-          },
-          "qwen_five_ms_input": {
-            "text": "嗯。",
-            "language": "Chinese",
-            "backend": "qwen",
-            "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
-            "duration_seconds": 0.004988662131519274,
-            "elapsed_seconds": 0.16683449999254663,
-            "transcript": "嗯。",
-            "source_audio": "/api/files/input/1d81e2a48f1a4af49fc7d9f610325028.wav",
-            "source_name": "audit4-five-ms.wav",
-            "text_file": "/api/files/output/804239e08841461a9b94b9ecfb12d987.txt",
-            "metadata": "/api/files/output/804239e08841461a9b94b9ecfb12d987.asr.json"
-          },
-          "alignment": {
-            "alignment": [
-              {
-                "text": "这",
-                "start": 0,
-                "end": 0.08
-              },
-              {
-                "text": "是",
-                "start": 0.08,
-                "end": 0.24
-              },
-              {
-                "text": "第",
-                "start": 0.24,
-                "end": 0.32
-              },
-              {
-                "text": "二",
-                "start": 0.32,
-                "end": 0.48
-              },
-              {
-                "text": "轮",
-                "start": 0.48,
-                "end": 0.64
-              },
-              {
-                "text": "本",
-                "start": 0.64,
-                "end": 0.8
-              },
-              {
-                "text": "地",
-                "start": 0.8,
-                "end": 1.04
-              },
-              {
-                "text": "语",
-                "start": 1.04,
-                "end": 1.12
-              },
-              {
-                "text": "音",
-                "start": 1.12,
-                "end": 1.28
-              },
-              {
-                "text": "测",
-                "start": 1.28,
-                "end": 1.52
-              },
-              {
-                "text": "试",
-                "start": 1.52,
-                "end": 1.76
-              }
-            ],
-            "session_id": "c997f8f9c9b84d1798c3ea6f00e72cd6",
-            "take_id": "7cc444d5d2d54b9a9871e261a6cee1b3",
-            "metadata": "/api/files/output/c1f9c17cd3ff401998337bf79f3154b7.alignment.json"
-          },
-          "preview_same_length": true,
-          "reference": {
-            "reference_id": "664c0171be59400e800c5caf1c3e7f69",
-            "name": "Audit4 codec validation",
-            "frames": 40
-          }
-        },
-        "runtime_dependencies": {
-          "compatible": 139,
-          "report": "validation/audit4-dependencies.log"
-        },
-        "artifact_format": "Cumulative source overlay for unchanged 0.1.3 full portable base, also applicable to its 0.1.4 upgraded directory; full independent node ZIP. Models/runtime/native DLLs unchanged.",
-        "real_comfyui_graph": {
-          "nodes": 17,
-          "qwen_asr": "passed",
-          "forced_alignment": "passed",
-          "r2t2": "passed",
-          "report": "validation/audit4-comfy-native.json"
-        },
-        "real_comfyui_live": {
-          "history_status": "success",
-          "packets": 2,
-          "actual_browser_audio_starts": 2,
-          "frames": 110592,
-          "sample_rate": 44100,
-          "saved_audio": "D:\\drama-3\\vendor\\ComfyUI\\output\\Drama3_T8\\output_00002.flac",
-          "chunk_and_complete_length_match": true,
-          "report": "validation/audit4-comfy-live-browser.json"
-        }
-      },
-      "audit_016": {
-        "date": "2026-10-15",
-        "independent_agent_rounds": 20,
-        "agent_report": "validation/audit5-20-agent.md",
-        "new_core_cases": 24,
-        "new_workspace_cases": 10,
-        "independent_cross_cases": 3,
-        "browser_behavior_checks": 37,
-        "browser_reports": [
-          "validation/audit5-browser.json",
-          "validation/audit5-agent-asr-post.json",
-          "validation/audit5-browser-previous.json",
-          "validation/audit5-browser-edges.json",
-          "validation/audit5-browser-saving.json",
-          "validation/audit5-browser-storage.json"
-        ],
-        "regressions": 273,
-        "real_pipeline": {
-          "real_live_cancel_without_project": true,
-          "tts": {
-            "audio": "/api/files/output/983ff5e55b944aef86513caa1a263714.wav",
-            "metadata": "/api/files/output/983ff5e55b944aef86513caa1a263714.json",
-            "session_id": "3de71e65f4164ad68448e4468668f6e3",
-            "take_id": "2e8e7f2c9d334df4acdaf41d8a2c8a1d",
-            "transcript": "这是第二轮本地语音测试。",
-            "metrics": {
-              "seed": 18446744073709552000,
-              "sampling": {
-                "seed": 18446744073709552000,
-                "temperature": 0.7,
-                "top_k": 30,
-                "top_p": 0.7,
-                "max_frames": 220
-              },
-              "model": "drama3-t8-fp8.safetensors",
-              "elapsed_seconds": 21.738820400001714,
-              "first_frame_seconds": 5.9528135000000475,
-              "duration_seconds": 1.8575963718820863,
-              "length_limit_reached": false,
-              "finish_reason": "eos",
-              "gdn_backend": "torch",
-              "requested_gdn_backend": "torch",
-              "actual_gdn_backends": [
-                "torch"
-              ],
-              "acceleration_fallback": null,
-              "gdn_calls_by_backend": {
-                "torch": 1230,
-                "fla": 0
-              },
-              "gdn_calls": 1230,
-              "output_duration_seconds": 1.8575963718820863
-            },
-            "subtitle": null,
-            "project": "/api/files/session/3de71e65f4164ad68448e4468668f6e3.safetensors"
-          },
-          "streaming_chunks": {
-            "count": 2,
-            "frames": 81920,
-            "final_length_matches": true
-          },
-          "directed_text_stream": {
-            "audio": "/api/files/output/d6e9bc1a14784b8097732ce6821398b5.wav",
-            "metadata": "/api/files/output/d6e9bc1a14784b8097732ce6821398b5.json",
-            "session_id": "d2c9c3ce9a2a4410a0cca1c9c0ee7f16",
-            "take_id": "d68e4c7fa2504e418b6d3ce2afc65fdc",
-            "transcript": "你好，我们开始吧。",
-            "metrics": {
-              "seed": 46,
-              "sampling": {
-                "seed": 46,
-                "temperature": 0.7,
-                "top_k": 30,
-                "top_p": 0.7,
-                "max_frames": 160
-              },
-              "model": "drama3-t8-fp8.safetensors",
-              "elapsed_seconds": 21.628927300000214,
-              "first_frame_seconds": 8.608531100006076,
-              "duration_seconds": 2.5541950113378684,
-              "length_limit_reached": false,
-              "finish_reason": "eos",
-              "gdn_backend": "torch",
-              "requested_gdn_backend": "torch",
-              "actual_gdn_backends": [
-                "torch"
-              ],
-              "acceleration_fallback": null,
-              "gdn_calls_by_backend": {
-                "torch": 1680,
-                "fla": 0
-              },
-              "gdn_calls": 1680,
-              "task": "text_stream",
-              "lookahead": "故事从这里开始。",
-              "output_duration_seconds": 2.5541950113378684
-            },
-            "subtitle": null,
-            "project": "/api/files/session/d2c9c3ce9a2a4410a0cca1c9c0ee7f16.safetensors"
-          },
-          "project_copy_preserves_original": true,
-          "r2t2": {
-            "text": "这是第二轮本地语音测试。",
-            "language": "Chinese",
-            "truncated": false,
-            "finish_reason": "stop",
-            "model": "Confucius4-R2T2-Q8_0.gguf",
-            "projector": "mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "mode_executed": "offline",
-            "segments": [],
-            "backend": "r2t2",
-            "duration_seconds": 1.857625,
-            "elapsed_seconds": 5.242564200001652,
-            "input_gain": 1,
-            "timing_method": "segment_estimate",
-            "model_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\Confucius4-R2T2-Q8_0.gguf",
-            "projector_path": "D:\\drama-3\\models\\Confucius4-R2T2-GGUF\\mmproj-Confucius4-R2T2-Q8_0.gguf",
-            "vad_path": "D:\\drama-3\\models\\FireRedVAD-ONNX",
-            "execution": "in_process_native",
-            "model_released": true,
-            "transcript": "这是第二轮本地语音测试。",
-            "source_audio": "/api/files/input/157e9ad8538e4df7bf40e23ee44e009e.wav",
-            "source_name": "audit5-real.wav",
-            "text_file": "/api/files/output/2ac380ac5eb44f9593574d7ac639a6c2.txt",
-            "metadata": "/api/files/output/2ac380ac5eb44f9593574d7ac639a6c2.asr.json"
-          },
-          "qwen": {
-            "text": "这是第二轮本地语音测试。",
-            "language": "Chinese",
-            "backend": "qwen",
-            "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
-            "duration_seconds": 1.8575963718820863,
-            "elapsed_seconds": 5.762114999990445,
-            "transcript": "这是第二轮本地语音测试。",
-            "source_audio": "/api/files/input/23337fd967e84073abb5f6abbb4ed8a3.wav",
-            "source_name": "audit5-qwen.wav",
-            "text_file": "/api/files/output/03590d9e9a234bbbaf05a72ae3683f8d.txt",
-            "metadata": "/api/files/output/03590d9e9a234bbbaf05a72ae3683f8d.asr.json"
-          },
-          "qwen_five_ms_input": {
-            "text": "嗯。",
-            "language": "Chinese",
-            "backend": "qwen",
-            "model_path": "D:\\drama-3\\models\\qwen3-asr-06b.safetensors",
-            "duration_seconds": 0.004988662131519274,
-            "elapsed_seconds": 0.3211015000124462,
-            "transcript": "嗯。",
-            "source_audio": "/api/files/input/0393a2c9fcca49e2b02c5c9b014a8f7f.wav",
-            "source_name": "audit5-five-ms.wav",
-            "text_file": "/api/files/output/527e5c3c3a1f41bfbfd02947f6fa0106.txt",
-            "metadata": "/api/files/output/527e5c3c3a1f41bfbfd02947f6fa0106.asr.json"
-          },
-          "alignment": {
-            "alignment": [
-              {
-                "text": "这",
-                "start": 0,
-                "end": 0.08
-              },
-              {
-                "text": "是",
-                "start": 0.08,
-                "end": 0.24
-              },
-              {
-                "text": "第",
-                "start": 0.24,
-                "end": 0.32
-              },
-              {
-                "text": "二",
-                "start": 0.32,
-                "end": 0.48
-              },
-              {
-                "text": "轮",
-                "start": 0.48,
-                "end": 0.64
-              },
-              {
-                "text": "本",
-                "start": 0.64,
-                "end": 0.8
-              },
-              {
-                "text": "地",
-                "start": 0.8,
-                "end": 1.04
-              },
-              {
-                "text": "语",
-                "start": 1.04,
-                "end": 1.12
-              },
-              {
-                "text": "音",
-                "start": 1.12,
-                "end": 1.28
-              },
-              {
-                "text": "测",
-                "start": 1.28,
-                "end": 1.52
-              },
-              {
-                "text": "试",
-                "start": 1.52,
-                "end": 1.76
-              }
-            ],
-            "session_id": "9f9fd31bad214d6cb5b95be0eda297a5",
-            "take_id": "2e8e7f2c9d334df4acdaf41d8a2c8a1d",
-            "metadata": "/api/files/output/7bf57bd0b7bb49c9aa759be4a3bc513d.alignment.json"
-          },
-          "preview_same_length": true,
-          "reference": {
-            "reference_id": "4c341f05f4c84e4c8e108944a9836122",
-            "name": "Audit5 codec validation",
-            "frames": 40
-          }
-        },
-        "runtime_dependencies": {
-          "compatible": 139,
-          "report": "validation/audit5-dependencies.log"
-        },
-        "artifact_format": "Cumulative source overlay for unchanged 0.1.3 full portable base, also applicable to its 0.1.4/0.1.5 upgraded directories; full independent node ZIP. Models/runtime/native DLLs unchanged.",
-        "real_comfyui_graph": {
-          "nodes": 17,
-          "qwen_asr": "passed",
-          "forced_alignment": "passed",
-          "r2t2": "passed",
-          "report": "validation/audit5-comfy-native.json"
-        },
-        "real_comfyui_live": {
-          "history_status": "success",
-          "packets": 2,
-          "actual_browser_audio_starts": 2,
-          "frames": 110592,
-          "sample_rate": 44100,
-          "saved_audio": "D:\\drama-3\\vendor\\ComfyUI\\output\\Drama3_T8\\output_00003.flac",
-          "chunk_and_complete_length_match": true,
-          "report": "validation/audit5-comfy-live-browser.json"
-        }
-      },
-      "release_017": {
-        "changes": "Code-only public release, bilingual documentation and transactional portable auto-update",
-        "updater_tests": 43,
-        "installer_tests": 12,
-        "release_excludes": [
-          "model weights",
-          "Python runtime",
-          "user data",
-          "roadmap.md"
-        ],
-        "registry_publisher": "t8star",
-        "models_repo": "t8star/Drama-3-Comfy",
-        "core_inference_changes": false,
-        "exported_source_fix": "Retain legitimate ComfyUI API input and ldm models Python packages"
-      },
-      "audit_018": {
-        "changes": [
-          "15 canvas-only examples covering all 17 native nodes and four generation modes",
-          "Exact uint64 seed_text avoids JavaScript number precision loss",
-          "Visible transcript, language and alignment previews",
-          "Long text outputs every generated segment",
-          "Session-load instructions no longer cover the visible transcript preview"
-        ],
-        "independent_audit_rounds": 20,
-        "browser_method": "Browser file import and visible Run click for every case; HTTP GET and tensor/audio reads are supplementary evidence.",
-        "canvas_workflows": 15,
-        "actual_browser_cases": 23,
-        "all_passed": true,
-        "report": "validation/canvas20-acceptance.json",
-        "live": {
-          "workflow": "workflow_live.json",
-          "prompt_id": "587df6bf-2d05-4a39-9879-1e6293d521e6",
-          "seconds": 25.58,
-          "visible_text_previews": 0,
-          "browser_playback": {
-            "currentTime": 0.084333,
-            "duration": 3.529433,
-            "error": null,
-            "startupSeconds": 0.249
-          },
-          "audio": [
-            {
-              "path": "vendor/ComfyUI/output/canvas20/live_00001.flac",
-              "frames": 155648,
-              "sample_rate": 44100,
-              "rms": 0.07813679561328772
-            }
-          ],
-          "takes": 1,
-          "references": 0,
-          "code_frames": [
-            76
-          ],
-          "finish_reasons": [
-            "eos"
-          ],
-          "chunk_count": 3,
-          "audio_context_starts": 3,
-          "first_playback_before_completion_seconds": 9.98069999998808,
-          "chunk_frames": [
-            65536,
-            65536,
-            24576
-          ]
-        },
-        "evidence_checks": [
-          "Exact uint64 seed preserved in real saved session",
-          "Two distinct reference recordings preserve different audio codes",
-          "Infill prefix/suffix codes unchanged",
-          "Long output contains both takes",
-          "Scene output has real separator and two segments",
-          "SRT timeline includes actual timing and requested silence",
-          "Stream continuation matches lookahead",
-          "Session reload produces identical decoded audio",
-          "Two-take saved session branches to exactly the original first take and decodes it",
-          "Session-load rerun after layout fix: PreviewAny text visible and not covered by instructions"
-        ],
-        "limits": [
-          "Automatic browser playback verified; subjective listening quality not scored.",
-          "Single Windows RTX 5090 Laptop configuration; no general accuracy or speed claim.",
-          "Fixture inputs and model paths configured before Run; connected session-save outputs added for code inspection."
-        ],
-        "inference_math_changed": false
-      },
-      "audit_019": {
-        "independent_review_topics": 20,
-        "new_core_cpu_cases": 25,
-        "new_workspace_cpu_cases": 7,
-        "changes": [
-          "Scene session direction/references/history reach actual prompts; explicit references match archived references",
-          "Reject empty voice references while keeping empty infill boundaries",
-          "Branch take_count rejects bool/noninteger direct calls",
-          "Generation/preview/align observers ignore stale POSTs and manual selection changes",
-          "Failed project registration or upload submission removes only its new unregistered files"
-        ],
-        "browser_new_assertions": 15,
-        "browser_prior_edge_assertions": 10,
-        "browser_page_errors": [],
-        "actual_canvas_runs": 5,
-        "canvas_passed": 3,
-        "canvas_failed_combinations": 2,
-        "all_tested_combinations_passed": false,
-        "canvas_report": "validation/audit7-canvas-acceptance.json",
-        "known_limit": "A reference-conditioned scene revision omitted the required separator at seeds 47 and 73. The node rejected it. No confirmed prompt-layout fault or cause; failed take/audio was not saved, so neither transcript loss nor termination reason is known.",
-        "core_report": "validation/audit7-20-agent.md",
-        "inference_math_or_models_changed": false,
-        "resolved_by": "scene_revision_fix_0110",
-        "retrospective_cause": "Captured failing output confirms early EOS after only Ready; see scene_revision_fix_0110. Original 3/5 result is retained as historical evidence."
-      },
-      "scene_revision_fix_0110": {
-        "failure_reproduced": {
-          "seeds": [
-            47,
-            73
-          ],
-          "termination": "EOS after 11 audio frames; no separator",
-          "actual_asr": "Ready only; Always omitted",
-          "report": "validation/scene-fix-comparison.json"
-        },
-        "changes": [
-          "Global Scene director notes belong in system direction; user scripts retain casting prefixes",
-          "One early-EOS to newline recovery per unfinished line; separator and all audio still sampled by the model",
-          "Reject empty/extra segments, repeated premature EOS and unfinished max_frames-limited scenes",
-          "Archive the actual user script and retain complete original session/history and director metadata",
-          "Legacy archives without script_lines remove only their recorded old global-note prefix when revising",
-          "Reference-conditioned named roles use stable persisted speaker IDs in current and historical prompt views, retaining original archive records",
-          "Reference display names do not implicitly bind voices; explicit speaker tags provide precise binding"
-        ],
-        "failed_alternatives": [
-          "layout only",
-          "speaker mapping only",
-          "note moved to first role",
-          "latest-take context only",
-          "direct early-EOS to separator produced repeated separators and was rejected"
-        ],
-        "cpu_regressions": {
-          "passed": 472,
-          "skipped": 1,
-          "new_cases": 94
-        },
-        "actual_canvas": {
-          "method": "file input import + visible Run button click; no direct prompt submission",
-          "positive_cases": 9,
-          "passed": 9,
-          "expected_budget_rejections": 1,
-          "unexpected_failures": 0,
-          "report": "validation/scene-fix-production_v3-browser-scene_revision-scene_revision_seed73-scene_revision_round2-scene_revis.json",
-          "cases": [
-            {
-              "name": "scene_revision",
-              "prompt_id": "2887aead-513e-44a8-8a95-83ca44a0083e",
-              "seconds": 63.035,
-              "expected_failure": false,
-              "passed": true
-            },
-            {
-              "name": "scene_revision_seed73",
-              "prompt_id": "d9a7bc0e-7821-4952-ad67-e4bbebc0f292",
-              "seconds": 26.55,
-              "expected_failure": false,
-              "passed": true
-            },
-            {
-              "name": "scene_revision_round2",
-              "prompt_id": "956769bf-6ff5-42fb-bb88-c7673aac1b36",
-              "seconds": 26.316,
-              "expected_failure": false,
-              "passed": true
-            },
-            {
-              "name": "scene_revision_round3",
-              "prompt_id": "287c441d-6e16-40a2-9807-ab11e5abf55a",
-              "seconds": 31.404,
-              "expected_failure": false,
-              "passed": true
-            },
-            {
-              "name": "reference",
-              "prompt_id": "321c27dd-8184-4cc8-9a88-647d49d1588c",
-              "seconds": 31.534,
-              "expected_failure": false,
-              "passed": true
-            },
-            {
-              "name": "scene",
-              "prompt_id": "737a8e82-1056-42d4-922a-5dab8ee6cdfe",
-              "seconds": 21.43,
-              "expected_failure": false,
-              "passed": true
-            },
-            {
-              "name": "scene_revision_coherent",
-              "prompt_id": "e43e1589-2b51-43f9-af3a-cbbac87c9300",
-              "seconds": 25.501,
-              "expected_failure": false,
-              "passed": true
-            },
-            {
-              "name": "scene_three_lines",
-              "prompt_id": "4265c8f3-bced-4da1-b14f-62acb0a430f2",
-              "seconds": 52.038,
-              "expected_failure": false,
-              "passed": true
-            },
-            {
-              "name": "scene_chinese",
-              "prompt_id": "b118d2ea-aa71-4d58-8095-222352b9f8a2",
-              "seconds": 45.769,
-              "expected_failure": false,
-              "passed": true
-            },
-            {
-              "name": "scene_short_budget",
-              "prompt_id": "324a230f-3ef8-44e5-8602-700fffa5e754",
-              "seconds": 11.391,
-              "expected_failure": true,
-              "passed": true
-            }
-          ]
-        },
-        "actual_audio": {
-          "asr_backend": "native Confucius R2T2 Q8",
-          "segments": 17,
-          "normalized_content_passed": 17,
-          "report": "validation/scene-fix-audio/qa-production-v3.json",
-          "scope": "English/Chinese fixture text and order checked by independent ASR; no subjective voice/style score"
-        },
-        "context_policy": "All archived takes remain in inference and archive; latest-only experiment was not adopted",
-        "separator_policy": "Never insert or force audio separators; only one newline recovery is recorded in take metadata",
-        "role_prefix_defect": {
-          "fixture": "Three-line reference scene, seed 57",
-          "before": "First segment spoke extra Ona; independently confirmed by native R2T2 and Qwen3 ASR",
-          "controlled_comparison": "Same script/reference/seed/settings and 4 GiB cache: named format repeated the defect; speaker-tag format produced all three expected lines",
-          "report": "validation/scene-fix-audio/qa-named_protocol_cache4-speaker_protocol_cache4.json",
-          "cross_asr": "validation/scene-fix-qwen-cross-asr.json"
-        },
-        "unchanged": [
-          "model weights",
-          "model math",
-          "reference identity",
-          "sampling seed/parameters",
-          "default acceleration",
-          "15 canvas-only workflows"
-        ],
-        "independent_agent_reports": [
-          "validation/scene-fix-agent.md",
-          "validation/scene-fix-agent-math.md",
-          "validation/scene-fix-agent-production-v3.json",
-          "validation/scene-fix-agent-cast-review.md"
-        ]
-      },
-      "transformers_compat_0111": {
-        "requested_target": "4.57.1",
-        "portable_defaults": {
-          "transformers": "4.57.1",
-          "tokenizers": "0.22.2",
-          "huggingface_hub": "0.36.2"
-        },
-        "retained_environment": {
-          "transformers": "5.19.0",
-          "tokenizers": "0.23.2",
-          "huggingface_hub": "1.33.0"
-        },
-        "reproduced_failure": "Real Qwen text-model forward raised TypeError: create_causal_mask() got an unexpected keyword argument inputs_embeds",
-        "fix": "Local mask-call adaptation: 4.57.1 receives input_embeds and cache_position; 5.19 retains inputs_embeds. Installed Transformers functions are not patched.",
-        "cpu_regression": {
-          "transformers_4571": {
-            "passed": 479,
-            "skipped": 1
-          },
-          "transformers_519": {
-            "passed": 479,
-            "skipped": 1
-          },
-          "added_real_tensor_cases": 7,
-          "coverage": [
-            "eager and SDPA prefill/cached/full equivalence",
-            "future-token isolation",
-            "left padding",
-            "Qwen audio tokenizer IDs and multilingual round trips"
-          ]
-        },
-        "actual_canvas": {
-          "method": "Browser workflow import and visible Run clicks; no direct API prompt submission",
-          "passed": 10,
-          "unexpected_failures": 0,
-          "reports": [
-            "validation/scene-fix-tf4-4571-browser-asr-align-r2t2.json",
-            "validation/scene-fix-tf4-4571-browser-basic-reference-revision-infill-stream-scene_revision-codec.json"
-          ],
-          "cases": [
-            {
-              "name": "asr",
-              "prompt_id": "3c7cf883-d693-4a1c-a80e-33284de95b56",
-              "seconds": 23.633,
-              "passed": true
-            },
-            {
-              "name": "align",
-              "prompt_id": "4a3c80e3-2c27-40d2-b0d2-140b74b0cd17",
-              "seconds": 8.846,
-              "passed": true
-            },
-            {
-              "name": "r2t2",
-              "prompt_id": "d80f09c7-828d-4923-bef7-3e87e11f312f",
-              "seconds": 5.174,
-              "passed": true
-            },
-            {
-              "name": "basic",
-              "prompt_id": "1976db59-f3b1-45a3-94a4-865e9a54cb3d",
-              "seconds": 60.981,
-              "passed": true
-            },
-            {
-              "name": "reference",
-              "prompt_id": "b61e5593-6ff4-4dc0-b889-ad8bfbac3e9a",
-              "seconds": 20.528,
-              "passed": true
-            },
-            {
-              "name": "revision",
-              "prompt_id": "4671a119-b3a9-4a0f-9491-3071ab717cf4",
-              "seconds": 38.812,
-              "passed": true
-            },
-            {
-              "name": "infill",
-              "prompt_id": "a05a3950-b6a5-4932-b0e2-0a3244060871",
-              "seconds": 11.416,
-              "passed": true
-            },
-            {
-              "name": "stream",
-              "prompt_id": "8cebc55c-4c45-4670-8a28-7b0983c82d26",
-              "seconds": 19.402,
-              "passed": true
-            },
-            {
-              "name": "scene_revision",
-              "prompt_id": "5a70c371-1bb8-45e4-83b2-c952b323660e",
-              "seconds": 16.428,
-              "passed": true
-            },
-            {
-              "name": "codec",
-              "prompt_id": "7474c5e8-a2fb-44d9-bc3a-683c07b912f7",
-              "seconds": 1.175,
-              "passed": true
-            }
-          ]
-        },
-        "content": {
-          "asr_exact": true,
-          "r2t2_exact": true,
-          "alignment_items": 11,
-          "alignment_seconds": [
-            0,
-            1.76
-          ],
-          "scene_segments_matched": 2,
-          "original_scene_history_preserved": true,
-          "report": "validation/tf4-canvas-content-qa.json"
-        },
-        "dependency_resolution": "pip dry-run with real portable and node requirements selects exactly the tested Transformers/tokenizers/hub triple",
-        "update_policy": "Code-only update; installed Python packages are preserved and pip is not run automatically",
-        "independent_report": "validation/tf4-agent-review.md",
-        "weights_changed": false,
-        "workflow_changes": false,
-        "validation_scope": "4.57.1 is the requested target. 5.19 full CPU regression retained for existing bundles. Other permitted versions are not all tested."
-      }
-    }
-  },
-  "publication_completion": {
-    "status": "tracked_in_separate_postpublication_ledger",
-    "runtime_acceptance_complete": true,
-    "scope": "This report records source-bound engineering acceptance. Final package member/CRC/source consistency, GitHub/HF/Registry remote status and the actual public online updater transaction are recorded externally after build/publication. No remote approval or online success is inferred from this report."
+    "web/workspace-tools.js": "5e45705e9449a252698c45ded7b4c93fb9038ac90f3f87bf5eb1c8f9bbc4c22e"
   },
   "gates": {
     "cpu_regressions": {
       "status": "passed",
-      "observed_result": "two_current_runtime_full_suites_passed",
-      "scope": "Two actual R19b inference-runtime-parent TF4.57.1 CPU dependency environments (Kitchen0.2.37/0.2.40), each1322passed/5skipped/1GPUdeselected, CUDAFalse. Final release-tool/developer-fixture-only changes received the separate115passed/2skipped canonical focused run. No new full suite or TF5.19 run is claimed for the final child. A final source-export-only change then passed54 packaging regressions with2 skips/CUDAFalse; protocol/canvas/inference sources remained unchanged.",
       "evidence": [
         {
-          "path": "validation/development-20261027/direction-progress-two-full-CPU-terminal-r19b.json",
-          "sha256": "dba63f58ba419ad484cd4f7bcba7b25d0f00dd7d46bb7a5f13fa963a36c7a5ca",
-          "bytes": 5186
+          "path": "E:/codex-record/drama3-upgrade/final-source405-two-stack-full-CPU-r35/batch.json",
+          "sha256": "e3dafc5e063b42c85853f9e1cadedd2e4fc1f76810aab11ccdaeae9d4e866e42",
+          "bytes": 5485
         },
         {
-          "path": "validation/development-20261027/node-progress-adoption-r19b/receipt.json",
-          "sha256": "4cd7326e8eca80dbcdd89e9e801a8872188a2ba02b5ee1e002dab3e47a80229d",
-          "bytes": 1597
-        },
-        {
-          "path": "validation/development-20261027/canonical-release-and-fixture-focused-root-terminal-r20b.json",
-          "bytes": 2003,
-          "sha256": "1d64b0a90efe3cdb78d877c709dc682c605a77094bbbb6c72447033856c0ba3f"
-        },
-        {
-          "path": "validation/development-20261027/canonical-source-export-packaging-root-terminal-r20c.json",
-          "bytes": 2008,
-          "sha256": "a613d1e15c9040aa7bc7084588467dc674e02aa6c49f516e1b0ff40871bc4f98"
+          "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/adoption405-r1/03-adoption-and-targeted-CPU-receipt.json",
+          "sha256": "eb8651e76d092847b2dbcaa16a707ea36c105016bd204c27e5a6b3b5df49a994",
+          "bytes": 2675
         }
       ],
-      "root_reviewed": true
+      "scope": "Source405 runtime baseline: bundled Kitchen0.2.37 and latest Kitchen0.2.40 each 1364 passed,5 skipped,1 deselected; skips/deselections are not passes. Targeted CPU34/34 both stacks. CUDA uninitialized."
     },
     "native_numerics": {
       "status": "passed",
-      "observed_result": "unchanged_native_component_lineage_and_actual_R18_pageable_transfer_qualified",
-      "scope": "ActualR17 norm/Graph numerical tests plus actualR18 FP8/W4/W6/INT8 pageable transfer/slot cache tests. All50 native files unchangedR18->R19; prompt ordering/node progress do not change native math. Synthetic/operator contracts do not certify full W6/INT8 models, acoustic quality, performance or VRAM residency.",
       "evidence": [
         {
-          "path": "validation/development-20261027/norm-precision-real-GPU-r17.json",
-          "sha256": "c601e9fc9cc4a33a63b994846810d5f27170cb13ce3f304816d0cfa1ba1edc2f",
-          "bytes": 1023
+          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/canonical-bundled-27-GPU-r1/report.json",
+          "sha256": "70caef88c60e5dc80cdb6175895c0e44bcb120c4b5bcc2f9ed91e15e239e4ea3",
+          "bytes": 571
         },
         {
-          "path": "validation/development-20261027/norm-layout-evidence-independent-readonly-review-r17b.json",
-          "sha256": "bbb43b08bb70498d5d266b436426100b822af2d0de4e77d266c833b2a58e5adb",
-          "bytes": 7714
+          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/existing-contracts-run-r1/report.json",
+          "sha256": "0e08dcaea2b3b88bf28a817aaf0c2b75ac2d8e8e4d0d61492d39351468390450",
+          "bytes": 1288
         },
         {
-          "path": "validation/development-20261027/legacy-pageable-transfer-actual-r18-r2/report.json",
-          "sha256": "862ebb284495e6eae53c414429531667b8ea5eed65064b64ff75bb387e0a3103",
-          "bytes": 41386
+          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/tiny-real-GPU-r1/report.json",
+          "sha256": "7770f0d81236c23c76c1df8501a9e185fcd7da3f0b416cb547eff38eae7041fc",
+          "bytes": 3959
         },
         {
-          "path": "validation/development-20261027/legacy-pin-CPU-and-pageable-GPU-independent-terminal-review-r18-r1.json",
-          "sha256": "652c5d4b743e3cae706d8c4bd3923b5b6024a1584cbffe0bfc8cb753c2430959",
-          "bytes": 9620
+          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/conversion-real-GPU-r1/report.json",
+          "sha256": "e5ea69037ed6b90db163598563778d563bb6cfe183d2f41ac4e9a8bb4480345d",
+          "bytes": 520
         },
         {
-          "path": "validation/development-20261027/current-release-gate-host-and-unchanged-evidence-readonly-r19-r1.json",
-          "sha256": "021aa1c16a39f0a1c1167506ba8be10755f0c962f97f60eec675cbf7bcc8783c",
-          "bytes": 17281
+          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/new-regression-tests-run-r1/report.json",
+          "sha256": "b9f2752e32e31c0d7097947955355b3a1dec43908c0adb4750640a81cc805086",
+          "bytes": 507
+        },
+        {
+          "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/tiny-gpu-report-r1.json",
+          "sha256": "4d87f51cb0b3f2ce7e138bc0aceb476875999c758cc8ba04474701035b7e3de2",
+          "bytes": 5975
         }
       ],
-      "root_reviewed": true
+      "scope": "Scoped numerical contracts: source404 canonical bundled27 and root-confirmed Kitchen0.2.40 canonical27 pass; candidate25/new2, exact conversion, independent rotation red-green are pinned. Source405 only idle host-cache synchronization plus CPU test; arithmetic paths unchanged. Not full-model correctness or seed42 repair.",
+      "additional_stack_provenance": "Root explicitly confirmed canonical27 passed on each Kitchen0.2.37/0.2.40. Existing attached reports retain their exact original stack and source scopes."
     },
     "real_model_checks": {
       "status": "passed",
-      "observed_result": "current_fixed_W4_original_cases_passed_with_two_blind_recognizers",
-      "scope": "Original complex scene plus two revisions:12clips; unchunked Joint4; Studio long964. One actual20clip batch per recognizer, each20/20. Original strict48 whole+3line prior4/4 reused only after every source code and saved decodedPCM bitexact, not new ASR. Fixed words/order checks, not universal timbre/emotion/accent/performance acceptance. New0.42 joint has separate fresh4/4, included in its gate.",
       "evidence": [
         {
-          "path": "validation/development-20261027/r19-all-original-content-and-clean-runtime-terminal-prepublication-root-checkpoint.json",
-          "sha256": "34d00333b130b3c11883ed386827ea4c953f685035c39705a9b43549bb827bd1",
-          "bytes": 12263
+          "path": "D:/drama-3/validation/development-20261027/final-source405-new042-Complex-audio-r35/terminal-and-audio-gate.json",
+          "sha256": "30d55262e40ecf2a199885d6f369878961488a39f4111e18009b3a00a5f53c35",
+          "bytes": 275828
         },
         {
-          "path": "validation/development-20261027/original-three-case-20clip-blind-batch-r19/strict-content-score.json",
-          "sha256": "f16761d71c46172236c6707efede038888d14ac9019af6cf0a951a05426a2fc3",
-          "bytes": 36163
+          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-old040-blind-batch-r34/strict-content-score.json",
+          "sha256": "ecfb5a41ac6b07c5c30e838b369c9ee62d36b1f8194f3e6c7b7f4d6a5ebb8875",
+          "bytes": 14444
         },
         {
-          "path": "validation/development-20261027/original-three-case-20clip-blind-batch-r19/workers-root-actual-terminal.json",
-          "sha256": "bda23ba70b33337d8adebbfed2e1a6c3ff4be8f3fee1ed87fea99bec8d71bba5",
-          "bytes": 2218
+          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-UI-r34-r2/basic42-Graph-on-terminal.json",
+          "sha256": "a7ed2ca73669625cc2bdfa4f8a634d629ba4758862cbc90811c01f4d1b753b17",
+          "bytes": 759
         },
         {
-          "path": "validation/development-20261027/original-complex-joint-r19-terminal-PCM-requests-independent-review-r2.json",
-          "sha256": "42a51dc12fda6199db8bfbaed8899429d148fe517342eb4aa7e45dfff3065c5e",
-          "bytes": 23941
-        },
-        {
-          "path": "validation/development-20261027/original-strict48-progress-R19-independent-terminal-review-r1.json",
-          "sha256": "774b770f599bfd9b63d8995db1e2c874ccb5871f16c3a6f70da4cd8e795c7f0a",
-          "bytes": 12047
+          "path": "E:/codex-record/drama3-upgrade/final-source405-Complex-blind-batch-r35/strict-content-score.json",
+          "sha256": "2fe3293f24b5987c0743788f67e858578014392cb5baa1d57b1849d006546682",
+          "bytes": 18831
         }
       ],
-      "root_reviewed": true
+      "scope": "Required positive cases passed within declared scope: source405 new0.42 original Complex generation+two revisions, all12 saved-PCM clips strict R2/Qwen12/12; source404 StudioLong96/old0.40 originalJoint actual UI with strict dual8/8 total and explicit405 unchanged-generation bridge. This gate does not convert separately recorded original W4 no-reference seed42 Torch/CUDA failures to passes.",
+      "known_negative_excluded_from_positive_case_count": [
+        "original_W4_no_reference_Basic_seed42_Torch_and_CUDA"
+      ]
     },
     "canvas_old_host": {
       "status": "passed",
-      "observed_result": "actual040_source_latest_dependency_combination_original_visible_UI_cases_passed",
-      "scope": "Actual sourceD:/drama-3/vendor/ComfyUI0.40.0 with Kitchen0.2.40/frontend1.57.1. Browser file import/visible Run, unique POST200 and terminal history for strict48/complex/Joint; actual CUDA MoE+Graph. This gate does not label this service as Kitchen0.2.37 or source0.42.0. Actual strict48 node progress900/1800=50%; queue0% is separate.",
+      "method": "visible_ui",
       "evidence": [
         {
-          "path": "validation/development-20261027/current-release-gate-host-and-unchanged-evidence-readonly-r19-r1.json",
-          "sha256": "021aa1c16a39f0a1c1167506ba8be10755f0c962f97f60eec675cbf7bcc8783c",
-          "bytes": 17281
+          "path": "E:/codex-record/drama3-upgrade/final-source404-old040-UI-r34/summary.json",
+          "sha256": "2555a4da98a1bae4e9dd05d8541f6c7bac37ace1bd6c721f2017eecb4f9b01f7",
+          "bytes": 694
         },
         {
-          "path": "validation/development-20261027/headless-canvas-r19-progress-original/20261027T222138Z/15-terminal-and-audio-gate-r19.json",
-          "sha256": "d59f6bddeb4a49c75a58fb31a10652a7a55d905509283ad5602c554038dfea7f",
-          "bytes": 20125
+          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-old040-blind-batch-r34/strict-content-score.json",
+          "sha256": "ecfb5a41ac6b07c5c30e838b369c9ee62d36b1f8194f3e6c7b7f4d6a5ebb8875",
+          "bytes": 14444
         },
         {
-          "path": "validation/development-20261027/headless-canvas-r19-progress-original/20261027T222138Z/16-visible-node-progress-gate-r19.json",
-          "sha256": "4be181efb8239b30e1ff1b87f6e0309fd4ea872986ed444f16071940a7f288a8",
-          "bytes": 4131
-        },
-        {
-          "path": "validation/development-20261027/headless-canvas-r19-complex-original/20261027T223055Z/blind-content/terminal-and-audio-gate.json",
-          "sha256": "a792f491ce9a68785e5efebb761125dc114c6834dd0aee3a79136a447393c9cf",
-          "bytes": 278154
-        },
-        {
-          "path": "validation/development-20261027/headless-canvas-r19-joint-original/20261027T223642Z/blind-content/terminal-and-audio-gate.json",
-          "sha256": "1249739d2b292dc0d47e0e8a34c25903121ebaf879937338ecd0c354584f5038",
-          "bytes": 12633
-        },
-        {
-          "path": "validation/development-20261027/original-three-case-20clip-blind-batch-r19/strict-content-score.json",
-          "sha256": "f16761d71c46172236c6707efede038888d14ac9019af6cf0a951a05426a2fc3",
-          "bytes": 36163
+          "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/adoption405-r1/03-adoption-and-targeted-CPU-receipt.json",
+          "sha256": "eb8651e76d092847b2dbcaa16a707ea36c105016bd204c27e5a6b3b5df49a994",
+          "bytes": 2675
         }
       ],
-      "method": "visible_ui",
-      "root_reviewed": true
+      "scope": "Scoped old0.40 originalJoint actual UI succeeded on source404; whole+three line clips all passed both blind recognizers. Source404 evidence remains identified as404; explicit405 delta changes only idle host-cache ordering plus CPU test, with generation path unchanged. Not a claimed405 UI rerun."
     },
     "canvas_new_host": {
       "status": "passed",
-      "observed_result": "actual042_original_joint_visible_UI_and_fresh_content_passed_per_root_terminals",
-      "scope": "Independent sourceE:/codex-record/drama3-upgrade/ComfyUI-latest0.42.0, Kitchen0.2.40/frontend1.57.1, TF4.57.1, one original Joint browser Run9da21c2a-7d49-49f3-affe-41f8f98f897c. Structure/CUDA+Graph qualified. Output differs from0.40, so fresh blindR2/Qwen whole+3crops4/4 each, no reused ASR. Independent structure/PCM review and a separate independent raw/returned content review both passed. No all16templates/parameter-sweep claim.",
+      "method": "visible_ui",
       "evidence": [
         {
-          "path": "validation/development-20261027/headless-canvas-r19-v042-original-joint/20261027T230528Z/02-actual-new-host-system-stats.json",
-          "sha256": "c89f74cc45216d1ec5481cd5b6fabdf3d2996d50ade1cffb73e1e49440a4f29a",
-          "bytes": 2461
+          "path": "E:/codex-record/drama3-upgrade/final-source405-new042-UI-r35/summary.json",
+          "sha256": "7731addd3b91c64538c9fc57e1870dc14ea84df3988a93754b0b45f336dd5395",
+          "bytes": 659
         },
         {
-          "path": "validation/development-20261027/headless-canvas-r19-v042-original-joint/20261027T230528Z/blind-content/terminal-and-audio-gate.json",
-          "sha256": "adb3f3619fe7abf577348f87a1c02d669f888bb5f090519c0169e033d7632358",
-          "bytes": 12669
+          "path": "D:/drama-3/validation/development-20261027/final-source405-new042-Complex-audio-r35/terminal-and-audio-gate.json",
+          "sha256": "30d55262e40ecf2a199885d6f369878961488a39f4111e18009b3a00a5f53c35",
+          "bytes": 275828
         },
         {
-          "path": "validation/development-20261027/current042-original-joint-independent-terminal-PCM-review-r19-r1.json",
-          "sha256": "39778632c20338155fa8499b64764aa55a355e9dd485c47a9f1e0124dd5c1273",
-          "bytes": 6236
-        },
-        {
-          "path": "validation/development-20261027/headless-canvas-r19-v042-original-joint/20261027T230528Z/blind-content/strict-content-score-root-r20.json",
-          "sha256": "b5bea023ee6985ae290acb33d53ab44a1453ca73ef5a2d660e205eaae54c2a4a",
-          "bytes": 6019
-        },
-        {
-          "path": "validation/development-20261027/headless-canvas-r19-v042-original-joint/20261027T230528Z/blind-content/workers-root-actual-terminal.json",
-          "sha256": "3af39431f8f42102553c94b87eb954a4740e3ede52482f18aebd34d7d8b5d5a1",
-          "bytes": 2083
-        },
-        {
-          "path": "validation/development-20261027/current042-original-joint-independent-content-review-r20-r1.json",
-          "bytes": 13919,
-          "sha256": "b0f5b49f640db9a789c8f20fbbd247c33c4d6f947cbaf405830161e0225c9586"
+          "path": "E:/codex-record/drama3-upgrade/final-source405-Complex-blind-batch-r35/strict-content-score.json",
+          "sha256": "2fe3293f24b5987c0743788f67e858578014392cb5baa1d57b1849d006546682",
+          "bytes": 18831
         }
       ],
-      "method": "visible_ui",
-      "root_reviewed": true
+      "scope": "Actual source405 new0.42 original Complex generation and two revisions succeeded through actual UI; all12 exact saved-PCM whole/line clips strictly match targets in fresh blind R2 and Qwen recognizers,12/12 each. This does not prove arbitrary content or standalone Basic seed42."
     },
     "studio_ui": {
       "status": "passed",
-      "observed_result": "actual_original_long96_visible_UI_and_saved_content_passed",
-      "scope": "Actual Studio originalpayload8047db689695431ba131936ffe1452bf,58frame reference retained, three chunks126/93/77,606208samples. Whole+3crop dual4/4 are views from the one20clip blind batch. Actual UI generation/unload is separate from fullclean ownPython app import, which did not enter lifespan/start models. Long progress remains per chunk; no aggregate claim.",
+      "method": "visible_ui",
       "evidence": [
         {
-          "path": "validation/development-20261027/headless-studio-r19/20261027T224031Z/00-original-input-and-source-binding.json",
-          "sha256": "543aa7d4725cc0320a080835481f8b7a545e119c36d2258503c281239cd80bbe",
-          "bytes": 7819
+          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-UI-r34-r2/summary.json",
+          "sha256": "2099f03f388ed4232cdbfc7f2048edddea30924bad3aa751553142ee57c92bd0",
+          "bytes": 861
         },
         {
-          "path": "validation/development-20261027/headless-studio-r19/20261027T224031Z/07-exact-original-UI-submit.json",
-          "sha256": "56d54fe0843d808fcb0b95e326ff48ce0118fc6349bd6dbb766aaf14b42de47e",
-          "bytes": 1018
+          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-old040-blind-batch-r34/strict-content-score.json",
+          "sha256": "ecfb5a41ac6b07c5c30e838b369c9ee62d36b1f8194f3e6c7b7f4d6a5ebb8875",
+          "bytes": 14444
         },
         {
-          "path": "validation/development-20261027/headless-studio-r19/20261027T224031Z/08-exact-original-terminal-job.json",
-          "sha256": "e34054887a3c1cbbda1c4c47312c2e729221194c9e71123e1f3b44ceb55f84ba",
-          "bytes": 8525
+          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-UI-r34-r2/basic42-Graph-on-terminal.json",
+          "sha256": "a7ed2ca73669625cc2bdfa4f8a634d629ba4758862cbc90811c01f4d1b753b17",
+          "bytes": 759
         },
         {
-          "path": "validation/development-20261027/headless-studio-r19/20261027T224031Z/blind-content/prepared.json",
-          "sha256": "c80032e0cc4a444c17c78759fac44de3aec01f55d658e36ce0ca6b2023f06e12",
-          "bytes": 4446
-        },
-        {
-          "path": "validation/development-20261027/original-three-case-20clip-blind-batch-r19/strict-content-score.json",
-          "sha256": "f16761d71c46172236c6707efede038888d14ac9019af6cf0a951a05426a2fc3",
-          "bytes": 36163
-        },
-        {
-          "path": "validation/development-20261027/headless-studio-r19/20261027T224031Z/14-owned-idle-Studio-stop.json",
-          "sha256": "8203522805a87ced8bd288ecea4e6187fc79a281c71e5f3fda6c9b2e754ce2b8",
-          "bytes": 1095
+          "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/adoption405-r1/03-adoption-and-targeted-CPU-receipt.json",
+          "sha256": "eb8651e76d092847b2dbcaa16a707ea36c105016bd204c27e5a6b3b5df49a994",
+          "bytes": 2675
         }
       ],
-      "method": "visible_ui",
-      "root_reviewed": true
+      "scope": "Scoped source404 Long96 actual UI and whole+three line strict dual4/4 scoring passed; source405 idle unload delta leaves generation unchanged. The separately pinned original CUDA/Graph no-reference Basic seed42 failure remains a failed known negative, not part of the positive pass count."
     },
     "portable_update": {
       "status": "passed",
-      "observed_result": "unchanged_official0111_updater_transaction_contract_and_current_private_layout_verified",
-      "scope": "Real historicalR5/R11 owned physical-copy0.1.11->0.2.0 update transactions bind byte-identical updater34e720...; currentR19 private1303code/126node members have accepted rootlayout/min_version/legacy path policy/CRC/sourceSHA. R19 same-version fullclean refresh and ownPython18schema/appimport pass separately. No newR19 cross-version transaction, online updater success, model59GB fresh read, or fullclean Studio/model Run is invented. Final docs-only export must receive its own fresh member/CRC/source audit; public network smoke belongs to external postpublication ledger, not self-referential archive acceptance. The final release collector now selects shared top-level native notices, preserving the existing24-member archive and download pin; its actual native reuse and scoped canonical packaging tests passed. Nested model notices remain in code/node archives at original paths. The old updater bytes are unchanged. Development build_public_release.py is source-only and absent from code/node ZIPs and the full runtime, preserving the original six-tool whitelist. Final code delta against privateR19 is only README2+acceptance; node delta is README2. The initial extra-tool delta expectation was a checker mistake, retained in a local diagnostic.",
       "evidence": [
         {
-          "path": "validation/development-20261027/../development-20261026/portable-cross-version-r5-root-independent-terminal-r1.json",
-          "sha256": "66b764c567b236e7cd2a48235634ec5708cbe146b6cc05264afab966eeae61f0",
-          "bytes": 4021
+          "path": "E:\\codex-record\\drama3-upgrade\\qualification-public020-to021-r36-transaction-result.json",
+          "bytes": 336208,
+          "sha256": "cefda61b00cd23d07a90bde43deecc56300d602319d2fc861d9f6fddf0033e15"
         },
         {
-          "path": "validation/development-20261027/full-portable-r11-root-independent-terminal-r1.json",
-          "sha256": "76669526dcab781c4bc69738724cb873ba0762d2a90c1b3c50a4a0b429cde9b3",
-          "bytes": 3269
+          "path": "E:\\codex-record\\drama3-upgrade\\portable-r37-source405-finaldocs-own-runtime-CPU-r1\\report.json",
+          "bytes": 285234,
+          "sha256": "46a194522b266e7997a8ee584584f49eef4ead997c792477f88c82678cdb9621"
         },
         {
-          "path": "validation/development-20261027/private-r19-code-node-build-receipt-r1.json",
-          "sha256": "830e99ef136fffb9c49ce0018a67619d80e53ff57bf8d48a5f188281ab904378",
-          "bytes": 17374
+          "path": "E:\\codex-record\\drama3-upgrade\\fullclean-final-source405-code-refresh-r37\\receipt.json",
+          "bytes": 7977,
+          "sha256": "7f3cd11e437783ebac4d4a97836a2ad0a189bc4c7bddef54d3d3b5225989b179"
         },
         {
-          "path": "validation/development-20261027/private-r19-code-node-independent-terminal-review-r1.json",
-          "sha256": "a7aee79c1b5e83a4a81b8751210dce75aa4f0d15ffdf9a8bf84d61a58593fef2",
-          "bytes": 14049
+          "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-acceptance-r38\\runtime-equivalence-to-qualified-transaction.json",
+          "bytes": 2399,
+          "sha256": "d90d0cc227183ebc8d089c847599af6c926cec26b423bda7ae67c8da1979c2c4"
         },
         {
-          "path": "validation/development-20261027/fullclean-r19-refresh-independent-terminal-review-r1.json",
-          "sha256": "aa45ee6928a83a20131b6b742a4c7a12ee487edd47cb2afd837f81a9cdeb2a5d",
-          "bytes": 5213
-        },
-        {
-          "path": "validation/development-20261027/fullclean-r19-own-runtime-CPU-independent-terminal-review-r1.json",
-          "sha256": "5cdec1c952562396364ab6171950ad8c899892153b243e7a4341c4290618bd32",
-          "bytes": 6272
-        },
-        {
-          "path": "validation/development-20261027/current-release-gate-host-and-unchanged-evidence-readonly-r19-r1.json",
-          "sha256": "021aa1c16a39f0a1c1167506ba8be10755f0c962f97f60eec675cbf7bcc8783c",
-          "bytes": 17281
-        },
-        {
-          "path": "validation/development-20261027/canonical-release-and-fixture-focused-root-terminal-r20b.json",
-          "bytes": 2003,
-          "sha256": "1d64b0a90efe3cdb78d877c709dc682c605a77094bbbb6c72447033856c0ba3f"
-        },
-        {
-          "path": "validation/development-20261027/release-native-license-fix-r20/actual-native-reuse-candidate/receipt.json",
-          "bytes": 1381,
-          "sha256": "feb64085855d9b8b948210ca5c7c51068a197ac1ff4b42961d7406cec64f1555"
-        },
-        {
-          "path": "validation/development-20261027/canonical-source-export-packaging-root-terminal-r20c.json",
-          "bytes": 2008,
-          "sha256": "a613d1e15c9040aa7bc7084588467dc674e02aa6c49f516e1b0ff40871bc4f98"
+          "path": "E:\\codex-record\\drama3-upgrade\\portable-r38-native-GPU-smoke\\report.json",
+          "bytes": 210632,
+          "sha256": "b3c10e00b6da90b2f8c51035f90b19e7a04ce06613127ee8f85bafdd8fa4f8de"
         }
       ],
-      "root_reviewed": true
+      "scope": "Actual original public020 updater install_archive committed1303 code members to021, with explicit inert protected sentinels; separate complete private bundle249-source-SHA/18-schema/1402-origin own-Python CPU qualification. Neither fixture sentinels nor CPU checks are claimed as full-model inference or automatic latest.",
+      "scoped_code_transaction_status": "passed",
+      "full_model_environment_status": "Own packaged Python CPU18 and native CUDA compiler/Graph smoke qualified; full checkpoint TTS was not loaded in this packaged layout. Separate actual UI tests qualify the byte-identical shared core.",
+      "automatic_latest": false,
+      "own_Python": {
+        "nodes": 18,
+        "module_origins": 1402,
+        "all_under_private_bundle": true,
+        "CUDA_initialized": false,
+        "versions": {
+          "transformers": "4.57.1",
+          "tokenizers": "0.22.2",
+          "huggingface-hub": "0.36.2"
+        }
+      },
+      "post_publication_latest": "Must be observed separately against the actual stable Release; it is not inferred from this offline transaction.",
+      "native_GPU_smoke": {
+        "real_NVRTC": true,
+        "real_Graph_captures": 1,
+        "real_Graph_replays": 5,
+        "exact_BF16_counterexample": true,
+        "full_model_in_packaged_layout": false
+      }
     },
     "requirements_audit": {
       "status": "passed",
-      "observed_result": "existing20topic_requirements_audit_and_current_affected_case_closure_ready_for_root_review",
-      "scope": "Original20topic requirements audit plus actual fixed-case closures, independent0.42 UI/freshdual4/4, ownPython CPU import and unchanged updater/native lineage. Root adopted final docs, verified387 unchanged oldnonREADME source entries, and scoped release-tool/developer-fixture changes with115passed/2skipped canonical focused tests plus exported-source35/26 checks. This is not a new20round audit or universal voice/hardware certification. Final artifact/member and public network publication readbacks remain external to avoid archive self-hash cycles.",
       "evidence": [
         {
-          "path": "validation/development-20261027/../development-20261026/requirements.json",
-          "sha256": "12bcd2c58f693f499bf7973d19c1351c5581e1e0696654575e64b84c2a9f4b28",
-          "bytes": 20814
-        },
-        {
-          "path": "validation/development-20261027/../development-20261026/delivery-requirements-20-independent-audit.json",
-          "sha256": "7b003d577158c91e9b1938848c95af0fab2e6790c6ce56a206310e95caf2fb46",
-          "bytes": 47526
-        },
-        {
-          "path": "validation/development-20261027/current-release-gate-host-and-unchanged-evidence-readonly-r19-r1.json",
-          "sha256": "021aa1c16a39f0a1c1167506ba8be10755f0c962f97f60eec675cbf7bcc8783c",
-          "bytes": 17281
-        },
-        {
-          "path": "validation/development-20261027/r19-all-original-content-and-clean-runtime-terminal-prepublication-root-checkpoint.json",
-          "sha256": "34d00333b130b3c11883ed386827ea4c953f685035c39705a9b43549bb827bd1",
-          "bytes": 12263
-        },
-        {
-          "path": "validation/development-20261027/headless-canvas-r19-v042-original-joint/20261027T230528Z/blind-content/strict-content-score-root-r20.json",
-          "sha256": "b5bea023ee6985ae290acb33d53ab44a1453ca73ef5a2d660e205eaae54c2a4a",
-          "bytes": 6019
-        },
-        {
-          "path": "validation/development-20261027/fullclean-r19-own-runtime-CPU-independent-terminal-review-r1.json",
-          "sha256": "5cdec1c952562396364ab6171950ad8c899892153b243e7a4341c4290618bd32",
-          "bytes": 6272
-        },
-        {
-          "path": "validation/development-20261027/canonical-release-and-fixture-focused-root-terminal-r20b.json",
-          "bytes": 2003,
-          "sha256": "1d64b0a90efe3cdb78d877c709dc682c605a77094bbbb6c72447033856c0ba3f"
-        },
-        {
-          "path": "validation/development-20261027/export-fixture-results-and-HF-adoption-independent-review-r20-r1.json",
-          "bytes": 9724,
-          "sha256": "190274923bb610293c4ee4080f56ca3a0ee2870f2bc04cea6161fff11ad99b42"
-        },
-        {
-          "path": "validation/development-20261027/canonical-source-export-packaging-root-terminal-r20c.json",
-          "bytes": 2008,
-          "sha256": "a613d1e15c9040aa7bc7084588467dc674e02aa6c49f516e1b0ff40871bc4f98"
+          "path": "E:\\codex-record\\drama3-upgrade\\requirements-final-delta-r37.json",
+          "bytes": 14473,
+          "sha256": "af3241274abc2d6b42fb1af9ee160d1a752b058591f7bf525c216a5e4d954c66"
         }
       ],
-      "root_reviewed": true
+      "scope": "Requirement implementation and precisely bounded evidence coverage. KnownW4 failure and external review are not passed by this gate."
     }
   },
-  "root_final_review": {
-    "observed_utc": "2026-10-27T23:53:45.557Z",
-    "runtime_parent": {
-      "archive_id": "direction-and-node-progress-source-freeze-r19b.json",
-      "sha256": "c7d958e942e5560acffa9367c5c83c36c3e7006d23345f3149d65d77fd4dadc8",
-      "files": 395,
-      "documentation_files_in_parent": 4,
-      "fresh_non_README_files": 391,
-      "scope": "Actual tested R19 runtime parent, not a future documentation freeze or final archive."
+  "source_freeze": {
+    "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-readmes-r37\\01-source-freeze-405-final-docs.json",
+    "bytes": 64012,
+    "sha256": "4630881ca6f3c64fd5bba0be090cdbcf8330ab6a267a4ad56c827430ff16e68d"
+  },
+  "QA_refresh": {
+    "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-readmes-r37\\02-QA-final-README-refresh-126.json",
+    "bytes": 40529,
+    "sha256": "93cb41a2f2fb67d5705016a2f1767125a7039bdc37b273e7af3f4b532d15ba6a"
+  },
+  "schema_reference": {
+    "path": "D:/drama-3/tools/finalize_manifest.py",
+    "sha256": "cdfa08efc549a6f4bae84fdf4a8601a9344d6693f1338ab22127357dd3a21857",
+    "bytes": 5138
+  },
+  "final_docs_freeze_required": false,
+  "source_hashes_origin": "Final source405 docs snapshot, all249 shipped canonical payload files except the acceptance output itself. Test/nonpayload sources remain bound by the405 snapshot.",
+  "source404_to405_delta": {
+    "parent": {
+      "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/adoption404/prepare_20261028T122053Z_90bc8371/01-source-freeze-404.json",
+      "sha256": "0a7d7101563bcd2df3107242e302980e069dffdc4a9dcc8bd4020065f3b77899",
+      "bytes": 65040
     },
-    "documentation_adoption": {
-      "path": "validation/development-20261027/final-doc-adoption-r20/receipt.json",
-      "bytes": 1910,
-      "sha256": "c0629498b279c99217decea9f72ec65a8a88ba11e991dd56630bcb5c4aeca050"
+    "changed_existing": [
+      "comfyui-drama3-T8/drama3_t8/native/acceleration.py",
+      "drama3_t8/native/acceleration.py"
+    ],
+    "added": [
+      "tests/test_pinned_host_release_order.py"
+    ],
+    "other402_existing_files_unchanged": true,
+    "generation_math_path_unchanged": true,
+    "mechanism": "Only effective idle pinned-host purge waits for pending CUDA copies; no claim this explains all historical17GB."
+  },
+  "known_negatives": [
+    {
+      "id": "original_W4_no_reference_Basic_seed42_Torch_and_CUDA",
+      "status": "failed_known_negative",
+      "text": "Original no-reference W4 seed42 local-speech case hits stalled/silent-repetition guard in Torch and CUDA. No seed, retry or budget substitution.",
+      "cuda_graph_evidence": {
+        "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-UI-r34-r2/basic42-Graph-on-terminal.json",
+        "sha256": "a7ed2ca73669625cc2bdfa4f8a634d629ba4758862cbc90811c01f4d1b753b17",
+        "bytes": 759
+      },
+      "torch_evidence": {
+        "path": "E:\\codex-record\\drama3-upgrade\\fair-w4-native-benchmark-r22\\r33-consolidated-source403-streamed-capture-r2\\torch\\report.json",
+        "bytes": 1157003,
+        "sha256": "06011041ff280ee9f01fb5c329e634ed8b0ae62ca6f2002306883bc213c1a24d"
+      },
+      "causal_attribution": "Unresolved. The guard message is not proof of an intrinsic model defect, a backend cause, or measured digital zero amplitude.",
+      "count_as_pass": false,
+      "source_scope": "Actual Torch diagnostic source403; its ordinary Torch generation path is unchanged in405. CUDA Graph diagnostic is actual source404;405 only changes idle host-cache release.",
+      "sampling": {
+        "text": "你好，这是本地语音测试。",
+        "seed": 42,
+        "temperature": 0.7,
+        "top_p": 0.7,
+        "top_k": 30,
+        "max_frames": 180,
+        "opening_retries": 0,
+        "references": 0
+      }
+    }
+  ],
+  "historical_evidence_policy": "Source40023-clip results remain historical; scoped unchanged-component audit evidence may be retained only with precise400-to405 delta coverage.",
+  "external_status": {
+    "publication_scope": "This runtime acceptance does not assert publication, Registry activation or online latest. Check the separately recorded post-publication state.",
+    "historical_registry_020": "Previously observed Flagged/pending; not an Active assertion or fresh current-state claim."
+  },
+  "distribution_boundary": {
+    "GitHub_release_code_only": true,
+    "models_in_code_release": false,
+    "Python_interpreter_in_code_release": false,
+    "native_R2_dependency": "Separately verified immutable610MB v0.2.0 asset; no rebuild",
+    "full_environment": "Author-provided complete Windows bundle, separately qualified within the recorded scope",
+    "roadmap_and_validation_trees_exported": false
+  },
+  "scoped_update_transaction": {
+    "report": {
+      "path": "E:/codex-record/drama3-upgrade/qualification-public020-to021-r36-transaction-result.json",
+      "sha256": "cefda61b00cd23d07a90bde43deecc56300d602319d2fc861d9f6fddf0033e15",
+      "bytes": 336208
     },
-    "source_count": 396,
-    "non_README_unchanged_files": 387,
-    "four_README_reviewed_and_synchronized": true,
-    "all8_gate_scopes_and_evidence_reviewed": true,
-    "new_042_independent_content": {
-      "path": "validation/development-20261027/current042-original-joint-independent-content-review-r20-r1.json",
-      "bytes": 13919,
-      "sha256": "b0f5b49f640db9a789c8f20fbbd247c33c4d6f947cbaf405830161e0225c9586"
+    "result": {
+      "status": "updated",
+      "version": "0.2.1"
     },
-    "finalizer": "Unchanged tools/finalize_manifest.py verifies actual396 source hashes plus eight gate evidence maps and atomically records acceptance; no archive self-hash is embedded.",
-    "original_parent_non_README_files": 391,
-    "release_only_adoption": {
-      "path": "validation/development-20261027/release-native-license-fix-r20/canonical-adoption-after-HF/receipt.json",
-      "bytes": 3278,
-      "sha256": "33a634174de1e5ce6fe6dfa5a42ddbcd6129985ba572c214610bcc5811f9c55a"
-    },
-    "focused_increment": {
-      "path": "validation/development-20261027/canonical-release-and-fixture-focused-root-terminal-r20b.json",
-      "bytes": 2003,
-      "sha256": "1d64b0a90efe3cdb78d877c709dc682c605a77094bbbb6c72447033856c0ba3f"
-    },
-    "developer_fixture_independent": {
-      "path": "validation/development-20261027/export-fixture-results-and-HF-adoption-independent-review-r20-r1.json",
-      "bytes": 9724,
-      "sha256": "190274923bb610293c4ee4080f56ca3a0ee2870f2bc04cea6161fff11ad99b42"
-    },
-    "final_source_only_export_increment": {
-      "path": "validation/development-20261027/canonical-source-export-packaging-root-terminal-r20c.json",
-      "bytes": 2008,
-      "sha256": "a613d1e15c9040aa7bc7084588467dc674e02aa6c49f516e1b0ff40871bc4f98"
-    },
-    "canonical_scope": "387 original nonREADME entries remain unchanged; four source-only release/developer-test entries,4README docs and one exactJSON fixture are scoped separately. No inference source change after R19b."
+    "journal_state": "committed",
+    "scope": "real_original_install_archive_transaction_code_fixture_only_not_latest_not_full_environment",
+    "public020_original_updater": true,
+    "protected_sentinels_scope_only": true,
+    "full_model_environment_proven": false,
+    "automatic_latest": false
+  },
+  "final_review_before_recording": "Root reviewed actual tool terminals, source lineage, exact inputs, raw+parsed blind scoring, private-runtime origins and the code-update transaction. Known failure is retained separately.",
+  "accepted_utc": "2026-10-28T13:48:34.580456+00:00",
+  "acceptance_policy": "Passed means the eight named, source-bound release gates meet their stated scope. It does not mean every generative seed, every model/parameter combination, all historical diagnostics or fair performance comparisons passed.",
+  "parent_private_draft": {
+    "path": "E:\\codex-record\\drama3-upgrade\\acceptance-0.2.1-private-draft-r35-r2\\acceptance-report-0.2.1.private-draft-r2.json",
+    "bytes": 60060,
+    "sha256": "0c4775d5d5e0a0156cf38bbd3453cdd960fd788f18ee97a879d780eec819cc17"
+  },
+  "performance_scope": {
+    "fair_Torch_vs_CUDA_speedup_qualified": false,
+    "reason": "The original Torch benchmark case stalled; an earlier CUDA eager EOS on pre-correction math is not a successful same-quality baseline. No replacement seed/text/budget/retry is used to claim a speedup."
+  },
+  "post_publication_required_check": "Run the unchanged original020 update CLI against a fresh exact020 code installation and actual latest stable021. Record outside this self-excluded acceptance report.",
+  "preliminary_root_review": {
+    "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-acceptance-r38\\acceptance-report-0.2.1.reviewed.json",
+    "bytes": 45351,
+    "sha256": "6e64fb126cd86128ffcb59028cfd2b793ac55838ce389591ade91859aa468f26"
   }
 }

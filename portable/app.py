@@ -21,10 +21,10 @@ standalone_engine(ROOT)
 import torch
 import uvicorn
 from fastapi import FastAPI, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from drama3_t8.studio import Studio, SessionNotFound
+from drama3_t8.studio import Studio, SessionNotFound, QueueUnavailable
 from drama3_t8.state import load_session
 from drama3_t8 import __version__
 from safetensors import SafetensorError
@@ -40,6 +40,10 @@ def create_app(root=ROOT):
             app.state.studio = studio
             yield
     app = FastAPI(title="Drama 3 Local Studio · T8", docs_url=None, redoc_url=None, lifespan=lifespan)
+
+    @app.exception_handler(QueueUnavailable)
+    async def queue_unavailable(request, exc):
+        return JSONResponse(status_code=503, content={"detail": str(exc)})
 
 
     @app.get("/api/status")
