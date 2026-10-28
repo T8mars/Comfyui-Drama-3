@@ -15,6 +15,13 @@ Native [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) nodes and 
 - A separate white-and-pink Studio with the same inference core and multitrack editor: role gain/mute, cuts, inserted silence, pause presets, undo and captions.
 - Source-aware model infill, local Qwen3-ASR 0.6B/1.7B, word alignment and [Confucius R2T2](https://github.com/T8mars/comfyui-confucius-r2t2-t8). All model paths are configurable.
 
+## Changes in 0.2.1
+
+- Long-text continuation keeps a fixed voice reference. The first new chunk uses the existing conversation; later chunks use the Session's explicit references in their original order, or the first newly generated Take when no references were supplied. Saved references, prior Takes and direction remain in the Session. Ordinary speech, Scene, streaming and revision keep their existing history policies.
+- Accelerated quantized MoE paths now preserve the intended BF16 intermediate rounding. BF16 Hadamard accumulation uses higher precision before a single BF16 rounding. This is an arithmetic correction, not a promise of identical output across all backends or higher speed.
+- Quantized BF16 full-resident prefill computes expert mixtures in chunks to bound extra workspace. Model weights and full-prefill tensors remain part of the VRAM budget.
+- Unloading waits for outstanding GPU copies before clearing unused pinned RAM. Load/cleanup errors preserve their original failure; Studio rejects new jobs with HTTP 503 if job-state storage fails.
+
 ## Installation
 
 Registry node ID: **`comfyui-drama3-t8`** · Publisher: **`t8star`**. For manual installation, use **ComfyUI's own Python**:
@@ -31,13 +38,13 @@ Restart ComfyUI, import a JSON from `workflows/`, select models/reference audio 
 
 `install.py` installs the separately verified **Windows x64 / CUDA 12.8** R2T2 runtime, without model weights. Set `DRAMA_SKIP_R2T2_INSTALL=1` to skip it or `DRAMA_R2T2_NATIVE_DIR` to use an existing runtime. Qwen ASR works independently.
 
-The portable default and tested dependency set is **Transformers 4.57.1 / tokenizers 0.22.2 / huggingface-hub 0.36.2**, with Torch 2.8 + CUDA 12.8:
+Use the supported dependency set: **Transformers 4.57.1 / tokenizers 0.22.2 / huggingface-hub 0.36.2**. Validation used Torch 2.8 + CUDA 12.8:
 
 ```sh
 python -m pip install "transformers==4.57.1" "tokenizers==0.22.2" "huggingface-hub==0.36.2"
 ```
 
-The node requirement ranges are `transformers>=4.57.1,<6` and `tokenizers>=0.22,<0.24`; the validation below uses the exact pinned versions.
+Only **Transformers 4.57.1** is supported and tested. Transformers 5.x/6.x and other dependency combinations are not covered. Install into a compatible ComfyUI environment; the portable updater does not install Python dependencies.
 
 ## Voices and dialogue
 
@@ -114,15 +121,15 @@ Local validation used Windows x64, **24 GB VRAM / 64 GB RAM**, RTX 5090 Laptop a
 | `expert_placement` | `ram` default: host experts plus cache. `vram` requires the complete model and heads to fit one GPU. |
 | `expert_cache_gb` | RAM-mode cache budget in GiB; `0` is automatic. Related takes share the cache; supported single-GPU INT8 can use CPU experts. |
 
-Codec uses bounded windows. Supported quantized pread loads check ownership and memory budgets; other layouts retain conservative loading. Whole-model VRAM residency and W6/INT8 coverage remain incomplete on this device. Multi-GPU is outside scope. If CUDA capture is invalidated, restart the host and disable Graph for that configuration. Peer Voice/Codes files are not interchangeable with this project's Session archives.
+Codec uses bounded windows. Supported quantized pread loads check ownership and memory budgets; other layouts retain conservative loading. Whole-model VRAM residency has not been established on this 24 GB device. Prior W6/INT8 fixed speech checks do not establish general quality, memory feasibility or current-version coverage. Multi-GPU is outside scope. If CUDA capture is invalidated, restart the host and disable Graph for that configuration. Peer Voice/Codes files are not interchangeable with this project's Session archives.
 
 ## Validation scope
 
-Tested canvas hosts: **ComfyUI 0.40.0 and 0.42.0**. With Transformers 4.57.1, two CPU dependency stacks (Comfy Kitchen 0.2.37 / 0.2.40) each completed **1322 passed, 5 skipped, 1 GPU deselected**.
+Two Transformers 4.57.1 CPU dependency stacks (Comfy Kitchen 0.2.37 / 0.2.40) each completed **1364 passed, 5 skipped, 1 GPU deselected**, with CUDA uninitialized. Scoped GPU checks cover BF16 arithmetic, cache transfers and Graph behavior; they do not establish whole-model VRAM residency.
 
-Actual canvas and Studio UI checks covered fixed dialogue, an initial Scene plus two revisions, an unchunked Scene and three-chunk long text. One R2T2 batch and one Qwen batch each scored **20/20** (12 + 4 + 4) on those 0.40.0 outputs. The 0.42.0 increment re-ran one original joint Scene, scoring **4/4 per recognizer** on whole/line clips. A separate replay reused prior 4/4 only after exact code/PCM equality. Live canvas node progress was checked.
+Fixed cases were run through the actual ComfyUI 0.40.0 / 0.42.0 canvas and Studio interfaces. Blind R2T2 and Qwen transcription each matched **20/20 whole-recording and per-line clips** from long text, a joint scene and a complex scene with two revisions. This verifies words and order for those cases, not general voice similarity, emotion or speed.
 
-These checks establish the original words and order for those cases. They do not certify all 16 workflows or all prompts, voice similarity, emotion/accent quality or speed. Historical failures remain separate. See the [acceptance report](https://github.com/T8mars/Comfyui-Drama-3/blob/main/portable/acceptance-report.json), also included locally in complete bundles.
+**Known failure:** a no-reference W4 case at seed 42 produces silent repetition in Torch and CUDA. Its cause remains unresolved and it is not counted as a pass. Cross-backend output identity and speed improvements are not promised. See the version, source scope and limitations in the [acceptance report](https://github.com/T8mars/Comfyui-Drama-3/blob/main/portable/acceptance-report.json).
 
 ## Credits and licenses
 

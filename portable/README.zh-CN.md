@@ -15,6 +15,16 @@ T8star 制作的 [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) 
 - 独立白粉 Studio，共用推理核心与多轨编辑器：角色音量/静音、剪切、插入静音、停顿预设、撤销与字幕。
 - 基于真实音频来源的模型局部编辑、本地 Qwen3-ASR 0.6B/1.7B、词级对齐及 [Confucius R2T2](https://github.com/T8mars/comfyui-confucius-r2t2-t8)。模型路径均可自定义。
 
+## 0.2.1 更新
+
+- 长文续读使用固定音色参考：首个新分段沿用原会话，后续优先按原顺序使用 Session 显式参考；未提供参考时，固定使用本次首个新 Take。原参考、旧 Take 和方向指令仍完整保存在 Session 中。普通语音、Scene、流式和改稿的历史策略保持原样。
+- 修正量化 MoE 加速路径中的 BF16 中间结果舍入。BF16 Hadamard 累加先用更高精度计算，再进行一次 BF16 舍入。 这是算术修正，不表示所有后端输出完全一致或速度提高。
+- BF16 量化全驻留预填充按块计算专家混合，限制额外工作区；模型权重与整段预填充张量仍计入显存需求。
+
+- 模型加载/清理保留原始异常；Studio 任务状态写入失败时暂停接单并返回可读的 503。
+
+卸载会先等待 GPU 复制完成，再清理闲置锁页内存缓存。
+
 ## 安装
 
 Registry 节点 ID：**`comfyui-drama3-t8`** · 发布者：**`t8star`**。手动安装须使用 **ComfyUI 自己的 Python**：
@@ -31,13 +41,13 @@ python install.py
 
 `install.py` 安装单独校验的 **Windows x64 / CUDA 12.8** R2T2 运行库，不下载模型。设 `DRAMA_SKIP_R2T2_INSTALL=1` 可跳过，已有运行库用 `DRAMA_R2T2_NATIVE_DIR` 指定。Qwen 转写独立可用。
 
-整合包默认及验证依赖为 **Transformers 4.57.1 / tokenizers 0.22.2 / huggingface-hub 0.36.2**，配合 Torch 2.8 + CUDA 12.8：
+支持的依赖组合为 **Transformers 4.57.1 / tokenizers 0.22.2 / huggingface-hub 0.36.2**。实际验证使用 Torch 2.8 + CUDA 12.8：
 
 ```sh
 python -m pip install "transformers==4.57.1" "tokenizers==0.22.2" "huggingface-hub==0.36.2"
 ```
 
-节点依赖范围为 `transformers>=4.57.1,<6`、`tokenizers>=0.22,<0.24`；下述验证使用精确固定版本。
+仅支持并验证 **Transformers 4.57.1**，不声明兼容 Transformers 5.x/6.x 或其他依赖组合。请使用兼容的 ComfyUI 环境；整合包更新器不会安装 Python 依赖。
 
 ## 音色与对话
 
@@ -114,15 +124,15 @@ runtime\python\python.exe tools\convert_model.py quantize "models\drama3-t8-fp8.
 | `expert_placement` | 默认 `ram`：主存专家加显存缓存；`vram` 要求整模型和控制头装入同一 GPU。 |
 | `expert_cache_gb` | RAM 模式缓存 GiB，`0` 自动；相关 Take 共用缓存，支持的单卡 INT8 可协同 CPU 专家。 |
 
-Codec 使用有界窗口；支持的量化 pread 加载会校验所有权与内存预算，其他布局保留保守加载。本机尚未完成整模型全显存驻留及 W6/INT8 全面验证，多卡不在范围内。CUDA capture 失效后，须重启宿主并对该配置关闭 Graph。对方项目的 Voice/Codes 文件不能直接替换本项目 Session 归档。
+Codec 使用有界窗口；支持的量化 pread 加载会校验所有权与内存预算，其他布局保留保守加载。本机 24 GB 显存尚未验证整模型全显存驻留。此前 W6/INT8 固定语音检查不代表通用质量、内存可行性或当前版本覆盖，多卡不在范围内。CUDA capture 失效后，须重启宿主并对该配置关闭 Graph。对方项目的 Voice/Codes 文件不能直接替换本项目 Session 归档。
 
 ## 验证范围
 
-已验证画布宿主：**ComfyUI 0.40.0 与 0.42.0**。Transformers 4.57.1 下，两套 CPU 依赖栈（Comfy Kitchen 0.2.37 / 0.2.40）各完成 **1322 passed、5 skipped、1 GPU deselected**。
+两套 Transformers 4.57.1 CPU 依赖环境（Comfy Kitchen 0.2.37 / 0.2.40）各完成 **1364 项通过、5 项跳过、1 项 GPU 测试未选入**，CUDA 未初始化。限定 GPU 测试覆盖 BF16 运算、缓存传输与 Graph 行为，不代表整模型全显存驻留已验证。
 
-实际画布与 Studio UI 检查覆盖固定对话、初稿及两次连续改稿、未分块整场对话和三段长文。0.40.0 的实际输出经一次 R2T2 batch 与一次 Qwen batch，各 **20/20**（12 + 4 + 4）。0.42.0 增量仅重跑一例原整场对话，整段/分行音频经双引擎各 **4/4**。另一回归仅在音码/PCM 精确相等后复用原 4/4，并检查了实际画布节点进度。
+固定案例通过 ComfyUI 0.40.0 / 0.42.0 真实画布和 Studio 界面运行。长文、整场对话、复杂场景及两次改稿的整段与逐句音频，由 R2T2、Qwen 分别盲转写，两个识别器均 **20/20** 字序匹配。该结果验证这些案例的文字与顺序，不代表通用音色相似度、情绪或速度评分。
 
-这些检查核实对应案例的原台词与顺序，不代表全部 16 张工作流或所有提示、音色相似度、情绪/口音质量、速度均已通过。历史失败独立保留。范围与限制见[验收报告](https://github.com/T8mars/Comfyui-Drama-3/blob/main/portable/acceptance-report.json)，完整包也包含本地副本。
+**已知失败：** W4 无参考、seed 42 的一个案例在 Torch 和 CUDA 下出现静音重复，原因尚未确定，不计为通过。不同后端不承诺输出一致或速度提高。具体版本、源码范围与限制见[验收报告](https://github.com/T8mars/Comfyui-Drama-3/blob/main/portable/acceptance-report.json)。
 
 ## 来源与许可
 

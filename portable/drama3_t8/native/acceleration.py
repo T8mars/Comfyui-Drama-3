@@ -18,6 +18,8 @@ def release_unused_pinned_memory():
     if release is None:release=getattr(torch._C,'_host_emptyCache',None)
     if release is None:release=getattr(torch._C,'_accelerator_emptyHostCache',None)
     if release is not None:
+        # Pending async copies must finish before the host allocator can free their blocks.
+        torch.cuda.synchronize()
         release()
         return True
     return False

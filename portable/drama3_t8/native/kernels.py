@@ -177,10 +177,20 @@ extern "C" __global__ void await_cpu(const int* plan, int k, volatile const int*
   for (int i = threadIdx.x; i < H; i += blockDim.x) out[i] = ready ? __int_as_float(((unsigned int)result[i]) << 16) : 0.0f;
 }
 
+// QA-only BF16 RNE boundaries; float32 mode preserves original expressions.
+__device__ __forceinline__ float qa_bf16(float value) {
+  unsigned int bits = __float_as_uint(value);
+  if ((bits & 0x7fffffffu) > 0x7f800000u) return __uint_as_float((bits | 0x00400000u) & 0xffff0000u);
+  return __uint_as_float((bits + 0x7fffu + ((bits >> 16) & 1u)) & 0xffff0000u);
+}
+__device__ __forceinline__ float qa_linear_bf16(int acc, float xs, float ws) {
+  return qa_bf16(__fmul_rn((float)acc, __fmul_rn(xs, ws)));
+}
+
 // One block per row of x [rows, K] (float; with `swiglu`, [rows, 2K] gate | up, SiLU(gate) * up first): the ConvRot
 // rotation (the regular Hadamard of 256, h4 kron h4 kron h4 kron h4 / 16, per group), then int8 with one scale per row.
 extern "C" __global__ void __launch_bounds__(256) rotate_quantize(const float* x, int swiglu, int K, signed char* q,
-                                                                  float* scale, const int* only_if) {
+                                                                  float* scale, const int* only_if, int bf16) {
   __shared__ float row[2048];
   __shared__ float partial[8];
   int r = blockIdx.x;
@@ -189,7 +199,11 @@ extern "C" __global__ void __launch_bounds__(256) rotate_quantize(const float* x
     float v;
     if (swiglu) {
       float g = x[(long long)r * 2 * K + i], u = x[(long long)r * 2 * K + K + i];
-      v = g / (1.0f + __expf(-g)) * u;
+      if (bf16) {
+        g = qa_bf16(g); u = qa_bf16(u);
+        float silu = qa_bf16(__fdiv_rn(g, __fadd_rn(1.0f, expf(-g))));
+        v = qa_bf16(__fmul_rn(silu, u));
+      } else v = g / (1.0f + __expf(-g)) * u;
     } else {
       v = x[(long long)r * K + i];
     }
@@ -211,6 +225,7 @@ extern "C" __global__ void __launch_bounds__(256) rotate_quantize(const float* x
   float amax = 0.0f;
   for (int i = threadIdx.x; i < K; i += blockDim.x) {
     row[i] *= 0.0625f;
+    if (bf16) row[i] = qa_bf16(row[i]);
     amax = fmaxf(amax, fabsf(row[i]));
   }
   for (int o = 16; o > 0; o >>= 1) amax = fmaxf(amax, __shfl_xor_sync(0xffffffffu, amax, o));
@@ -218,9 +233,99 @@ extern "C" __global__ void __launch_bounds__(256) rotate_quantize(const float* x
   __syncthreads();
   amax = partial[0];
   for (int w = 1; w < (blockDim.x >> 5); w++) amax = fmaxf(amax, partial[w]);
-  float s = amax > 0.0f ? amax / 127.0f : 1.0f;
-  for (int i = threadIdx.x; i < K; i += blockDim.x)
-    q[(long long)r * K + i] = (signed char)max(-127, min(127, __float2int_rn(row[i] / s)));
+  float s = bf16 ? fmaxf(__fmul_rn(amax, 1.0f / 127.0f), 1e-30f) : (amax > 0.0f ? amax / 127.0f : 1.0f);
+  float divisor = bf16 ? qa_bf16(s) : s;
+  if (bf16 && divisor == 0.0f) divisor = __uint_as_float(0x00800000u);
+  for (int i = threadIdx.x; i < K; i += blockDim.x) {
+    if (bf16) {
+      float quotient = qa_bf16(__fdiv_rn(row[i], divisor));
+      q[(long long)r * K + i] = (signed char)max(-128, min(127, __float2int_rn(quotient)));
+    } else q[(long long)r * K + i] = (signed char)max(-127, min(127, __float2int_rn(row[i] / s)));
+  }
+  if (threadIdx.x == 0) scale[r] = s;
+}
+
+// Direct binary64 -> BF16 RNE for the already-computed double value.
+// This conversion does not claim the preceding sum is exact over all exponents.
+__device__ __forceinline__ float qa_double_bf16(double value) {
+  unsigned long long bits = (unsigned long long)__double_as_longlong(value);
+  unsigned int sign = (unsigned int)((bits >> 48) & 0x8000ULL);
+  unsigned int exponent = (unsigned int)((bits >> 52) & 0x7ffULL);
+  unsigned long long fraction = bits & 0x000fffffffffffffULL;
+  if (exponent == 0x7ffu) {
+    unsigned int payload = fraction ? ((unsigned int)(fraction >> 45) | 0x40u) : 0u;
+    return __uint_as_float((sign | 0x7f80u | payload) << 16);
+  }
+  if (exponent == 0u) return __uint_as_float(sign << 16);
+  int e = (int)exponent - 1023;
+  if (e > 127) return __uint_as_float((sign | 0x7f80u) << 16);
+  if (e < -134) return __uint_as_float(sign << 16);
+  unsigned long long significand = 0x0010000000000000ULL | fraction;
+  int shift = e >= -126 ? 45 : -e - 81;
+  unsigned long long kept = significand >> shift;
+  unsigned long long remainder = significand & ((1ULL << shift) - 1ULL);
+  unsigned long long half = 1ULL << (shift - 1);
+  kept += (remainder > half || (remainder == half && (kept & 1ULL)));
+  unsigned int magnitude = e >= -126 ? (((unsigned int)(e + 127) << 7) + (unsigned int)(kept - 128ULL))
+                                    : (unsigned int)kept;
+  return __uint_as_float((sign | magnitude) << 16);
+}
+
+// Separate BF16 entry: keep the old float entry and its expressions intact.
+// Input/SiLU and all post-rotation amax/scale/quotient/INT8 rules are unchanged.
+extern "C" __global__ void __launch_bounds__(256) rotate_quantize_bf16(const float* x, int swiglu, int K, signed char* q,
+                                                                       float* scale, const int* only_if, int bf16) {
+  __shared__ double row[2048];
+  __shared__ float partial[8];
+  int r = blockIdx.x;
+  if (!only_if[0]) return;
+  for (int i = threadIdx.x; i < K; i += blockDim.x) {
+    float v;
+    if (swiglu) {
+      float g = x[(long long)r * 2 * K + i], u = x[(long long)r * 2 * K + K + i];
+      if (bf16) {
+        g = qa_bf16(g); u = qa_bf16(u);
+        float silu = qa_bf16(__fdiv_rn(g, __fadd_rn(1.0f, expf(-g))));
+        v = qa_bf16(__fmul_rn(silu, u));
+      } else v = g / (1.0f + __expf(-g)) * u;
+    } else {
+      v = x[(long long)r * K + i];
+    }
+    row[i] = (double)v;
+  }
+  __syncthreads();
+  for (int stride = 1; stride < 256; stride *= 4) {
+    for (int t = threadIdx.x; t < K / 4; t += blockDim.x) {
+      int within = t & 63, low = within % stride, high = within / stride;
+      int i = (t >> 6) * 256 + high * stride * 4 + low;
+      double a = row[i], b = row[i + stride], c = row[i + 2 * stride], d = row[i + 3 * stride];
+      row[i] = a + b + c - d;
+      row[i + stride] = a + b - c + d;
+      row[i + 2 * stride] = a - b + c + d;
+      row[i + 3 * stride] = -a + b + c + d;
+    }
+    __syncthreads();
+  }
+  float amax = 0.0f;
+  for (int i = threadIdx.x; i < K; i += blockDim.x) {
+    // The rounded value is a BF16 float, exactly representable again in double.
+    row[i] = (double)qa_double_bf16(row[i] * 0.0625);
+    amax = fmaxf(amax, fabsf((float)row[i]));
+  }
+  for (int o = 16; o > 0; o >>= 1) amax = fmaxf(amax, __shfl_xor_sync(0xffffffffu, amax, o));
+  if ((threadIdx.x & 31) == 0) partial[threadIdx.x >> 5] = amax;
+  __syncthreads();
+  amax = partial[0];
+  for (int w = 1; w < (blockDim.x >> 5); w++) amax = fmaxf(amax, partial[w]);
+  float s = bf16 ? fmaxf(__fmul_rn(amax, 1.0f / 127.0f), 1e-30f) : (amax > 0.0f ? amax / 127.0f : 1.0f);
+  float divisor = bf16 ? qa_bf16(s) : s;
+  if (bf16 && divisor == 0.0f) divisor = __uint_as_float(0x00800000u);
+  for (int i = threadIdx.x; i < K; i += blockDim.x) {
+    if (bf16) {
+      float quotient = qa_bf16(__fdiv_rn((float)row[i], divisor));
+      q[(long long)r * K + i] = (signed char)max(-128, min(127, __float2int_rn(quotient)));
+    } else q[(long long)r * K + i] = (signed char)max(-127, min(127, __float2int_rn((float)row[i] / s)));
+  }
   if (threadIdx.x == 0) scale[r] = s;
 }
 
@@ -232,7 +337,7 @@ extern "C" __global__ void __launch_bounds__(256) gemv_int8(const signed char* x
                                                             const long long* ids, const int* plan, const int* took_over,
                                                             int late, signed char* slot_w, float* slot_s,
                                                             const signed char* host_w, const float* host_s, float* out,
-                                                            int N, int K) {
+                                                            int N, int K, int bf16) {
   extern __shared__ int4 x_vec[];
   int e = blockIdx.y, xr = x_rows == 1 ? 0 : e, code = plan[2 * e + 1];
   if (late ? code != 2 || !took_over[0] : code == 2) {
@@ -265,7 +370,7 @@ extern "C" __global__ void __launch_bounds__(256) gemv_int8(const signed char* x
     acc = warp_sum_int(acc);
     if (lane == 0) {
       float row_scale = s[n];
-      out[(long long)e * N + n] = (float)acc * xs * row_scale;
+      out[(long long)e * N + n] = bf16 ? qa_linear_bf16(acc, xs, row_scale) : (float)acc * xs * row_scale;
       if (fill) slot_s[(long long)slot * N + n] = row_scale;
     }
   }
@@ -327,7 +432,7 @@ extern "C" __global__ void __launch_bounds__(256) gemv_fp8(const float* x, int x
 extern "C" __global__ void __launch_bounds__(256) grouped_int8(const signed char* xq, const float* xscale,
                                                                const int* groups, signed char* slot_w, float* slot_s,
                                                                const signed char* host_w, const float* host_s,
-                                                               float* out, int N, int K) {
+                                                               float* out, int N, int K, int bf16) {
   const int* group = groups + 5 * blockIdx.y;
   int expert = group[0], slot = group[1], fill = group[2], first = group[3], rows = group[4];
   bool host = slot < 0 || fill;
@@ -365,7 +470,7 @@ extern "C" __global__ void __launch_bounds__(256) grouped_int8(const signed char
         }
       }
       acc = warp_sum_int(acc);
-      if (lane == 0) out[(long long)t * N + n] = (float)acc * xscale[t] * row_scale;
+      if (lane == 0) out[(long long)t * N + n] = bf16 ? qa_linear_bf16(acc, xscale[t], row_scale) : (float)acc * xscale[t] * row_scale;
     }
   }
 }
@@ -464,7 +569,7 @@ extern "C" __global__ void __launch_bounds__(256) gemv_codes(const signed char* 
                                                              unsigned char* slot_r, float* slot_c,
                                                              const unsigned char* host_w, const unsigned char* host_r,
                                                              const float* host_c, const float* codebook, int bits,
-                                                             float* out, int N, int K) {
+                                                             float* out, int N, int K, int bf16) {
   extern __shared__ int4 x_vec[];
   __shared__ float lut[16];
   int e = blockIdx.y, xr = x_rows == 1 ? 0 : e;
@@ -502,7 +607,7 @@ extern "C" __global__ void __launch_bounds__(256) gemv_codes(const signed char* 
     acc = warp_sum_int(acc);
     if (lane == 0) {
       float channel = c[n];
-      out[(long long)e * N + n] = (float)acc * xs * channel;
+      out[(long long)e * N + n] = bf16 ? qa_linear_bf16(acc, xs, channel) : (float)acc * xs * channel;
       if (fill) slot_c[(long long)slot * N + n] = channel;
     }
   }
@@ -515,7 +620,7 @@ extern "C" __global__ void __launch_bounds__(256) grouped_codes(const signed cha
                                                                 const unsigned char* host_w,
                                                                 const unsigned char* host_r, const float* host_c,
                                                                 const float* codebook, int bits, float* out, int N,
-                                                                int K) {
+                                                                int K, int bf16) {
   __shared__ float lut[16];
   if (bits == 4 && threadIdx.x < 16) lut[threadIdx.x] = codebook[threadIdx.x];
   __syncthreads();
@@ -561,7 +666,7 @@ extern "C" __global__ void __launch_bounds__(256) grouped_codes(const signed cha
         }
       }
       acc = warp_sum_int(acc);
-      if (lane == 0) out[(long long)t * N + n] = (float)acc * xscale[t] * channel;
+      if (lane == 0) out[(long long)t * N + n] = bf16 ? qa_linear_bf16(acc, xscale[t], channel) : (float)acc * xscale[t] * channel;
     }
   }
 }
@@ -587,7 +692,7 @@ def available(device):
     if device.type != "cuda":
         return False
     try:
-        for name in ("resolve_experts", "rotate_quantize", "gemv_int8", "gemv_fp8", "grouped_int8", "grouped_fp8", "await_cpu", "gemv_codes",
+        for name in ("resolve_experts", "rotate_quantize", "rotate_quantize_bf16", "gemv_int8", "gemv_fp8", "grouped_int8", "grouped_fp8", "await_cpu", "gemv_codes",
                      "grouped_codes"):
             _kernel(name, device.index)
     except (AttributeError, RuntimeError, OSError):  # PyTorch without the NVRTC helper, or NVRTC missing
@@ -613,24 +718,24 @@ def await_cpu(plan, flag, step, result, timeout_us, took_over):
     return out
 
 
-def rotate_quantize(x, only_if, swiglu=False):
+def rotate_quantize(x, only_if, swiglu=False, *, bf16=False):
     """Rows of x [rows, K] (float32; [rows, 2K] with `swiglu`) rotated and quantized: (int8 [rows, K], scale [rows]).
     Only when `only_if` (an int32 on the GPU) is set; otherwise the outputs are left unset."""
     rows, width = x.shape
     k = width // 2 if swiglu else width
     q = torch.empty((rows, k), dtype=torch.int8, device=x.device)
     scale = torch.empty((rows,), dtype=torch.float32, device=x.device)
-    _launch("rotate_quantize", x.device, (rows, 1, 1), (256, 1, 1), [x, int(swiglu), k, q, scale, only_if])
+    _launch("rotate_quantize_bf16" if bf16 else "rotate_quantize", x.device, (rows, 1, 1), (256, 1, 1), [x, int(swiglu), k, q, scale, only_if, int(bf16)])
     return q, scale
 
 
-def gemv_int8(xq, xscale, ids, plan, took_over, late, slot_fields, host_fields, n):
+def gemv_int8(xq, xscale, ids, plan, took_over, late, slot_fields, host_fields, n, *, bf16=False):
     """[k, n] float32: each expert's int8 rows against xq [1 or k, K]; fields are {"_qdata", "scale"}."""
     k, width = ids.shape[0], xq.shape[1]
     out = torch.empty((k, n), dtype=torch.float32, device=xq.device)
     _launch("gemv_int8", xq.device, (n // ROWS_PER_BLOCK, k, 1), (256, 1, 1),
             [xq, xscale, xq.shape[0], ids, plan, took_over, int(late), slot_fields["_qdata"], slot_fields["scale"],
-             host_fields["_qdata"], host_fields["scale"], out, n, width], shared_mem=width)
+             host_fields["_qdata"], host_fields["scale"], out, n, width, int(bf16)], shared_mem=width)
     return out
 
 
@@ -644,13 +749,13 @@ def gemv_fp8(x, ids, plan, slot_fields, host_fields, n):
     return out
 
 
-def grouped_int8(xq, xscale, groups, slot_fields, host_fields, n):
+def grouped_int8(xq, xscale, groups, slot_fields, host_fields, n, *, bf16=False):
     """[rows, n] float32 for xq's rows (sorted by expert) through their experts; groups [g, 5] int32 as grouped_int8.
     Rows outside every group are left unset."""
     out = torch.empty((xq.shape[0], n), dtype=torch.float32, device=xq.device)
     _launch("grouped_int8", xq.device, (n // ROWS_PER_BLOCK, groups.shape[0], 1), (256, 1, 1),
             [xq, xscale, groups, slot_fields["_qdata"], slot_fields["scale"], host_fields["_qdata"], host_fields["scale"],
-             out, n, xq.shape[1]])
+             out, n, xq.shape[1], int(bf16)])
     return out
 
 
@@ -663,7 +768,7 @@ def grouped_fp8(x, groups, slot_fields, host_fields, n):
     return out
 
 
-def gemv_codes(xq, xscale, ids, plan, slot_fields, host_fields, codebook, bits, n):
+def gemv_codes(xq, xscale, ids, plan, slot_fields, host_fields, codebook, bits, n, *, bf16=False):
     """gemv_int8 for W4A8/W6A8 banks; fields are {"_qdata", "scale" (e4m3), "s_channel"}, codebook [16] at 4 bits."""
     k, width = ids.shape[0], xq.shape[1]
     if codebook is None:
@@ -671,17 +776,17 @@ def gemv_codes(xq, xscale, ids, plan, slot_fields, host_fields, codebook, bits, 
     out = torch.empty((k, n), dtype=torch.float32, device=xq.device)
     _launch("gemv_codes", xq.device, (n // ROWS_PER_BLOCK, k, 1), (256, 1, 1),
             [xq, xscale, xq.shape[0], ids, plan, slot_fields["_qdata"], slot_fields["scale"], slot_fields["s_channel"],
-             host_fields["_qdata"], host_fields["scale"], host_fields["s_channel"], codebook, bits, out, n, width],
+             host_fields["_qdata"], host_fields["scale"], host_fields["s_channel"], codebook, bits, out, n, width, int(bf16)],
             shared_mem=width)
     return out
 
 
-def grouped_codes(xq, xscale, groups, slot_fields, host_fields, codebook, bits, n):
+def grouped_codes(xq, xscale, groups, slot_fields, host_fields, codebook, bits, n, *, bf16=False):
     """grouped_int8 for W4A8/W6A8 banks (see gemv_codes)."""
     out = torch.empty((xq.shape[0], n), dtype=torch.float32, device=xq.device)
     if codebook is None:
         codebook = host_fields["s_channel"]  # never read at 6 bits
     _launch("grouped_codes", xq.device, (n // ROWS_PER_BLOCK, groups.shape[0], 1), (256, 1, 1),
             [xq, xscale, groups, slot_fields["_qdata"], slot_fields["scale"], slot_fields["s_channel"], host_fields["_qdata"],
-             host_fields["scale"], host_fields["s_channel"], codebook, bits, out, n, xq.shape[1]])
+             host_fields["scale"], host_fields["s_channel"], codebook, bits, out, n, xq.shape[1], int(bf16)])
     return out

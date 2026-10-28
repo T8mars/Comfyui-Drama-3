@@ -33,6 +33,17 @@ class SessionNotFound(ValueError):
     pass
 
 
+class QueueUnavailable(RuntimeError):
+    pass
+
+
+def _error_text(exc):
+    try:
+        return str(exc)
+    except BaseException:
+        return f"<{type(exc).__name__}: message unavailable>"
+
+
 def integer_option(value, label):
     if isinstance(value, str) and re.fullmatch(r"-?[0-9]{1,20}", value):
         value = int(value)
@@ -94,6 +105,11 @@ class Studio:
         self._activity_lock = threading.RLock()
         self._active_job = None
         self._closed = False
+        self._queue_error = None
+        self._job_records = {}
+        self._fault_wakeup = object()
+        self._fault_unload_attempted = False
+        self._fault_unload_error = None
         try:
             self._initialize()
         except BaseException:
@@ -138,6 +154,55 @@ class Studio:
         db.row_factory = sqlite3.Row
         return db
 
+    def _job_view(self, row, cancelable):
+        return {**row, "payload": json.loads(row["payload"]), "cancelable": cancelable,
+                "result": json.loads(row["result"]) if row["result"] else None}
+
+    def _fail_queue(self, exc=None, failed_job=None):
+        """Publish volatile terminal records; never retry generation or storage."""
+        with self._activity_lock:
+            first = self._queue_error is None
+            if first:
+                self._queue_error = f"任务队列存储发生错误，已暂停接单，请关闭并重新打开工作台：{type(exc).__name__}: {_error_text(exc)}"
+            for job_id, row in self._job_records.items():
+                if job_id == self._active_job or row.get("persistence_error"):
+                    continue
+                if job_id != failed_job and row["status"] not in {"queued", "running"}:
+                    continue
+                prior_status = row["status"]
+                event = self.cancel_events.pop(job_id, None)
+                was_cancelled = prior_status == "cancelled" or (event is not None and event.is_set())
+                row["execution_status"] = row.get("execution_status", "not_started" if prior_status == "queued" else prior_status)
+                row["status"] = "cancelled" if was_cancelled else "failed"
+                if prior_status == "done":
+                    detail = "执行结果已保留，但任务终态无法确认持久化；队列已暂停接单"
+                else:
+                    row["result"] = None
+                    detail = "任务未执行；队列存储发生错误" if prior_status == "queued" else "任务终态写入失败；队列已暂停接单"
+                row["error"] = (row["error"] + "；" if row["error"] else "") + detail + "；" + self._queue_error
+                row["persistence_error"] = self._queue_error
+                row["updated"], row["progress"] = time.time(), 0
+            if first and not self._closed:
+                # Wake an idle worker so it can release its own idle engine once.
+                self.pending.put(self._fault_wakeup)
+
+    def _unload_failed_queue_if_idle(self):
+        with self._activity_lock:
+            if (self._queue_error is None or self._fault_unload_attempted or self._closed
+                    or self._active_job is not None):
+                return
+            self._fault_unload_attempted = True
+        try:
+            # The normal engine guard remains authoritative; never force-close.
+            self.engine.unload()
+        except BaseException as exc:
+            with self._activity_lock:
+                self._fault_unload_error = f"空闲模型自动释放失败：{type(exc).__name__}: {_error_text(exc)}"
+                for row in self._job_records.values():
+                    if row.get("persistence_error"):
+                        row["resource_cleanup_error"] = self._fault_unload_error
+                        row["error"] += "；" + self._fault_unload_error
+
     def submit(self, payload):
         encoded_payload = json.dumps(payload, ensure_ascii=False, allow_nan=False)
         payload = json.loads(encoded_payload)
@@ -145,10 +210,23 @@ class Studio:
         now = time.time()
         with self._activity_lock:
             if self._closed:
-                raise RuntimeError("工作台正在关闭，不能提交新任务")
-            with self.connect() as db:
-                db.execute("INSERT INTO jobs VALUES(?,?,?,?,?,?,?,?)",
-                           (job_id, "queued", encoded_payload, None, None, now, now, 0))
+                raise QueueUnavailable("工作台正在关闭，不能提交新任务")
+            if self._queue_error is not None:
+                detail = self._queue_error
+                if self._fault_unload_error:
+                    detail += "；" + self._fault_unload_error
+                raise QueueUnavailable(detail)
+            if not self.worker.is_alive():
+                raise QueueUnavailable("任务执行线程已停止，请关闭工作台释放模型后再重新打开")
+            self._job_records[job_id] = dict(id=job_id, status="queued", payload=encoded_payload,
+                result=None, error=None, created=now, updated=now, progress=0, execution_status="not_started")
+            try:
+                with self.connect() as db:
+                    db.execute("INSERT INTO jobs VALUES(?,?,?,?,?,?,?,?)",
+                               (job_id, "queued", encoded_payload, None, None, now, now, 0))
+            except BaseException as exc:
+                self._fail_queue(exc, failed_job=job_id)
+                raise QueueUnavailable(self._queue_error) from exc
             self.cancel_events[job_id] = threading.Event()
             self.pending.put((job_id, payload))
         return job_id
@@ -177,7 +255,8 @@ class Studio:
                 event.set()
             if self._active_job is not None:
                 mm.interrupt_current_processing(True)
-            self.pending.put(None)
+            if self.worker.is_alive():
+                self.pending.put(None)
         self.worker.join()
         try:
             self.engine.unload()
@@ -195,24 +274,47 @@ class Studio:
         return path if path.is_absolute() else self.data / path
 
     def jobs(self):
-        with self.connect() as db:
-            rows = db.execute("""SELECT * FROM jobs WHERE status IN ('running','queued')
-                OR id IN (SELECT id FROM jobs ORDER BY created DESC LIMIT 100)
-                ORDER BY created DESC""").fetchall()
+        try:
+            with self.connect() as db:
+                rows = db.execute("""SELECT * FROM jobs WHERE status IN ('running','queued')
+                    OR id IN (SELECT id FROM jobs ORDER BY created DESC LIMIT 100)
+                    ORDER BY created DESC""").fetchall()
+            merged = {row["id"]: dict(row) for row in rows}
+        except (sqlite3.Error, OSError):
+            with self._activity_lock:
+                if self._queue_error is None:
+                    raise
+            merged = {}
         with self._activity_lock:
+            for job_id, row in self._job_records.items():
+                if job_id not in merged or row.get("persistence_error"):
+                    merged[job_id] = dict(row)
             cancelable = set(self.cancel_events)
-        return [{**dict(r), "payload": json.loads(r["payload"]), "cancelable": r["id"] in cancelable,
-                 "result": json.loads(r["result"]) if r["result"] else None} for r in rows]
+        return [self._job_view(row, row["id"] in cancelable)
+                for row in sorted(merged.values(), key=lambda row: row["created"], reverse=True)]
 
     def get_job(self, job_id):
-        with self.connect() as db:
-            row = db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+        with self._activity_lock:
+            cached = self._job_records.get(job_id)
+            if cached is not None and cached.get("persistence_error"):
+                return self._job_view(dict(cached), False)
+        try:
+            with self.connect() as db:
+                found = db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+            row = dict(found) if found is not None else None
+        except (sqlite3.Error, OSError):
+            with self._activity_lock:
+                if self._queue_error is None or job_id not in self._job_records:
+                    raise
+                row = dict(self._job_records[job_id])
+        with self._activity_lock:
+            cached = self._job_records.get(job_id)
+            if cached is not None and cached.get("persistence_error"):
+                row = dict(cached)
+            cancelable = job_id in self.cancel_events
         if row is None:
             raise ValueError("The requested task does not exist")
-        with self._activity_lock:
-            cancelable = job_id in self.cancel_events
-        return {**dict(row), "payload": json.loads(row["payload"]), "cancelable": cancelable,
-                "result": json.loads(row["result"]) if row["result"] else None}
+        return self._job_view(row, cancelable)
 
     def references(self):
         with self.connect() as db:
@@ -312,62 +414,102 @@ class Studio:
     def run_queue(self):
         while True:
             item = self.pending.get()
-            if item is None:
-                self.pending.task_done()
-                return
-            job_id, payload = item
-            cancel = self.cancel_events[job_id]
-            result_json = None
-            last_update = 0
-
-            def progress(step=0, total=1):
-                nonlocal last_update
-                if cancel.is_set():
-                    raise Cancelled("任务已取消")
-                if time.monotonic() - last_update > 0.25:
-                    last_update = time.monotonic()
-                    with self.connect() as db:
-                        db.execute("UPDATE jobs SET progress=?,updated=? WHERE id=?",
-                                   (min(0.99, step / max(1, total)), time.time(), job_id))
-
             try:
-                progress()
+                if item is None:
+                    return
+                if item is self._fault_wakeup:
+                    continue
+                job_id, payload = item
                 with self._activity_lock:
-                    if cancel.is_set():
-                        raise Cancelled("任务已取消")
-                    self._active_job = job_id
-                    mm.interrupt_current_processing(False)
+                    if self._queue_error is not None:
+                        continue
+                self._run_queue_item(job_id, payload)
+            except BaseException as exc:
+                with self._activity_lock:
+                    failed_job = item[0] if isinstance(item, tuple) else self._active_job
+                    self._active_job = None
+                self._fail_queue(exc, failed_job=failed_job)
+            finally:
+                try:
+                    self._unload_failed_queue_if_idle()
+                finally:
+                    self.pending.task_done()
+
+    def _run_queue_item(self, job_id, payload):
+        with self._activity_lock:
+            if self._queue_error is not None:
+                return
+            cancel = self.cancel_events[job_id]
+        result_json = None
+        execution_started = False
+        last_update = 0
+
+        def progress(step=0, total=1):
+            nonlocal last_update
+            if cancel.is_set():
+                raise Cancelled("任务已取消")
+            if time.monotonic() - last_update > 0.25:
+                last_update = time.monotonic()
                 with self.connect() as db:
-                    db.execute("UPDATE jobs SET status='running',updated=? WHERE id=?", (time.time(), job_id))
-                with torch.inference_mode():
-                    result = self.execute(job_id, payload, progress)
-                result_json = json.dumps(result, ensure_ascii=False, allow_nan=False)
+                    db.execute("UPDATE jobs SET progress=?,updated=? WHERE id=?",
+                               (min(0.99, step / max(1, total)), time.time(), job_id))
+
+        try:
+            progress()
+            with self._activity_lock:
+                if self._queue_error is not None:
+                    return
                 if cancel.is_set():
                     raise Cancelled("任务已取消")
-                status, error = "done", None
-            except (Cancelled, mm.InterruptProcessingException) as exc:
-                result, status, error = None, "cancelled", str(exc) or "任务已取消"
-            except BaseException as exc:
-                result, status, error = None, "cancelled" if cancel.is_set() else "failed", str(exc)
-                if status == "failed":
-                    try:
-                        (self.data / "logs" / f"{job_id}.log").write_text(traceback.format_exc(), encoding="utf-8")
-                        if hasattr(exc,"generation_attempts"):
-                            (self.data/"logs"/f"{job_id}.attempts.json").write_text(
-                                json.dumps(exc.generation_attempts,ensure_ascii=False,indent=2,allow_nan=False),encoding="utf-8")
-                    except OSError as log_error:
-                        error += f"（错误日志未能保存：{log_error}）"
-            with self._activity_lock:
-                if cancel.is_set():
-                    result, status, error = None, "cancelled", "任务已取消"
-                self._active_job = None
+                self._active_job = job_id
+                self._job_records[job_id].update(status="running", updated=time.time())
                 mm.interrupt_current_processing(False)
-                self.cancel_events.pop(job_id, None)
+            with self.connect() as db:
+                db.execute("UPDATE jobs SET status='running',updated=? WHERE id=?", (time.time(), job_id))
+            with torch.inference_mode():
+                execution_started = True
+                result = self.execute(job_id, payload, progress)
+            result_json = json.dumps(result, ensure_ascii=False, allow_nan=False)
+            if cancel.is_set():
+                raise Cancelled("任务已取消")
+            status, error = "done", None
+        except (Cancelled, mm.InterruptProcessingException) as exc:
+            result, status, error = None, "cancelled", _error_text(exc) or "任务已取消"
+        except BaseException as exc:
+            result, status, error = None, "cancelled" if cancel.is_set() else "failed", _error_text(exc)
+            if status == "failed":
+                try:
+                    (self.data / "logs" / f"{job_id}.log").write_text(traceback.format_exc(), encoding="utf-8")
+                    if hasattr(exc,"generation_attempts"):
+                        (self.data/"logs"/f"{job_id}.attempts.json").write_text(
+                            json.dumps(exc.generation_attempts,ensure_ascii=False,indent=2,allow_nan=False),encoding="utf-8")
+                except BaseException as log_error:
+                    error += f"（错误日志未能保存：{type(log_error).__name__}: {_error_text(log_error)}）"
+        with self._activity_lock:
+            if cancel.is_set():
+                result, status, error = None, "cancelled", "任务已取消"
+            row = self._job_records[job_id]
+            row.update(status=status, execution_status=status if execution_started else "not_started",
+                       result=result_json if status == "done" else None,
+                       error=error, updated=time.time(), progress=1 if status == "done" else 0)
+            self._active_job = None
+            mm.interrupt_current_processing(False)
+            self.cancel_events.pop(job_id, None)
+            unavailable = self._queue_error is not None
+        if unavailable:
+            self._fail_queue(failed_job=job_id)
+            return
+        try:
             with self.connect() as db:
                 db.execute("UPDATE jobs SET status=?,result=?,error=?,updated=?,progress=? WHERE id=?",
-                           (status, result_json if status == "done" else None, error, time.time(),
+                           (status, result_json if status == "done" else None, error, row["updated"],
                             1 if status == "done" else 0, job_id))
-            self.pending.task_done()
+        except BaseException as exc:
+            self._fail_queue(exc, failed_job=job_id)
+        else:
+            with self._activity_lock:
+                if self._queue_error is None:
+                    self._job_records.pop(job_id, None)
 
     def execute(self, job_id, payload, progress):
         mode = payload.get("mode", "tts")

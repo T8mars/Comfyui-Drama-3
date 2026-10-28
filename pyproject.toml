@@ -1,12 +1,12 @@
 [project]
 name = "comfyui-drama3-t8"
-version = "0.2.0"
+version = "0.2.1"
 description = "Native DRAMA-3 speech generation, voice cloning, scenes, revision, infill and local ASR. Built with Fish Audio."
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 dependencies = [
-  "torch>=2.8", "torchaudio>=2.8", "safetensors>=0.8", "tokenizers>=0.22,<0.24",
-  "transformers>=4.57.1,<6", "einops>=0.8", "scipy", "soundfile>=0.13",
+  "torch>=2.8", "torchaudio>=2.8", "safetensors>=0.8", "tokenizers==0.22.2",
+  "transformers==4.57.1", "huggingface-hub==0.36.2", "einops>=0.8", "scipy", "soundfile>=0.13",
   "accelerate>=1.12", "librosa>=0.11", "sox", "soynlp>=0.0.493", "nagisa>=0.2.11",
   "onnxruntime>=1.23.2", "kaldi-native-fbank>=1.22.3", "kaldiio>=2.18.1", "soxr>=0.3.7"
 ]

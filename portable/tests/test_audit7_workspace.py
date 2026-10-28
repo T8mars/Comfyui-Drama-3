@@ -71,10 +71,18 @@ def test_upload_that_never_becomes_a_job_is_removed(tmp_path, endpoint):
         kept = studio.data/'inputs'/'kept.wav';kept.write_bytes(b'Existing recording')
         reject_inserts(studio, 'jobs')
         response = client.post('/api/'+endpoint, files={'file':('new.wav', b'New uploaded recording')})
-        assert response.status_code == 500
+        assert response.status_code == 503
+        assert '暂停接单' in response.json()['detail']
+        assert 'registration unavailable' in response.json()['detail']
         assert list((studio.data/'inputs').iterdir()) == [kept]
         assert kept.read_bytes() == b'Existing recording'
-        assert studio.jobs() == []
+        # Rejected submission leaves no durable job or executed model request.
+        with studio.connect() as db:
+            assert db.execute('SELECT COUNT(*) FROM jobs').fetchone()[0] == 0
+        rejected = studio.jobs()
+        assert len(rejected) == 1 and rejected[0]['status'] == 'failed'
+        assert rejected[0]['execution_status'] == 'not_started'
+        assert rejected[0]['result'] is None and not rejected[0]['cancelable']
 
 
 def test_failed_import_cleans_both_upload_and_unregistered_archive(tmp_path):
