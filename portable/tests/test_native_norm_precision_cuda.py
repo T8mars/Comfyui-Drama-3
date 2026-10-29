@@ -15,6 +15,25 @@ from drama3_t8.native.norms import GatedRMSNorm, ZeroCenteredRMSNorm
 pytestmark = pytest.mark.skipif(not torch.cuda.is_available(), reason='Real norm CUDA contract needs a GPU')
 
 
+@pytest.mark.parametrize('kind', ['zero_centered', 'gated'])
+@pytest.mark.parametrize('dtype', [torch.float32, torch.bfloat16])
+def test_host_norm_residency_guard_keeps_process_healthy_and_matches_eager(kind, dtype):
+    from drama3_t8.native.graphs import norm_residency_reason
+    norm = _norm(kind, 'cpu', dtype)
+    device = torch.device('cuda:0')
+    reason = norm_residency_reason([], [], norm, device)
+    assert reason and 'cpu' in reason
+    runtime = StaticReplay(device)
+    with torch.inference_mode():
+        for step in range(6):
+            inputs = _inputs(kind, device, dtype, step)
+            actual = norm(*inputs) if reason else runtime(norm, *inputs)
+            torch.testing.assert_close(actual, _oracle(kind, norm, inputs), rtol=0, atol=0)
+        torch.cuda.synchronize()
+    assert runtime.calls == runtime.captures == 0
+    assert norm.weight.device.type == 'cpu'
+
+
 def _norm(kind, device, dtype):
     cls = ZeroCenteredRMSNorm if kind == 'zero_centered' else GatedRMSNorm
     norm = cls(32, eps=1e-6, device=device, dtype=dtype)

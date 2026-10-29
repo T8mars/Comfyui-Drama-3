@@ -19,7 +19,7 @@ from comfy.text_encoders.qwen35 import GatedAttention, GatedDeltaNet, LinearKV, 
 from .offload import experts_decode, gather_experts
 from .resident import ResidentFP8Experts as FP8Experts
 from .delta import DramaDeltaNet
-from .cache import LinearState, TowerKV as FixedKVBias
+from .cache import AudioTowerKV, LinearState, TowerKV as FixedKVBias
 from .norms import ZeroCenteredRMSNorm
 
 
@@ -296,8 +296,8 @@ class Drama3Tower(nn.Module):
 
     def init_caches(self, capacity, device, dtype):
         cfg = self.cfg
-        shared = FixedKVBias.shared(capacity, device, dtype)
-        return [FixedKVBias.zeros(1, cfg.n_local_heads, capacity, cfg.head_dim, device, dtype, shared)
+        shared = AudioTowerKV.shared(capacity, device, dtype)
+        return [AudioTowerKV.zeros(1, cfg.n_local_heads, capacity, cfg.head_dim, device, dtype, shared)
                 for _ in range(len(self.shared_layers) + len(self.residual_layers))]
 
     def context(self, positions, mask_rows, device, dtype):

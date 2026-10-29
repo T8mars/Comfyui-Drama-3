@@ -15,15 +15,21 @@ Native [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) nodes and 
 - A separate white-and-pink Studio with the same inference core and multitrack editor: role gain/mute, cuts, inserted silence, pause presets, undo and captions.
 - Source-aware model infill, local Qwen3-ASR 0.6B/1.7B, word alignment and [Confucius R2T2](https://github.com/T8mars/comfyui-confucius-r2t2-t8). All model paths are configurable.
 
+## Changes in 0.2.4
+
+- Use Fish Audio's grouped attention path for audio-tower decode on both tested ComfyUI hosts. The reproduced W4 seed-42 repetition now completes with the original prompt and no retries.
+- Check normalization-weight residency before CUDA Graph capture. If those weights are offloaded, generate eagerly and record the reason. Backbone selection, normalization arithmetic and model weights are unchanged.
+- This is a code update; existing model files remain usable.
+
 ## Changes in 0.2.3
 
 - Release decoder objects held by nested streaming errors and scene PCM held after preview callbacks fail. Preserve error identities, stack locations and unrelated caller diagnostics.
 - Clarify Qwen ASR chunking: the target duration has an upstream-compatible +/-5-second quiet-point search. The partitioning algorithm is unchanged.
-- Targeted Transformers 4.57.1 regression: **242 passed, 1 skipped** (Windows symlink privilege). This is separate from the earlier full-model/UI checks below.
+- Targeted Transformers 4.57.1 regression: **242 passed, 1 skipped** (Windows symlink privilege).
 
 ## Changes in 0.2.2
 
-- Close workspace file handles even when initialization or explicit unlocking fails, preserving the original error and allowing the workspace to reopen. With Transformers 4.57.1, 494 targeted CPU regressions passed, including five new fault/ownership checks. The inference checks below retain their 0.2.1 scope; generation code is unchanged.
+- Close workspace file handles even when initialization or explicit unlocking fails, preserving the original error and allowing the workspace to reopen. With Transformers 4.57.1, 494 targeted CPU regressions passed, including five new fault/ownership checks. Release 0.2.2 did not change generation code.
 
 ## Changes in 0.2.1
 
@@ -127,7 +133,7 @@ Local validation used Windows x64, **24 GB VRAM / 64 GB RAM**, RTX 5090 Laptop a
 |---|---|
 | `gdn_backend` | `torch` default, optional `fla`. Attention follows available ComfyUI kernels; installing FlashAttention does not force its use. |
 | `moe_backend` | `auto` default, or `torch` / `cuda`. Actual backend and fallback reasons are recorded. |
-| `cuda_graph` | Requested by default; capture/replay requires a compatible CUDA expert/host lifecycle. |
+| `cuda_graph` | Requested by default. Capture requires a compatible CUDA expert/host lifecycle and resident normalization weights; otherwise eager execution records the reason. |
 | `expert_placement` | `ram` default: host experts plus cache. `vram` requires the complete model and heads to fit one GPU. |
 | `expert_cache_gb` | RAM-mode cache budget in GiB; `0` is automatic. Related takes share the cache; supported single-GPU INT8 can use CPU experts. |
 
@@ -135,11 +141,13 @@ Codec uses bounded windows. Supported quantized pread loads check ownership and 
 
 ## Validation scope
 
-Two Transformers 4.57.1 CPU dependency stacks (Comfy Kitchen 0.2.37 / 0.2.40) each completed **1364 passed, 5 skipped, 1 GPU deselected**, with CUDA uninitialized. Scoped GPU checks cover BF16 arithmetic, cache transfers and Graph behavior; they do not establish whole-model VRAM residency.
+With Transformers 4.57.1, two CPU dependency stacks (Comfy Kitchen 0.2.37 / 0.2.40) each completed **1413 passed, 5 skipped, 1 GPU test deselected**, plus five passing subtests; CUDA remained uninitialized. **16 targeted GPU tests** cover numerical, cache and Graph contracts.
 
-Fixed cases were run through the actual ComfyUI 0.40.0 / 0.42.0 canvas and Studio interfaces. Blind R2T2 and Qwen transcription each matched **20/20 whole-recording and per-line clips** from long text, a joint scene and a complex scene with two revisions. This verifies words and order for those cases, not general voice similarity, emotion or speed.
+Fresh testing used **four actual ComfyUI canvases** across hosts 0.40.0 / 0.42.0 and **two Studio generation tasks**. Cases include the original no-reference W4 seed 42, long text with a voice reference, and a two-reference scene followed by two revisions. The original short case completed after the long-text task with seed 42, a 180-frame budget and zero retries. Each scene canvas includes generation and two revisions.
 
-**Known failure:** a no-reference W4 case at seed 42 produces silent repetition in Torch and CUDA. Its cause remains unresolved and it is not counted as a pass. Cross-backend output identity and speed improvements are not promised. See the version, source scope and limitations in the [acceptance report](https://github.com/T8mars/Comfyui-Drama-3/blob/main/portable/acceptance-report.json).
+Blind checks of the newly exported audio: **R2T2 31/31; Qwen 29/31**. The 31 whole clips and crops contain 18 unique PCM inputs. All 24 short, chunk and line checks matched both recognizers. The two Qwen disagreements are the same whole-scene PCM exported by both hosts: Qwen heard “政府里” for “这福利”; isolated-line checks and a third blind recognizer support “这福利”. The third recognizer also wrote “写休” for “邪修”; all disagreements are retained. In each of the two scene/revision chains, reference-identity checks selected the intended reference for **9/9 line clips**; this is not a naturalness or MOS score.
+
+These are fixed-case results, not a guarantee for arbitrary scripts, dialects, emotions or voices. Cross-backend output identity, speed improvements and full-model VRAM residency are not established. See the version, source scope and limitations in the [acceptance report](https://github.com/T8mars/Comfyui-Drama-3/blob/main/portable/acceptance-report.json).
 
 ## Credits and licenses
 

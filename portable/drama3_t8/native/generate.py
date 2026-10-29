@@ -111,9 +111,11 @@ def generate(drama3, prompt, max_frames, temperature, top_k, top_p, seed, on_fra
             elif any(getattr(p,'is_dynamic',lambda:False)() for p in drama3.patchers()):
                 graph_reason='Dynamic host weights use their own graph lifecycle'
             else:
-                from .graphs import BackboneGraphs,TowerGraph
-                backbone_graphs=BackboneGraphs(drama3.experts)
-                tower_graph=TowerGraph(tower,tower_caches,sample,finite_residual_heads,generator,last)
+                from .graphs import BackboneGraphs,TowerGraph,norm_residency_reason
+                graph_reason=norm_residency_reason(layers,devices,tower,last)
+                if graph_reason is None:
+                    backbone_graphs=BackboneGraphs(drama3.experts)
+                    tower_graph=TowerGraph(tower,tower_caches,sample,finite_residual_heads,generator,last)
         hidden = run(rows)
         history = torch.full((RAS_WINDOW,), -1, dtype=torch.long, device=last)
         window = rows[-RAS_WINDOW:, 0]
