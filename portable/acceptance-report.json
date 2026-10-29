@@ -1,12 +1,13 @@
 {
   "schema": "drama3.release-acceptance.v1",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "status": "passed",
   "validation_scope": "current_release",
-  "prepared_utc": "2026-10-28T15:27:43.903113+00:00",
+  "accepted_utc": "2026-10-29T10:45:20.608653+00:00",
+  "acceptance_policy": "Scoped fixed-case engineering acceptance, not universal model quality. Each execution retains its actual candidate/host version. Final 0.2.4 differs from the executed d03 candidate only in version metadata, README and an AST-identical test EOF cleanup. The four changed inference files are byte-identical.",
   "source_sha256": {
-    "README.md": "7ca04261db4d5a6290e41e059b3df5982a965ac0393c2fa1a8843bb2437e344c",
-    "README.zh-CN.md": "ddf521792d6d5db69e545a0429789eb44553a903dbeb437637fdc6956cd57803",
+    "README.md": "cbc41a66f92c6bc3c8c97db637b0074858df1ecab7e47f4bba39d997fa32aaa9",
+    "README.zh-CN.md": "538c87248afb4b18ad7b5d8d2a6b0e91e041811bab468893aec4bccef04e2867",
     "Start-Drama3.cmd": "b09da463b292919b34df5bb6f874a9b3bc47f5c7bece12aa9f49b8a093b09c33",
     "Update-Drama3.cmd": "04ffb55ed48866119883a802f91f64181bcf4c5519600463d6258a7664bdb502",
     "acceleration-manifest.json": "8338e0a28494d6261840c0a6d4e8694af63a201a3c209340d1ad17e915d12a45",
@@ -15,10 +16,10 @@
     "comfyui-drama3-T8/.comfyignore": "ca666c2741b19a51cd80d5f103ed410ceda82da184828814ff9954752a78ee15",
     "comfyui-drama3-T8/.gitignore": "2cff18067a488a2789c8c124551235da98a2b40762fb57b8b1f28154498ada46",
     "comfyui-drama3-T8/LICENSE": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db",
-    "comfyui-drama3-T8/README.md": "7ca04261db4d5a6290e41e059b3df5982a965ac0393c2fa1a8843bb2437e344c",
-    "comfyui-drama3-T8/README.zh-CN.md": "ddf521792d6d5db69e545a0429789eb44553a903dbeb437637fdc6956cd57803",
+    "comfyui-drama3-T8/README.md": "cbc41a66f92c6bc3c8c97db637b0074858df1ecab7e47f4bba39d997fa32aaa9",
+    "comfyui-drama3-T8/README.zh-CN.md": "538c87248afb4b18ad7b5d8d2a6b0e91e041811bab468893aec4bccef04e2867",
     "comfyui-drama3-T8/__init__.py": "f4918b89e4eb9ab3308a8550ad0861f2548ec56d420e1dd00f62b3ed24bd9bb4",
-    "comfyui-drama3-T8/drama3_t8/__init__.py": "24dd2301e86ef0b22e157a96d9096867b00825e999586fd8ad74ce8bfdcac00d",
+    "comfyui-drama3-T8/drama3_t8/__init__.py": "862b4b20b219c6fa591aff4ea90f444f94e10153cd1abbddca9366898aa6fd1c",
     "comfyui-drama3-T8/drama3_t8/alignment.py": "38603b9a4e35c944cecd84de9b048df5d9ef6360da5044111f8a3d00d83a4540",
     "comfyui-drama3-T8/drama3_t8/audio.py": "bbc88a53ab5f90cdfaa92f7a09980dca1adbdb0a7a0a681d175c241c48c37246",
     "comfyui-drama3-T8/drama3_t8/audio_processing.py": "eb498e750306a45539ee38e319a22b690437d088b59b4010c39b1cdb57a32570",
@@ -31,7 +32,7 @@
     "comfyui-drama3-T8/drama3_t8/model_paths.py": "f5e066c61a76c70084243c55ee0b7c8d6822fcf8b8c532e2acfbaa2a5525ab39",
     "comfyui-drama3-T8/drama3_t8/native/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "comfyui-drama3-T8/drama3_t8/native/acceleration.py": "35aaa81b021140d85f4551c7048baf35ebcc601781bc88d22efd2be7b384a241",
-    "comfyui-drama3-T8/drama3_t8/native/cache.py": "afa9be6e53e8e45838d911392a9940a3389c99d2f612d7862b027e1a12a74a83",
+    "comfyui-drama3-T8/drama3_t8/native/cache.py": "3adcefb63fdb7ae5aae2e9dfec0a102e26cc0312dd7ae2351b9848abcf6dac62",
     "comfyui-drama3-T8/drama3_t8/native/checkpoint_ownership.py": "8aec637942299490c8ac9768f9e78b7e8c33480a6b61ff5e4e00c5d32db4447d",
     "comfyui-drama3-T8/drama3_t8/native/checkpoint_reader.py": "c7052c4a3e07b87c057d986cc00692e8fc201a02ffc5a057997a42b5143a37f9",
     "comfyui-drama3-T8/drama3_t8/native/chunking.py": "b6dd4eece292a61a0b6a1f8da4c3899f7822c837a96abd84c0c48073d3c7b9b3",
@@ -42,12 +43,12 @@
     "comfyui-drama3-T8/drama3_t8/native/delta_reference.py": "8b7822cceb6208271b10aae3a5530cd573fb8729867debb36762767cad4e1c8e",
     "comfyui-drama3-T8/drama3_t8/native/fish/config.json": "d8dafefbda2a1ff421004d8926a917eb5e1649964f097cff285a269deac869c6",
     "comfyui-drama3-T8/drama3_t8/native/fish/tokenizer.json": "2da260680bf5558e8167d407d7cc92fbb243deecc4e8f0d0ccd2a09f319205ca",
-    "comfyui-drama3-T8/drama3_t8/native/generate.py": "4e8490812dd625018b295af38fa6fc8e460183ef1414cf804e4ea304dd358e59",
-    "comfyui-drama3-T8/drama3_t8/native/graphs.py": "2dae7bf8041fd5495166fb969a8f1b7d1f3fd2f12f6036c167699c1c5082bd01",
+    "comfyui-drama3-T8/drama3_t8/native/generate.py": "2f9ffdb58252f6368ea5a535ae7abe6945724c6b0a0356c72e10457c615e768e",
+    "comfyui-drama3-T8/drama3_t8/native/graphs.py": "55b34e3568376ca2eb38c7c9f43cb6451c1a37fd6b59befea60b8d915d2ea6ef",
     "comfyui-drama3-T8/drama3_t8/native/kernels.py": "fa7894201425cd0506982dae5c721a724c41cef83ef5c0286b3eae381e5f71d7",
     "comfyui-drama3-T8/drama3_t8/native/kitchen_compat.py": "ad089272fcf5849a4971e17dc705bca9b002552f6a12933828db83338e35e6d5",
     "comfyui-drama3-T8/drama3_t8/native/loader.py": "64ea5be10c05fd56496b6bb07690b320a7fcd2e6d981304cc25bc89515f69609",
-    "comfyui-drama3-T8/drama3_t8/native/model.py": "00da0b893405d79214b165e62e88bbd97f0844551320910e9b417214e081e90e",
+    "comfyui-drama3-T8/drama3_t8/native/model.py": "6ccd7bcccf805fd79df2756669862ceede889548cd8ff2f2b6eb2d8d5c1f55ed",
     "comfyui-drama3-T8/drama3_t8/native/norms.py": "f4efaaf302519e13300b470fdd2fd74c6b96c0e9b8a474d556954d84af76a8f4",
     "comfyui-drama3-T8/drama3_t8/native/offload.py": "c1066e48e13e3786e5e8d6647eb196e94e6a76784f0b1d1026b055fd7080aecd",
     "comfyui-drama3-T8/drama3_t8/native/offload_accelerated.py": "c650e6f0682c4149f6c17da809daafe58c997dd9edc5dc0c6b9d9ab2b58e2b05",
@@ -114,7 +115,7 @@
     "comfyui-drama3-T8/native-source/NOTICE.md": "b623247f7c153192c8ed77ef36644fb827e3b423ce2fdc8d27868e2605f37be9",
     "comfyui-drama3-T8/native-source/README.md": "5fc519a126372a452244045350d395aa10333d46a5234c62bcea72c8a5197cf9",
     "comfyui-drama3-T8/native-source/native_ext.cpp": "39867cf597a6fcfdb083ebb1b197da2fda75f526045349d0d19968102d6d9667",
-    "comfyui-drama3-T8/pyproject.toml": "4878c143af0a3c6b90d0af49ad6135a5b9446822deb6519ab51d25d5f563dc7a",
+    "comfyui-drama3-T8/pyproject.toml": "7aaaecadc2fad113e67ef71c657d9d8a4729b1e94869a7b57f1d0832f5e437ea",
     "comfyui-drama3-T8/r2t2-runtime.json": "4a5c7085be79fe588d2c3d54e1c6b34c9c6ded2e42182af0228189c44a72c046",
     "comfyui-drama3-T8/requirements.txt": "2e26adb5270ccab740109295fa7ccd4a6bb6b41afede0615a248ad371211a181",
     "comfyui-drama3-T8/upstream-lock.json": "2e8657c5bfce8fd5acdf7a43a812c4f1678c3edbc3ebc7acf653b6a95dab9b03",
@@ -138,7 +139,7 @@
     "comfyui-drama3-T8/workflows/workflow_scene.json": "231d51e15ec2ff948ef1859c686b5d133626ca1ed82fd1a8c51ef8c3d267bba1",
     "comfyui-drama3-T8/workflows/workflow_srt.json": "cbf34aa07b17328c4bc54a939a87152055f78ca3be2095a3188a9123c740955f",
     "comfyui-drama3-T8/workflows/workflow_stream.json": "0036818d757817410d9a1bc8fa8e0f382b7d628a94e7c223d9114522712e5106",
-    "drama3_t8/__init__.py": "24dd2301e86ef0b22e157a96d9096867b00825e999586fd8ad74ce8bfdcac00d",
+    "drama3_t8/__init__.py": "862b4b20b219c6fa591aff4ea90f444f94e10153cd1abbddca9366898aa6fd1c",
     "drama3_t8/alignment.py": "38603b9a4e35c944cecd84de9b048df5d9ef6360da5044111f8a3d00d83a4540",
     "drama3_t8/audio.py": "bbc88a53ab5f90cdfaa92f7a09980dca1adbdb0a7a0a681d175c241c48c37246",
     "drama3_t8/audio_processing.py": "eb498e750306a45539ee38e319a22b690437d088b59b4010c39b1cdb57a32570",
@@ -152,7 +153,7 @@
     "drama3_t8/model_paths.py": "f5e066c61a76c70084243c55ee0b7c8d6822fcf8b8c532e2acfbaa2a5525ab39",
     "drama3_t8/native/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "drama3_t8/native/acceleration.py": "35aaa81b021140d85f4551c7048baf35ebcc601781bc88d22efd2be7b384a241",
-    "drama3_t8/native/cache.py": "afa9be6e53e8e45838d911392a9940a3389c99d2f612d7862b027e1a12a74a83",
+    "drama3_t8/native/cache.py": "3adcefb63fdb7ae5aae2e9dfec0a102e26cc0312dd7ae2351b9848abcf6dac62",
     "drama3_t8/native/checkpoint_ownership.py": "8aec637942299490c8ac9768f9e78b7e8c33480a6b61ff5e4e00c5d32db4447d",
     "drama3_t8/native/checkpoint_reader.py": "c7052c4a3e07b87c057d986cc00692e8fc201a02ffc5a057997a42b5143a37f9",
     "drama3_t8/native/chunking.py": "b6dd4eece292a61a0b6a1f8da4c3899f7822c837a96abd84c0c48073d3c7b9b3",
@@ -163,12 +164,12 @@
     "drama3_t8/native/delta_reference.py": "8b7822cceb6208271b10aae3a5530cd573fb8729867debb36762767cad4e1c8e",
     "drama3_t8/native/fish/config.json": "d8dafefbda2a1ff421004d8926a917eb5e1649964f097cff285a269deac869c6",
     "drama3_t8/native/fish/tokenizer.json": "2da260680bf5558e8167d407d7cc92fbb243deecc4e8f0d0ccd2a09f319205ca",
-    "drama3_t8/native/generate.py": "4e8490812dd625018b295af38fa6fc8e460183ef1414cf804e4ea304dd358e59",
-    "drama3_t8/native/graphs.py": "2dae7bf8041fd5495166fb969a8f1b7d1f3fd2f12f6036c167699c1c5082bd01",
+    "drama3_t8/native/generate.py": "2f9ffdb58252f6368ea5a535ae7abe6945724c6b0a0356c72e10457c615e768e",
+    "drama3_t8/native/graphs.py": "55b34e3568376ca2eb38c7c9f43cb6451c1a37fd6b59befea60b8d915d2ea6ef",
     "drama3_t8/native/kernels.py": "fa7894201425cd0506982dae5c721a724c41cef83ef5c0286b3eae381e5f71d7",
     "drama3_t8/native/kitchen_compat.py": "ad089272fcf5849a4971e17dc705bca9b002552f6a12933828db83338e35e6d5",
     "drama3_t8/native/loader.py": "64ea5be10c05fd56496b6bb07690b320a7fcd2e6d981304cc25bc89515f69609",
-    "drama3_t8/native/model.py": "00da0b893405d79214b165e62e88bbd97f0844551320910e9b417214e081e90e",
+    "drama3_t8/native/model.py": "6ccd7bcccf805fd79df2756669862ceede889548cd8ff2f2b6eb2d8d5c1f55ed",
     "drama3_t8/native/norms.py": "f4efaaf302519e13300b470fdd2fd74c6b96c0e9b8a474d556954d84af76a8f4",
     "drama3_t8/native/offload.py": "c1066e48e13e3786e5e8d6647eb196e94e6a76784f0b1d1026b055fd7080aecd",
     "drama3_t8/native/offload_accelerated.py": "c650e6f0682c4149f6c17da809daafe58c997dd9edc5dc0c6b9d9ab2b58e2b05",
@@ -232,12 +233,173 @@
     "licenses/QWEN3-ASR-1.7B/LICENSE": "a54c8553df5d4313d293d1aef3bf2f13952bda8b7c7a1fdd729b2bbe27ee6015",
     "licenses/QWEN3-ASR-1.7B/NOTICE": "cb01dd6b59eba1b29e956db4e1c378a39642f1eb4d7cfac1d8b33661880d5ca8",
     "requirements.txt": "3ca831e29176f441363c23d6efec65dd7c6f2eacfe82c3c60be6abe1e6adef86",
+    "tests/editor_core.test.mjs": "e1b543649a8efbc1de2f2ecfb2bbbd1945f4486da554d5459f204814d2df41ed",
+    "tests/fixtures/asr-node-v0.1.11/SOURCE.json": "30dbffa01f044f771f6f88034939f61c9a7cef1b0d17d1eb181c0a29c9a692b5",
+    "tests/fixtures/asr-node-v0.1.11/transcribe.py": "ea7dd1bdd8b1ba31fceb260c1598f31dbb9a8f7efd7a70522aded6b7b2629812",
+    "tests/fixtures/fim-system-protocol/fixture.json": "534e6fdbb46773f48b576833af59485420784bdd36d5c17c5ac8237b340b4857",
+    "tests/fixtures/fim-system-protocol/original-speaker1-prompt.json": "b16459d4c391cfd84df13bfe02a00be0c0fb49538353017115ab204bd6da20c3",
+    "tests/fixtures/fim-system-protocol/original-speaker1-prompt.safetensors": "b61c4ec393069b75e6e1b5352e2c97f41304063a4139230e9150fec7584ed67f",
+    "tests/fixtures/load-session-output0-editor.json": "47b3930516325d097d6d070662ca78c4e7c3df8ef5af81c9fdfcf4fcf27d8e60",
+    "tests/fixtures/public-v0.1.11-updater/SOURCE.json": "ef92d316c376d6e2c4d80270ef719538d19a2dd16b5b6b9a71d0d2ca540b07d4",
+    "tests/fixtures/public-v0.1.11-updater/updater.py": "34e7208432950730398fd507da2c9419fe49f9414800cd9092aefbfa82b13f62",
+    "tests/fixtures/scene-before-chunk-controls.json": "8b3c26bc2a2d6b611d3c53a61ce897dd2103a7c04a314b8031efd026cf6aa9ee",
+    "tests/fixtures/scene-before-sampling-controls-SOURCE.json": "07c1c68d81d5d0e704b0bb4e0f03745d238270de30caf64f0fd4ccfa9979fe40",
+    "tests/fixtures/scene-before-sampling-controls.json": "b3b0a9426136227f3cf9d2531620c6ce8142b2d7596f9b384c4118185e35eb49",
+    "tests/fixtures/scene-before-sampling-controls.py": "8a8a62642a6ebc4a6cec68023036dac8f8f46e8069f8387fa399af985f33e294",
+    "tests/fixtures/scene-chunks-v1.json": "2d7aced540c200c20299fc3052790bd90fa7c376250c688669db3de7c3e1d565",
+    "tests/fixtures/scene-chunks-v2.json": "1f0c25ff6286863191721422f93699bb34915ce413458d17fc49618a9dcc0940",
+    "tests/fixtures/seed-workflows-v0.1.11/SOURCE.json": "017ab26ca022b6405f0da89af584a08aea1c70a43ca8e65e90d746b2e28bdff2",
+    "tests/fixtures/seed-workflows-v0.1.11/node-info-v1.json": "b7b53f108c25da7c0fdee4b7db1882ad269399edb28b170547e08988163bc32f",
+    "tests/fixtures/seed-workflows-v0.1.11/workflow_basic.json": "b76f850b1fde25d449c209beeddc9f93204a296d4113c2a5a47e9b0bb64aef96",
+    "tests/fixtures/seed-workflows-v0.1.11/workflow_infill.json": "2ab6628e7f9ae29366edb393aa1849d29141860772d4fb8c97c8ce762be692bb",
+    "tests/fixtures/seed-workflows-v0.1.11/workflow_live.json": "c4d298fd8908cac11cd820cafb67d8c9911acd8cd95539cd91430c4fe6376c4e",
+    "tests/fixtures/seed-workflows-v0.1.11/workflow_scene.json": "0fdc48fd5b049606c16c19453dc2678f259b091bb5e886f4d05629127c74357f",
+    "tests/fixtures/seed-workflows-v0.1.11/workflow_srt.json": "15b07676a6be6b5052daad0f971ff6f03f2186f817bce17855c9e0d98c864db9",
+    "tests/frontend_canvas_oracle.mjs": "5242fa5432e68f54d22853f6754b0e2a8000a379f65db9050a64b6afdb0cd206",
+    "tests/infill_options.test.mjs": "ec4864f13b1c7c0906b1c3d6fe86ce1aa9a959c73db82f090602304bf4c6bac8",
+    "tests/runtime_settings.test.mjs": "6e324f80d879b7562dd394728dcf6c7e812d221b716fb1500ca74fbd5d7b675f",
+    "tests/scene_options.test.mjs": "600a3e56d2dd1ae77eda0de43351aff9eda7621e5a9437b32449efdd6a1504bd",
+    "tests/studio_app_loader.py": "940ff2e0d824fb3733ca87f41a6cde2ed788d418fc85b1ff8c27f76c2ccd5cc0",
+    "tests/test_api.py": "e0baa92bf4bf372a93c19afd376e4f393c5b3a2ed95878315b0e750b39911c97",
+    "tests/test_asr_batch.py": "ab0af46b4bc88b1614fb3f8bb68ffc0468843fee76a5d67eb7e1eb23344888f6",
+    "tests/test_audio_editor.py": "a9bd33edfbd636bdc499fcfd2b303eb6dae762394f95119b81eef1e7b5a097ea",
+    "tests/test_audio_editor_engine_contract.py": "1ce08038386234f1da3708656078515c7f21a320e9109c97f9a9b70ed86a64b4",
+    "tests/test_audio_editor_integration.py": "469db4d5b9e52e195080cd7711b305555256bfe342900a7377650b9fadada3b0",
+    "tests/test_audit3_core.py": "fb07d9bf4eb6ff4b221a2b85d0278d6415c98599c233e8da08c2986a820fc1b2",
+    "tests/test_audit3_workspace.py": "ea5765b4ab5d8d4c64cbdc92e72d564d6ed2c36e9e58e7e539f00878b8f15afe",
+    "tests/test_audit4_core.py": "1a3bfe444536e0c94e9c94973b1d119bac54cf581deb563c6b0c81b2a97b114e",
+    "tests/test_audit4_workspace.py": "16e183a9d254df989bfb1ee9094aa22e7dffa2710b3570f2834b89436eecf56f",
+    "tests/test_audit5_core.py": "c200d511551bbadf18a666eeaaf511c01799eaff85031b4be50f26769a3c147d",
+    "tests/test_audit5_cross.py": "3cc79742af6ff42c487d84253d27105518bd0027ec6b44640573e114a2debf06",
+    "tests/test_audit5_workspace.py": "d4dfa81d8fb40a51f5455b8807c2057bd46957ce68669213b85bb45b7f3bed25",
+    "tests/test_audit7_core.py": "a0dd097fd2804213142585bba0100c87bf9eb514f08033fd75e83c80925e954e",
+    "tests/test_audit7_workspace.py": "cb5587a597373592ee681a2836cc7464a92236b7442584ec46bc0a725b9f70d8",
+    "tests/test_backbone_host_compat.py": "7e57887995c2abb253c2ca07c2167b5c82cb22957ef84031d2156d751c52e1b9",
+    "tests/test_canvas_seed.py": "91f7a414b0bb6691a16a9d453782d77e5eae178d32e9e9f5a5aeca7ef70c0e1d",
+    "tests/test_canvas_workflows.py": "e2b84b259461ca97c8ec1519ae084d48a1340d23729f1058e9942f3105520a36",
+    "tests/test_checkpoint_ownership.py": "7ac746f6611272d727ab4b88c7a4d365c85075dfb55c05d33ab379e8a1eabf9e",
+    "tests/test_checkpoint_ownership_cuda.py": "f24fb9d735771ea05446649ea074112a644dc60721637370542e6588afea16d7",
+    "tests/test_checkpoint_ownership_namespace.py": "fdb35ea86fd08cd80bebe15df9b66506997911b3f55c662a1d8b06984421f26b",
+    "tests/test_checkpoint_reader.py": "ef2760a2be9b350fa8f4624c013929b7aac20c46085181adbeaec38fceffed58",
+    "tests/test_checkpoint_reader_cuda.py": "e866a3ee329a5ca3f52763019b26fec0911cbc891840551bca302a5edc0103e7",
+    "tests/test_core_boundaries.py": "b5e6000e5062d7d4cff24a02fa1616b8285059830c6a690c59db84aa37c16370",
+    "tests/test_cuda_bf16_contract.py": "e48789459a2e9d81115690de44b4f9951b9f731d9e5c73a2b806ff2b512ad937",
+    "tests/test_cuda_bf16_rotation_precision.py": "3515611408356f74d1a9b72625875a96f58d25ca278ccd1e019bfdbcb02bbf39",
+    "tests/test_cuda_cpu_experts.py": "092359eb7bd7020a03c87d549cc0f58d64e71f0d186df5fe48a73c2dea936621",
+    "tests/test_cuda_experts.py": "b82d85c13bb334b68bc219f772b0ef5a51be438780dfd5e2f4a9792a8bc2976e",
+    "tests/test_cuda_graphs.py": "885c76a6c7ae1ae2f989508f41f240cfb5eab6edef0e56e17b30e65a34a38c08",
+    "tests/test_cuda_kitchen_compat.py": "42591b295920fd88c1fc61fedd1e0bbc747dd78ca5ae5a3cfc9fad0dceb2e84d",
+    "tests/test_cuda_native_host_attention.py": "c73cd42bbb6dc22f9cf941451d67bd429815aa52e85a72632146ce2c6a2df2f2",
+    "tests/test_cuda_quantized_experts.py": "67398025760c40d0a32d1ac1e8fda9b2d3f31f47b3a9ff8a66960def6979c752",
+    "tests/test_cuda_resident_bf16_contract.py": "aa9529cf3b5b34d7c32f4cbc12f21c76b894654835491eebfaf0fba27c7dc149",
+    "tests/test_cuda_resident_bf16_mixture_bounds.py": "03d8fddcc88048c8c6b856b5aa1f990317e4bce42878cacfa9d6aa9d53c58912",
+    "tests/test_delta_state.py": "691adb49d3c5fafe42990e8e762c092816e43fbb36cc42de3723f1bbd634065e",
+    "tests/test_dialogue_modes.py": "dacd3432874982802f1c756449eb6d6e2dab9f1caaf5ef8e8e64302e221a788c",
+    "tests/test_engine_lifecycle_failures.py": "fc0f1c22118bc42c6c09e95e9f1bdfeeab93f15c3bfaa3dfc904ad9f5b7013dc",
+    "tests/test_expert_math.py": "51548d949e1b868b50c6dd743d3ecd19c93bb159306e28a6a665c0b76982358a",
+    "tests/test_expert_placement.py": "64d05ab68be732e1e3f7e2ca5ef608094601d7baa49dc157e3f9d89b5e75de95",
+    "tests/test_expert_session_cleanup.py": "70dbd824215c6c2f82ab03b6c55a43b36b4f7f0497b1a236d38aabdd39406052",
+    "tests/test_infill_system_protocol.py": "ef74095abd5f6f4f45a0809bcecb8c91cc53fd8a7bdb344752cc5174ed44e6de",
+    "tests/test_kitchen_compat.py": "8a0a7c4068920ed4678878234fbd738ed1de7adb7bf6b781a96b574a4fb67583",
+    "tests/test_legacy_expert_memory.py": "dd3cc2385a26b7e06672252148a0886ea789b77412a27b391dd93dbb51e7687f",
+    "tests/test_legacy_update_quantize.py": "d3cb42c069401c5841ff2b0f264b1114dc3a04aa9031a2fdc2f2bb559eb34218",
+    "tests/test_live_error_chains.py": "aae959da6db6daa80811669937c12729de65f097e92ef85298761a3f62bbc0e5",
+    "tests/test_live_scene_pcm.py": "2e29f59fbf2a05cdeb9ba8da4352984560a7d7b237216ea1ceacf09090abf3b0",
+    "tests/test_loader_pin_rollback.py": "155e24eea1a2888017fe2fd5e16c9b825bd9a99c948b6d55824f827acc2e664e",
+    "tests/test_long_reference.py": "cb2115f0e06e376b26247434d5ef9077fb2d2fcd891636e7818cc1b2f4d7f774",
+    "tests/test_model_paths.py": "d8a49d989de79f1a0e3eb335047a7f24195389881982a5f203db792c7c6ba680",
+    "tests/test_native_norm_precision.py": "c56c78e142fa23093ca0ccc9820a15110f59815896939c03b9a833bf035db8a3",
+    "tests/test_native_norm_precision_cuda.py": "881cf64a7c6ed1c4d3bd52fd3148efb7aec7a998bbdd89a08bd1c38eaaf0afab",
+    "tests/test_native_upgrade.py": "26791eb7de12fdcd94e7761c77119a2ed85fa9add94bbb075025b4b29c8d81e5",
+    "tests/test_node_installer.py": "f6026141cfdf32050ccd891cd34671b1e838a2b3429577b36e4a1d8eff20c04a",
+    "tests/test_node_progress.py": "2cac516c8d492fc54eb91c90fd873c586d9dc251e13ec4c70cf0aa6ed7c52a39",
+    "tests/test_opening_retry.py": "1ca84933e73ef60d61835708ed100df442254cf847b9bd87c4bb29c542fa0a0f",
+    "tests/test_optional_model_settings.py": "bc801d42ec8dd3f1e50c66e9a9552957730cec039e8a90a59b0ebdd47ae6d87b",
+    "tests/test_packaging.py": "c8904f21d96cce713f99792b0c69cff59484f27d04bb77b895d598562f7afb3e",
+    "tests/test_pinned_expert_memory.py": "6dcef75cac866940ded229b8e96c8001eba33ded6b47d42cc84e4aa3a9947a5e",
+    "tests/test_pinned_host_release_order.py": "286a1f7d222d33946d5dcf6f7dd5828d26f5ccb3667ee7ad0485787244fe4088",
+    "tests/test_prompt_direction_order.py": "831168b37666d490961d0ec5191c6c9a2cedb31c8d075187ba274532295f0979",
+    "tests/test_quantized_loading.py": "92c8aadf988b6a2b8436a777978a956a950b4748a8e6b374946530bd3b67e3e1",
+    "tests/test_qwen_split_tolerance.py": "5910158cbf5cfc2d51371744e6a4d5ec60031154b6aa2d2468a27aac6c5d1f53",
+    "tests/test_r2t2.py": "4aa285cde1f54347b07bf5e599317c390442c8e0221fd88c70a4d53139a4074d",
+    "tests/test_render_consumers.py": "5e8230dfca037fb300e13d6266ec9a4fa9c1eaa7a3ee5aaccea918cc14a8bb6d",
+    "tests/test_resident_cuda.py": "e56674f8e0abafcd84c3815aeb3a7bbd0c6ad55a7c2f8a7c2ec0b95307576f43",
+    "tests/test_resident_experts.py": "a335dc4663e88e2a1b12d41c4533092d070dd3a83f0b9ef3fa30f6bbf9986a6b",
+    "tests/test_resident_mixture.py": "774d61178bc2e27f79c52f510025b358750f3ba379920e1a90244ae8db6ef599",
+    "tests/test_resident_real_weights.py": "2f87693fc1875fba8850d45b8f652ee49d76faa0cf1a0315bfff09394e369f45",
+    "tests/test_round2_boundaries.py": "2273f4ee4700b30e33c3fc64a48dd000d2b5d91ac566718daa210069248b3c0b",
+    "tests/test_saved_reference_nodes.py": "c38218431eda37ecd9e2e570002b834c31997e21d6297733cf7bcfd300239bd9",
+    "tests/test_scene_boundary_policy.py": "78cb80d3c29f66ce81517c410e681bdc44394363ead3d0f2b924534db4669508",
+    "tests/test_scene_cast.py": "94d63e0dae265067ec047b515be698926f186f637a89732c5ef5dd0ef8f5b5c4",
+    "tests/test_scene_chunk_body.py": "8134542cd806458a860053a78f4249d4e282a8dfa62fefed844f822beeb5f733",
+    "tests/test_scene_chunks.py": "5ced9ca3395063fc4ffab283ba7ab57e5d3321c4905a16a992a436b9ffb024ad",
+    "tests/test_scene_decode_runtime.py": "1b17b2b748615786f37011596cf1da4ef655f133df5ca62ee601b9dfa4af52f7",
+    "tests/test_scene_head_patcher.py": "158548064367694a44f30e10854d871f2c449b7994f27842417904834c513769",
+    "tests/test_scene_planner_v3.py": "0a2714f59c41dfd678c54461a7f82f53aff0fd76b77527a4024e797ae68aee8f",
+    "tests/test_scene_revision_protocol.py": "631330ffab725536bc94f503c0cc8aaf4eebfb8e472d5b1059d691047c333fee",
+    "tests/test_scene_sampling_controls.py": "707ac9b94876be4a14912681ff9da6d301e3321ef0241349cf2b30c4a32ed392",
+    "tests/test_scene_session_input.py": "4adf9f2a02cc8ca49ede4a9369065e581bc9434bde6a9fe3af48d57a46d691ed",
+    "tests/test_session_commit_locks.py": "83f5e9a119bdece4c4b25c6773d7060604fd98711d3a18b7b392f6d5fc5a6d0f",
+    "tests/test_source_aware_infill.py": "8cb0ae80b070a59404830a38c17dff690dd697e4e03c109aa708531c7579db4e",
+    "tests/test_speech_output_policy.py": "39feb5f92cf4f4927a768fa8aebe7b971b4fb3de5c7022aacbd31eac36683e4f",
+    "tests/test_studio.py": "3b9ba7a1a039972dac9479aca7a28885ce43cc237bfc9d68329e33c943112d98",
+    "tests/test_studio_asr_languages.py": "012c274f3f5590c7c4bf9cac99f2e331b27c5f248293b5bbc0147ecc688691f7",
+    "tests/test_studio_form_sampling.py": "93b99e12c59928c5afc73a9c171040d0c2d4d09b3a3390b727a67abcbec8c6c3",
+    "tests/test_studio_queue_storage_faults.py": "273f469443f0a30be2b7f4b564db9148bbb739393abae7b604a32fa6cbe0144c",
+    "tests/test_subtitles.py": "e7fed1638abffdd92fff48fbd79a8bdf6f87df40c76df380c095c7e6e0b19501",
+    "tests/test_take_duration.py": "7e46b998f4701f2edd244bdad3aec69d813e6d252a8a38e20631537d3b26b5fa",
+    "tests/test_tasks.py": "6bb6dad0f3fa4ac70ce40b9d392829391c5e23a0ddabcb048e7e00e824500d6d",
+    "tests/test_transformers_compat.py": "c70087e9c72a421d4c7bd286ca3effe4c2108c93981d800e61857f28b6c49546",
+    "tests/test_typed_archive.py": "a5086ce1516f4c1063bcc89eaf554bad2faa6f49586b937547fdf635d44edc95",
+    "tests/test_updater.py": "e1fef20399cf4f77797369eef0d5db67aa154c896ace6640dfc0b913bbbd407e",
+    "tests/test_weight_writer.py": "5776c35909a8c43626a7cf9059659149c973797050d2799ff944428554702ed4",
+    "tests/test_workflow_public_inventory.py": "3095dc12e1af2b1760ef6514b2204696dfab4c5fedbc31c23fc4c31c061d1720",
+    "tests/test_workspace.py": "a6a3aedb99926756a8000c611684ec85f89dc72c3afd853660e845e90e3e8250",
+    "tests/test_workspace_history.py": "4bca9a1379cac74006b25058af1c348083fae3bc63f9bc7dedf836fc3218784c",
+    "tests/test_workspace_lock_failures.py": "9c990e436648f7fa4f54e13f9ed8a250f0a47627f2abcb618746b4b36bc0ee1d",
+    "tests/transcribe_languages.test.mjs": "159f6d97807dd7fd76828b755c80dedb54bfc4bf424c5ab9c8a6e6104b36705d",
+    "tools/audit_release_audio.py": "9957c4f9fb292a5f1b0e392426c3afc35d162ef154a14eed7d5ff3fdcf558c73",
+    "tools/benchmark_model.py": "c0fd25adb2da2b2d265767713a262c748f039bf04cdc7c64e9988920fc98b75f",
+    "tools/build_node_package.py": "bbb2af7226a2347793df0768a8fa7ac68462389486475c3b7d176b1b28d90c0b",
+    "tools/build_patch.py": "07f5ce0108dafd69779921537ba0d3560f87a7255a07f481b5cd591196106223",
+    "tools/build_portable.py": "4d899ec088a99617584f6799db4a0001e5113f400872002bdeaffce9beda9db1",
+    "tools/build_public_release.py": "98d8ea3194e102e87b2f2d84548090a0d471afcca85ddacba42d5f27e4b81f78",
+    "tools/build_r2t2_native.ps1": "a0a222dceaf34a5d34fe470510cfe3e55392857f62ec5c73967a54b21ae46383",
     "tools/check_runtime.py": "d0175269cff79ca56d6335f382d6c32349c41649b52a3d3c1bd68faf730309fd",
     "tools/convert_model.py": "44a3308cb60bd6e764f1ec41e75fccd4a2b557e2b4c65fe45622186b9f1ad0eb",
+    "tools/create_test_reference.ps1": "878fa09f7eeb07558e9ce9a66f628a3a162dac32169e7fdc06c7095b729cf606",
     "tools/download_models.py": "cad3f9b1149a1d8e4de525b6f2806027c41ca6b0148d4266f0efa4b6ee07281b",
+    "tools/extend_ui.py": "b6afff3770290c2fd90dacecaf6522cb963dc0b72a145418190d25ad9ec9f56d",
     "tools/extract_text_head.py": "f559d66b2e395d2c37aaa11dc8daa5d33f96d08f44dfa5628761dafc1f8bf463",
+    "tools/finalize_manifest.py": "cdfa08efc549a6f4bae84fdf4a8601a9344d6693f1338ab22127357dd3a21857",
+    "tools/make_workflows.py": "56a7e2e5dff90838804aba393e5c1699a7498f138a31f70e75040a44944299f7",
+    "tools/preview_ui.cjs": "a7bacc9ffbda0eb63c55c7c591297fa6bcde6ddf154861f0ef515a1777825003",
+    "tools/quantize_converted.py": "95e2c3f2a1f697a38cd063e0b3c42526b122536837cf085b85fc08695484f90f",
     "tools/safetensors_stream.py": "574b33e227935eed15b88e9b8d09f50fa9a70647f97a3174641156409e3b7018",
+    "tools/test_acceleration.py": "926afc13c4189ac92c7be3e6fe11aae0f3e2d1d37f01227a9f861f422c6cc8a2",
+    "tools/test_aligner.py": "e880002552ca732b5cb3fe25cb4185345cce3961a548fc51597158e56d8b9af3",
+    "tools/test_asr.py": "caa6d04e9f1893deb0b064cfcdb7b7c7f06168cfcb6ff106cd052e33a99d7ff6",
+    "tools/test_audit3_browser.cjs": "cdbadca4c779eb5ed6e6dc3d6c100a564f0ea09fb05bd4085e6591879c06afb2",
+    "tools/test_audit4_browser.cjs": "f8c7501e5317c62f7e6578a0446d3484ea1ed757594d53056e925e5a58572cd1",
+    "tools/test_audit5_browser.cjs": "71b9800286333ebbc6c02538acb4b8c51c04446b4e1978ea410d593fc77552df",
+    "tools/test_codec.py": "7d1187a7a470738f9dbf8b7b949ce4e5cb6da3af69e9a6ae1c7790e15a8ac8d1",
+    "tools/test_comfy_extended.py": "9920b7ad41830cd9c7336f8869c36cbc3785b0dce3f63579f49f9b7857679d5d",
+    "tools/test_comfy_features.py": "f37b21605976e4536fd141a5a42b70a1449d2786597356e22688252b40cf8077",
+    "tools/test_comfy_workflow.py": "2fb1b30c0cc4eac5f452d406d9a7104ccdc3033f97fa4413484f57f7eb2f03a3",
+    "tools/test_features.py": "b7b569d2e2e951da9352ec883cbfec9b052889ed00ab0c4cf3ebf9ad30b139b6",
+    "tools/test_live_audio.py": "fd9fd8899ca78c1b1e510f1ad6515c608f49dc2c36293e6c388e0be84b5baf2e",
+    "tools/test_model.py": "b1fda404a83dc7df1f78a131b883ca984fecfb3aa95270dc7225ce16cffecddb",
+    "tools/test_portable_workflows.py": "d96214f8a0bae87025c5dd9ace9b59073cf63153dbbfb34a9f84367bb04b30ba",
+    "tools/test_relocated.py": "04cecab6b2a2e13699ad997fc23b107a6a0eb7c6523636504d8aed03a2d6c6ff",
+    "tools/test_scene_logits.py": "7708af16fabc18e81125afe5cd25f14ebccd94fe025d75a4b55f28aa81524f8b",
+    "tools/test_scene_revision.py": "88a610c3bbfcaccec7a53bedad7225557ba3c134640f3a9255f01c021ffbbb3d",
+    "tools/test_workspace_browser.cjs": "7ebc547a5ecc6e8387a8b435ae40abbc8142114ce2d86738c15b627392e4c369",
+    "tools/test_workspace_browser_edges.cjs": "4861a0d79ac77f59b847ae2301dd8d0b9a69955daa8dd06de8fc99d75000e3dc",
     "tools/update_portable.py": "db5dc06f5117b42a474ba99a7603e07ba270013baffca29702c9ecd7532c58d5",
+    "tools/verify_comfy_canvas.cjs": "1669c8cfad74ceb144ebaa45b70c5e53cef1fc5de0e9d9d648f4be7f20a19a72",
+    "tools/verify_comfy_live_browser.cjs": "049c1f67b801d62f735b11a1d14efd450f4dfcfb823ff77f3a368d11382727b8",
+    "tools/verify_feature_audio.py": "a09b6fa2f94824104253ae5b4cdfda43495d4b21699d38fe92cf0957ff666bb6",
+    "tools/verify_release_package.py": "839f4ab88420d05f758fe5db9e9d8f889e1f1833c713de90bc43e47b3c8870fd",
     "upstream-lock.json": "2e8657c5bfce8fd5acdf7a43a812c4f1678c3edbc3ebc7acf653b6a95dab9b03",
     "web/app.js": "2747bf3fd9045a19a3072d963ebdcb132194c5a5215785cd62c95a94b3fd77b0",
     "web/drama3_editor.js": "ac90c58eb6e261823d59e610a0f70d98a733db35ddca4b7190744e61a60b18ec",
@@ -252,427 +414,406 @@
     "web/studio-extras.css": "8ee8a60e41a48e8baf1c1feef1c004f5a34a00fa5acb776c7561453c6b0d5e04",
     "web/styles.css": "266140153916f6594997c8ee041e3a00728b170558853ce9c9a06f8e5ab9c2eb",
     "web/transcribe.js": "d16c94481b28236cba4d66511a6d2a0bbf571b26f1d7adfe8c3ec6461a1896ab",
-    "web/workspace-tools.js": "5e45705e9449a252698c45ded7b4c93fb9038ac90f3f87bf5eb1c8f9bbc4c22e"
+    "web/workspace-tools.js": "5e45705e9449a252698c45ded7b4c93fb9038ac90f3f87bf5eb1c8f9bbc4c22e",
+    "tests/test_audio_tower_cache.py": "8122932b114afb9a509112491be10bcb8b0422777279e66c0afc699e002e2403",
+    "tests/test_audio_tower_cache_cuda.py": "161f509966d74502395757082458b117e11ed3433c7a1055a8d77a6bb5bf1492"
+  },
+  "source_freeze": {
+    "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\source411-final024.json",
+    "bytes": 66327,
+    "sha256": "d347517ea4665d6922811ca45ed4640d1057e770bbcf8840448f3a2fdd289851"
+  },
+  "execution_equivalence": {
+    "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final024-execution-equivalence.json",
+    "bytes": 1410,
+    "sha256": "6f36a821c7054fbf6f4e8cd3c0305708b404002ddfa51b8b20bacdf004fc6658"
   },
   "gates": {
     "cpu_regressions": {
       "status": "passed",
+      "scope": "Each TF4.57.1 CPU stack (Kitchen0.2.37 and0.2.40) passed1413 tests +5 subtests,5 skipped,1 GPU test deselected; CUDA uninitialized. Executed d03 candidate with final metadata bridge.",
       "evidence": [
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\final-restored.xml",
-          "bytes": 34577,
-          "sha256": "a7c0ac2e962908db78e59ab222c95b66fb139fc77932dda935237804a4bfddf0"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-full-CPU-GPU-summary.json",
+          "bytes": 1594,
+          "sha256": "41c3f5cbe19346abedff9f4c274fce0d2130d7207636b6c456788e5c955bebb2"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\final-restored.log",
-          "bytes": 2242,
-          "sha256": "a55f3c045c339cb2b7136590063cc27828c1fe2a04f7836aac3c6955de5be825"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\graph-guard-cpu-bundled\\results.xml",
+          "bytes": 215494,
+          "sha256": "8bfeba62129408156c45f4c9cb3401108b8e0f4de2790175b310f2841894f496"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\audit20-final-fix-023-receipt.json",
-          "bytes": 4162,
-          "sha256": "f346dacb1eaa0eece4364bf4438a92857a4cf237c0074c5118403332d77f2dba"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\graph-guard-cpu-bundled\\pytest.log",
+          "bytes": 4070,
+          "sha256": "b0daf0e431557146ca1f5d8ec03d924d4f9e455093e7fc5e27356dc3a1555c9f"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\graph-guard-cpu-latest\\results.xml",
+          "bytes": 215480,
+          "sha256": "65e5f7c1ee8e5543990bb7f26cd0328f59820d339a0e2c34cf9d56f14e6511ae"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\graph-guard-cpu-latest\\pytest.log",
+          "bytes": 4009,
+          "sha256": "00a48ba0bd4708497602308e485a79376e6658bbb0fb8d578cf6a5b13ccf23aa"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final024-execution-equivalence.json",
+          "bytes": 1410,
+          "sha256": "6f36a821c7054fbf6f4e8cd3c0305708b404002ddfa51b8b20bacdf004fc6658"
         }
-      ],
-      "scope": "Current023 logic242passed/1Windows symlink privilege skip/0failed withTransformers4.57.1,CUDAFalse.31new cases included; no new full1364-suite claim. Version/docs-only changes after runtime testing are bound by the410 source delta."
+      ]
     },
     "native_numerics": {
       "status": "passed",
+      "scope": "16 targeted real CUDA norm/offload/residency/cache/Graph tests passed, not16 full-checkpoint TTS cases. Old-host factory/Graph4-arm matrix and tower-only replay isolate arithmetic-path sampling divergence; this does not establish a mathematically broken legacy kernel or a speed gain.",
       "evidence": [
         {
-          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/canonical-bundled-27-GPU-r1/report.json",
-          "sha256": "70caef88c60e5dc80cdb6175895c0e44bcb120c4b5bcc2f9ed91e15e239e4ea3",
-          "bytes": 571
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-GPU.xml",
+          "bytes": 2794,
+          "sha256": "e89c14ee981d3f25ea26a9cba67a7ca734c3091902b81da3e59ab1ddeb03cea1"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/existing-contracts-run-r1/report.json",
-          "sha256": "0e08dcaea2b3b88bf28a817aaf0c2b75ac2d8e8e4d0d61492d39351468390450",
-          "bytes": 1288
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-GPU.log",
+          "bytes": 102,
+          "sha256": "8d71beebad72d9340170f0e5e0f95719ee37066d892f2c8a9a1e7ede74c42775"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/tiny-real-GPU-r1/report.json",
-          "sha256": "7770f0d81236c23c76c1df8501a9e185fcd7da3f0b416cb547eff38eae7041fc",
-          "bytes": 3959
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-host-attention-matrix\\report.json",
+          "bytes": 13616,
+          "sha256": "e3a349c249a576056096190be047ed7b46708ab8cd266750c8e72d3500adc301"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/conversion-real-GPU-r1/report.json",
-          "sha256": "e5ea69037ed6b90db163598563778d563bb6cfe183d2f41ac4e9a8bb4480345d",
-          "bytes": 520
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-matrix-first-divergence.json",
+          "bytes": 8279,
+          "sha256": "eb4c7e10cde0436743ea93906e0fa56ac3dfed2109563b91fcaa5c983aa72db5"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/new-regression-tests-run-r1/report.json",
-          "sha256": "b9f2752e32e31c0d7097947955355b3a1dec43908c0adb4750640a81cc805086",
-          "bytes": 507
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\tower-replay-old040-matrix\\report.json",
+          "bytes": 9396,
+          "sha256": "bcb895a7fe7b60b51b138b28ae15aecb3e78ae5270169f454c5482b13977de3e"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/tiny-gpu-report-r1.json",
-          "sha256": "4d87f51cb0b3f2ce7e138bc0aceb476875999c758cc8ba04474701035b7e3de2",
-          "bytes": 5975
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\peer-old-matrix-graph-eager-bytes.json",
+          "bytes": 9051,
+          "sha256": "a418aa2dfb7e1181e2ca5181565693f3c45cc39b3acd6717fc9516072d4b269e"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
-          "bytes": 3967,
-          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\audit20-final-fix-023-receipt.json",
-          "bytes": 4162,
-          "sha256": "f346dacb1eaa0eece4364bf4438a92857a4cf237c0074c5118403332d77f2dba"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final024-execution-equivalence.json",
+          "bytes": 1410,
+          "sha256": "6f36a821c7054fbf6f4e8cd3c0305708b404002ddfa51b8b20bacdf004fc6658"
         }
-      ],
-      "scope": "Scoped numerical contracts: source404 canonical bundled27 and root-confirmed Kitchen0.2.40 canonical27 pass; candidate25/new2, exact conversion, independent rotation red-green are pinned. Source405 only idle host-cache synchronization plus CPU test; arithmetic paths unchanged. Not full-model correctness or seed42 repair. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run. Incremental023: only streaming failure cleanup, version/docs changed; Qwen executable AST unchanged. Successful streaming PCM contracts passed in targeted CPU regression. Historical021/022 UI/model/GPU evidence is not a new023 execution.",
-      "additional_stack_provenance": "Root explicitly confirmed canonical27 passed on each Kitchen0.2.37/0.2.40. Existing attached reports retain their exact original stack and source scopes."
+      ]
     },
     "real_model_checks": {
       "status": "passed",
+      "scope": "Fresh actual UI outputs:31 whole/crop files representing18 unique PCM; R2 exact31/31, Qwen29/31. All24 critical short/chunk/line checks matched both. The two Qwen whole-scene mismatches are the same PCM across two hosts. Third blind ASR supports the disputed welfare phrase, but has another homophone error; not an all-recognizer pass. CAMP++ selects intended references for9/9 lines per host, the same9 PCM across hosts; not MOS or percent similarity.",
       "evidence": [
         {
-          "path": "D:/drama-3/validation/development-20261027/final-source405-new042-Complex-audio-r35/terminal-and-audio-gate.json",
-          "sha256": "30d55262e40ecf2a199885d6f369878961488a39f4111e18009b3a00a5f53c35",
-          "bytes": 275828
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-final-blind-content-score.json",
+          "bytes": 28170,
+          "sha256": "36fd8547157a4c50fb262372d25eba795ab59e6038f0915715e7c1e24f3a28cb"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-old040-blind-batch-r34/strict-content-score.json",
-          "sha256": "ecfb5a41ac6b07c5c30e838b369c9ee62d36b1f8194f3e6c7b7f4d6a5ebb8875",
-          "bytes": 14444
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-all-final-ASR-plan.json",
+          "bytes": 13626,
+          "sha256": "565a97959cc35498e1408b9e0b3c307ab21bd686e4f98967089bae1a6b24330d"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-UI-r34-r2/basic42-Graph-on-terminal.json",
-          "sha256": "a7ed2ca73669625cc2bdfa4f8a634d629ba4758862cbc90811c01f4d1b753b17",
-          "bytes": 759
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-third-blind-asr-disagreement.json",
+          "bytes": 1323,
+          "sha256": "9044c6ec98600c504641dd93ae1a9860c2ca4465eda0900be55bb66ac84b52ca"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source405-Complex-blind-batch-r35/strict-content-score.json",
-          "sha256": "2fe3293f24b5987c0743788f67e858578014392cb5baa1d57b1849d006546682",
-          "bytes": 18831
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-voice-identity-check.json",
+          "bytes": 3921,
+          "sha256": "7b75eca69183aa47ebcd417daa2ecac9b8033ecfda990e32c60393d5bf2e453a"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
-          "bytes": 3967,
-          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-voice-identity-check.json",
+          "bytes": 3903,
+          "sha256": "8f95ecf29a754a8e38ea84f5b6709e03b0ba2790aac482610cd26cc51af87180"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\audit20-final-fix-023-receipt.json",
-          "bytes": 4162,
-          "sha256": "f346dacb1eaa0eece4364bf4438a92857a4cf237c0074c5118403332d77f2dba"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-studio-extracted.json",
+          "bytes": 11097,
+          "sha256": "8c17420174544bdcf6cd03e9b9f4c4e3709ad5701beaccd8237498329352787b"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\unified-old-complex-extracted.json",
+          "bytes": 221929,
+          "sha256": "20eb3fab4f4f803b8723c158ea71e60753812f9cb6c1af81ec1c77951e6e992c"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-complex-extracted.json",
+          "bytes": 221879,
+          "sha256": "74a15c27626d55e6911b111076f684dc5c4c11d797d45ac525233a9c79e433e8"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final024-execution-equivalence.json",
+          "bytes": 1410,
+          "sha256": "6f36a821c7054fbf6f4e8cd3c0305708b404002ddfa51b8b20bacdf004fc6658"
         }
-      ],
-      "scope": "Required positive cases passed within declared scope: source405 new0.42 original Complex generation+two revisions, all12 saved-PCM clips strict R2/Qwen12/12; source404 StudioLong96/old0.40 originalJoint actual UI with strict dual8/8 total and explicit405 unchanged-generation bridge. This gate does not convert separately recorded original W4 no-reference seed42 Torch/CUDA failures to passes. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run. Incremental023: only streaming failure cleanup, version/docs changed; Qwen executable AST unchanged. Successful streaming PCM contracts passed in targeted CPU regression. Historical021/022 UI/model/GPU evidence is not a new023 execution.",
-      "known_negative_excluded_from_positive_case_count": [
-        "original_W4_no_reference_Basic_seed42_Torch_and_CUDA"
       ]
     },
     "canvas_old_host": {
       "status": "passed",
-      "method": "visible_ui",
+      "scope": "Two actual headless UI File/Open imports and visible Run clicks on ComfyUI0.40.0/Kitchen0.2.37: original no-reference W4 seed42 and two-reference scene+two revisions. GET history only observes results; no harness prompt submission API. Exact generation contracts and saved-PCM content checked; loader reused between chained jobs.",
       "evidence": [
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source404-old040-UI-r34/summary.json",
-          "sha256": "2555a4da98a1bae4e9dd05d8541f6c7bac37ace1bd6c721f2017eecb4f9b01f7",
-          "bytes": 694
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\unified-old-cuda_graph-ui-submit.json",
+          "bytes": 15522,
+          "sha256": "41e968cc32647b0debfb39d2166b62966fc3b7c654aa7781a5c2cfeb3ffc9969"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-old040-blind-batch-r34/strict-content-score.json",
-          "sha256": "ecfb5a41ac6b07c5c30e838b369c9ee62d36b1f8194f3e6c7b7f4d6a5ebb8875",
-          "bytes": 14444
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\unified-old-cuda_graph-ui-history.json",
+          "bytes": 17889,
+          "sha256": "af6a8723db259cfc7c875912be2451cd08008cc91c3a698373a06999e204ab2c"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/adoption405-r1/03-adoption-and-targeted-CPU-receipt.json",
-          "sha256": "eb8651e76d092847b2dbcaa16a707ea36c105016bd204c27e5a6b3b5df49a994",
-          "bytes": 2675
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\unified-old-complex-ui-submit.json",
+          "bytes": 38864,
+          "sha256": "9aeab1e8393548e9e95857fb597931dae1d8b200d07aac6f44f2cdd64232f0fc"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
-          "bytes": 3967,
-          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\unified-old-complex-ui-history.json",
+          "bytes": 44333,
+          "sha256": "7307f3a418f3ecd2aac3994e6e20681f75256a6a55e2c0bdfda43f628160bdef"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\audit20-final-fix-023-receipt.json",
-          "bytes": 4162,
-          "sha256": "f346dacb1eaa0eece4364bf4438a92857a4cf237c0074c5118403332d77f2dba"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\unified-old-all-observed-posts.json",
+          "bytes": 27157,
+          "sha256": "1a4169b31a1130edf2bffe886e35f9ca672ab8594560b04218cf6ca2d20780a3"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\unified-old-actual-UI-trace.zip",
+          "bytes": 67162897,
+          "sha256": "a03c9d7fafb057664d1a397dbffa94547085cfd102a5c8f6a0723b9642dc4439"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\unified-old-canvas-extracted-cuda_graph.json",
+          "bytes": 4199,
+          "sha256": "db17a6bdfc69a053d0daf707a61b3c4f247072d362fd4538eb1c0154cb1155b3"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\unified-old-complex-extracted.json",
+          "bytes": 221929,
+          "sha256": "20eb3fab4f4f803b8723c158ea71e60753812f9cb6c1af81ec1c77951e6e992c"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-old-canvas-service-close.json",
+          "bytes": 197,
+          "sha256": "c0119c658c382e6d2bbccc7079e17d7e351a52918c0af7e45c90efa2dc5ffc9f"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final024-execution-equivalence.json",
+          "bytes": 1410,
+          "sha256": "6f36a821c7054fbf6f4e8cd3c0305708b404002ddfa51b8b20bacdf004fc6658"
         }
       ],
-      "scope": "Scoped old0.40 originalJoint actual UI succeeded on source404; whole+three line clips all passed both blind recognizers. Source404 evidence remains identified as404; explicit405 delta changes only idle host-cache ordering plus CPU test, with generation path unchanged. Not a claimed405 UI rerun. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run. Incremental023: only streaming failure cleanup, version/docs changed; Qwen executable AST unchanged. Successful streaming PCM contracts passed in targeted CPU regression. Historical021/022 UI/model/GPU evidence is not a new023 execution."
+      "method": "visible_ui"
     },
     "canvas_new_host": {
       "status": "passed",
-      "method": "visible_ui",
+      "scope": "Two fresh actual headless UI imports and visible Run clicks on ComfyUI0.42.0/Kitchen0.2.40: same original short and scene+two revisions. Browser POST observer covers both clicks; trace started after basic Run, so trace alone covers complex only. Exact generation contracts/PCM checked. Optional workflow-template version warning remains outside imported-workflow inference scope.",
       "evidence": [
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source405-new042-UI-r35/summary.json",
-          "sha256": "7731addd3b91c64538c9fc57e1870dc14ea84df3988a93754b0b45f336dd5395",
-          "bytes": 659
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-cuda_graph-ui-submit.json",
+          "bytes": 15462,
+          "sha256": "ad6519f693ac8d29a4a62c06cdc35af83c194ad172a057d1901b7bf1a27a7c50"
         },
         {
-          "path": "D:/drama-3/validation/development-20261027/final-source405-new042-Complex-audio-r35/terminal-and-audio-gate.json",
-          "sha256": "30d55262e40ecf2a199885d6f369878961488a39f4111e18009b3a00a5f53c35",
-          "bytes": 275828
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-cuda_graph-ui-history.json",
+          "bytes": 17874,
+          "sha256": "a493b390e479c0aa5e2c98ed58bbe85dc500f5f7841a43e2f3aae8d911a9fe4d"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source405-Complex-blind-batch-r35/strict-content-score.json",
-          "sha256": "2fe3293f24b5987c0743788f67e858578014392cb5baa1d57b1849d006546682",
-          "bytes": 18831
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-complex-ui-submit.json",
+          "bytes": 38825,
+          "sha256": "84279bb15b7f903a41d83848312182e38916b620b947bf367cf1a4485719e208"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
-          "bytes": 3967,
-          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-complex-ui-history.json",
+          "bytes": 44290,
+          "sha256": "4a6ccd076e0cff239d6ce7ecebcc85f22d7830c09ca8ad0216fd9aab6e6bd463"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\audit20-final-fix-023-receipt.json",
-          "bytes": 4162,
-          "sha256": "f346dacb1eaa0eece4364bf4438a92857a4cf237c0074c5118403332d77f2dba"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-all-observed-posts.json",
+          "bytes": 26967,
+          "sha256": "0d134f77c794c0660cdbf71e8fc70df01388280787abae5fee086a4e6e1e1976"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-actual-UI-trace.zip",
+          "bytes": 73183294,
+          "sha256": "2c473f31e5e4a6e3db53e8fdb241879c6f34179f95795c19a4d01cd5f9fead8c"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-canvas-extracted-cuda_graph.json",
+          "bytes": 4196,
+          "sha256": "ad37d38cab0266ee78e54ae6b9ef296fc0eb2d0222ca568357653459496a3858"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final-new-complex-extracted.json",
+          "bytes": 221879,
+          "sha256": "74a15c27626d55e6911b111076f684dc5c4c11d797d45ac525233a9c79e433e8"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-new-canvas-service-close.json",
+          "bytes": 189,
+          "sha256": "4595c38617216c405f151aaa1599d2b67ba6ce9fc5576311de0ef085da1a7099"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final024-execution-equivalence.json",
+          "bytes": 1410,
+          "sha256": "6f36a821c7054fbf6f4e8cd3c0305708b404002ddfa51b8b20bacdf004fc6658"
         }
       ],
-      "scope": "Actual source405 new0.42 original Complex generation and two revisions succeeded through actual UI; all12 exact saved-PCM whole/line clips strictly match targets in fresh blind R2 and Qwen recognizers,12/12 each. This does not prove arbitrary content or standalone Basic seed42. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run. Incremental023: only streaming failure cleanup, version/docs changed; Qwen executable AST unchanged. Successful streaming PCM contracts passed in targeted CPU regression. Historical021/022 UI/model/GPU evidence is not a new023 execution."
+      "method": "visible_ui"
     },
     "studio_ui": {
       "status": "passed",
-      "method": "visible_ui",
+      "scope": "Actual headless white/pink Studio UI: exact original referenced Long96 (three chunks) followed by original no-reference seed42,180-frame budget,zero retries; both completed with genuine CUDA Graph captures/replays. Actual UI unload completed, model_loaded=false. Initial RAM admission refusals and harness issues retained, not inference passes.",
       "evidence": [
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-UI-r34-r2/summary.json",
-          "sha256": "2099f03f388ed4232cdbfc7f2048edddea30924bad3aa751553142ee57c92bd0",
-          "bytes": 861
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-studio-guard-real-r1\\long96-confirmed-submit.json",
+          "bytes": 1033,
+          "sha256": "39e81021cc8da48feeb89f0725200dc00f0dd4bb44e6c28a883a36d36c823197"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-old040-blind-batch-r34/strict-content-score.json",
-          "sha256": "ecfb5a41ac6b07c5c30e838b369c9ee62d36b1f8194f3e6c7b7f4d6a5ebb8875",
-          "bytes": 14444
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-studio-guard-real-r1\\long96-retry-terminal.json",
+          "bytes": 9195,
+          "sha256": "441b35850bbfa408a4f4a4799f7ac1d130e60ee95fffc19698eb5fa5c2afbab0"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-UI-r34-r2/basic42-Graph-on-terminal.json",
-          "sha256": "a7ed2ca73669625cc2bdfa4f8a634d629ba4758862cbc90811c01f4d1b753b17",
-          "bytes": 759
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-studio-guard-real-r1\\basic42-submit.json",
+          "bytes": 634,
+          "sha256": "e30c39beb7bc97b475259d9a33b7624874776a5852be147852b70e05c416007c"
         },
         {
-          "path": "E:/codex-record/drama3-upgrade/pinned-host-unload-order-candidate-r35/adoption405-r1/03-adoption-and-targeted-CPU-receipt.json",
-          "sha256": "eb8651e76d092847b2dbcaa16a707ea36c105016bd204c27e5a6b3b5df49a994",
-          "bytes": 2675
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-studio-guard-real-r1\\basic42-terminal.json",
+          "bytes": 3033,
+          "sha256": "5ecabebc075ab3c8b6deaf303ccf083b53af9c2f93ce89d949da06cf3734b1e8"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
-          "bytes": 3967,
-          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-studio-guard-real-r1\\all-observed-posts.json",
+          "bytes": 3076,
+          "sha256": "476ba3ee5fb76541a3e3c65563923c4f9b342144c192e51378c33437323c1bae"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\audit20-final-fix-023-receipt.json",
-          "bytes": 4162,
-          "sha256": "f346dacb1eaa0eece4364bf4438a92857a4cf237c0074c5118403332d77f2dba"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-studio-guard-real-r1\\actual-UI-trace.zip",
+          "bytes": 26965100,
+          "sha256": "f6e43248e6683d821654b95b452cc1e15cc62ca41dfc54d3425bb824e6696793"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-studio-guard-real-r1\\unload-terminal.json",
+          "bytes": 4637,
+          "sha256": "3ec69d893cd0b66a37a0e2981a87926f5b831b878ff8aecfcaca408ab26ec0c0"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\old-studio-guard-real-r1\\healthy-unload-resource.json",
+          "bytes": 189,
+          "sha256": "5a074b7244becd93797fcf9c8a6f87b216244679c9ee823e8daa7498201632af"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-studio-extracted.json",
+          "bytes": 11097,
+          "sha256": "8c17420174544bdcf6cd03e9b9f4c4e3709ad5701beaccd8237498329352787b"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final024-execution-equivalence.json",
+          "bytes": 1410,
+          "sha256": "6f36a821c7054fbf6f4e8cd3c0305708b404002ddfa51b8b20bacdf004fc6658"
         }
       ],
-      "scope": "Scoped source404 Long96 actual UI and whole+three line strict dual4/4 scoring passed; source405 idle unload delta leaves generation unchanged. The separately pinned original CUDA/Graph no-reference Basic seed42 failure remains a failed known negative, not part of the positive pass count. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run. Incremental023: only streaming failure cleanup, version/docs changed; Qwen executable AST unchanged. Successful streaming PCM contracts passed in targeted CPU regression. Historical021/022 UI/model/GPU evidence is not a new023 execution."
+      "method": "visible_ui"
     },
     "portable_update": {
       "status": "passed",
+      "scope": "Current unmodified public0.2.3 updater actually committed1303 code members to a final-code0.2.4 qualification archive. Its acceptance member was explicitly pending to avoid self-reference. Six inert protected sentinels retain bytes, identity and mtime; they are not real models/Python. Final release archive must differ only in acceptance-report.json, verified separately. Actual official stable/latest update remains a mandatory separate post-publication observation, never inferred here.",
       "evidence": [
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\qualification-public020-to021-r36-transaction-result.json",
-          "bytes": 336208,
-          "sha256": "cefda61b00cd23d07a90bde43deecc56300d602319d2fc861d9f6fddf0033e15"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\update024-local-transaction.json",
+          "bytes": 349151,
+          "sha256": "d4d6108517c7e86fd7661ac0ed6d5a802ce4e5cb01f8bf94d2685415f654031c"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\portable-r37-source405-finaldocs-own-runtime-CPU-r1\\report.json",
-          "bytes": 285234,
-          "sha256": "46a194522b266e7997a8ee584584f49eef4ead997c792477f88c82678cdb9621"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\qualification024-pending\\portable-update.json",
+          "bytes": 227151,
+          "sha256": "edc70b54907fe56a102ebe7047cb85598189739e838fad081bc3bedeaf0e109f"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\fullclean-final-source405-code-refresh-r37\\receipt.json",
-          "bytes": 7977,
-          "sha256": "7f3cd11e437783ebac4d4a97836a2ad0a189bc4c7bddef54d3d3b5225989b179"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-acceptance-r38\\runtime-equivalence-to-qualified-transaction.json",
-          "bytes": 2399,
-          "sha256": "d90d0cc227183ebc8d089c847599af6c926cec26b423bda7ae67c8da1979c2c4"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\portable-r38-native-GPU-smoke\\report.json",
-          "bytes": 210632,
-          "sha256": "b3c10e00b6da90b2f8c51035f90b19e7a04ce06613127ee8f85bafdd8fa4f8de"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
-          "bytes": 3967,
-          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\audit20-final-fix-023-receipt.json",
-          "bytes": 4162,
-          "sha256": "f346dacb1eaa0eece4364bf4438a92857a4cf237c0074c5118403332d77f2dba"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final024-execution-equivalence.json",
+          "bytes": 1410,
+          "sha256": "6f36a821c7054fbf6f4e8cd3c0305708b404002ddfa51b8b20bacdf004fc6658"
         }
       ],
-      "scope": "Actual original public020 updater install_archive committed1303 code members to021, with explicit inert protected sentinels; separate complete private bundle249-source-SHA/18-schema/1402-origin own-Python CPU qualification. Neither fixture sentinels nor CPU checks are claimed as full-model inference or automatic latest. Incremental022: only workspace-lock lifecycle plus version/docs changed; historical021 execution is retained as021, not relabelled as a fresh022 run. Incremental023: only streaming failure cleanup, version/docs changed; Qwen executable AST unchanged. Successful streaming PCM contracts passed in targeted CPU regression. Historical021/022 UI/model/GPU evidence is not a new023 execution.",
-      "scoped_code_transaction_status": "passed",
-      "full_model_environment_status": "Own packaged Python CPU18 and native CUDA compiler/Graph smoke qualified; full checkpoint TTS was not loaded in this packaged layout. Separate actual UI tests qualify the byte-identical shared core.",
       "automatic_latest": false,
-      "own_Python": {
-        "nodes": 18,
-        "module_origins": 1402,
-        "all_under_private_bundle": true,
-        "CUDA_initialized": false,
-        "versions": {
-          "transformers": "4.57.1",
-          "tokenizers": "0.22.2",
-          "huggingface-hub": "0.36.2"
-        }
-      },
-      "post_publication_latest": "Must be observed separately against the actual stable Release; it is not inferred from this offline transaction.",
-      "native_GPU_smoke": {
-        "real_NVRTC": true,
-        "real_Graph_captures": 1,
-        "real_Graph_replays": 5,
-        "exact_BF16_counterexample": true,
-        "full_model_in_packaged_layout": false
-      }
+      "post_publication_required": true
     },
     "requirements_audit": {
       "status": "passed",
+      "scope": "Requirements, lock, acceleration declarations and updater are byte-identical to accepted0.2.3; current TF4.57.1 dual-stack CPU and real-model runs substantiate exercised dependencies. Existing requirements audit retains its original scope. This is not a clean-install test of every possible host/plugin combination.",
       "evidence": [
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\guard-full-CPU-GPU-summary.json",
+          "bytes": 1594,
+          "sha256": "41c3f5cbe19346abedff9f4c274fce0d2130d7207636b6c456788e5c955bebb2"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\peer-release-preflight-024-receipt.json",
+          "bytes": 4905,
+          "sha256": "7559ed0928864b3dd8fb8ae0d0d716b1af223087b5df0697cce3320c67ed340b"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\peer-cache-review20.md",
+          "bytes": 6974,
+          "sha256": "b2ab4e1956a1693182e6568fc9fb7a4e57dae7c293ae7345a12768260c1b1c21"
+        },
+        {
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\peer-norm-Graph-residency.md",
+          "bytes": 6017,
+          "sha256": "ed1d0c11305c135421ff50b14cb5395554620332baa1d6238c7846d61c999238"
+        },
         {
           "path": "E:\\codex-record\\drama3-upgrade\\requirements-final-delta-r37.json",
           "bytes": 14473,
           "sha256": "af3241274abc2d6b42fb1af9ee160d1a752b058591f7bf525c216a5e4d954c66"
         },
         {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
-          "bytes": 3967,
-          "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-agent\\report.json",
-          "bytes": 25034,
-          "sha256": "879e142a3b8cad8c917ec073a268187524d7efd5cb14c5f1c7561e484e1f17b8"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\audit20-final-fix-023-receipt.json",
-          "bytes": 4162,
-          "sha256": "f346dacb1eaa0eece4364bf4438a92857a4cf237c0074c5118403332d77f2dba"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-agent\\report.json",
-          "bytes": 18209,
-          "sha256": "4de7d3a04a266ab777721c715fd55781e9be4f3dc28a881ce574cac58a870a99"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-agent\\final-resolution-summary.json",
-          "bytes": 3864,
-          "sha256": "ef558ab2bdc45f0fed065d7dc5400bb9d73cdb3a235ddf35c8b66482192ea473"
+          "path": "E:\\codex-record\\drama3-upgrade\\quality-resume-20261029\\final024-execution-equivalence.json",
+          "bytes": 1410,
+          "sha256": "6f36a821c7054fbf6f4e8cd3c0305708b404002ddfa51b8b20bacdf004fc6658"
         }
-      ],
-      "scope": "20new bounded input contracts reviewed. The ASR hard-cap diagnosis was corrected using the existing upstream parity contract: only documentation changed. Two streaming reference-retention bugs fixed, weakref-tested; original functional requirements and unchanged inference retain their earlier scopes."
+      ]
     }
   },
-  "source_freeze": {
-    "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\source410-before-acceptance.json",
-    "bytes": 65253,
-    "sha256": "6e356f1424b2efef8e80bfdd50046ca2ad227d5a9dd6046566ab0baa9cac1bf1"
-  },
-  "QA_refresh": {
-    "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-readmes-r37\\02-QA-final-README-refresh-126.json",
-    "bytes": 40529,
-    "sha256": "93cb41a2f2fb67d5705016a2f1767125a7039bdc37b273e7af3f4b532d15ba6a"
-  },
-  "schema_reference": {
-    "path": "D:/drama-3/tools/finalize_manifest.py",
-    "sha256": "cdfa08efc549a6f4bae84fdf4a8601a9344d6693f1338ab22127357dd3a21857",
-    "bytes": 5138
-  },
-  "final_docs_freeze_required": false,
-  "source_hashes_origin": "Current023 named payload hashes exclude acceptance itself. Incremental410 snapshot binds new tests and resource-only changes. ASR executable AST and original parity test are unchanged.",
-  "source404_to405_delta": {
-    "parent": {
-      "path": "E:/codex-record/drama3-upgrade/bf16-rotation-precision-candidate-r34/adoption404/prepare_20261028T122053Z_90bc8371/01-source-freeze-404.json",
-      "sha256": "0a7d7101563bcd2df3107242e302980e069dffdc4a9dcc8bd4020065f3b77899",
-      "bytes": 65040
-    },
-    "changed_existing": [
-      "comfyui-drama3-T8/drama3_t8/native/acceleration.py",
-      "drama3_t8/native/acceleration.py"
-    ],
-    "added": [
-      "tests/test_pinned_host_release_order.py"
-    ],
-    "other402_existing_files_unchanged": true,
-    "generation_math_path_unchanged": true,
-    "mechanism": "Only effective idle pinned-host purge waits for pending CUDA copies; no claim this explains all historical17GB."
-  },
-  "known_negatives": [
-    {
-      "id": "original_W4_no_reference_Basic_seed42_Torch_and_CUDA",
-      "status": "failed_known_negative",
-      "text": "Original no-reference W4 seed42 local-speech case hits stalled/silent-repetition guard in Torch and CUDA. No seed, retry or budget substitution.",
-      "cuda_graph_evidence": {
-        "path": "E:/codex-record/drama3-upgrade/final-source404-Studio-UI-r34-r2/basic42-Graph-on-terminal.json",
-        "sha256": "a7ed2ca73669625cc2bdfa4f8a634d629ba4758862cbc90811c01f4d1b753b17",
-        "bytes": 759
-      },
-      "torch_evidence": {
-        "path": "E:\\codex-record\\drama3-upgrade\\fair-w4-native-benchmark-r22\\r33-consolidated-source403-streamed-capture-r2\\torch\\report.json",
-        "bytes": 1157003,
-        "sha256": "06011041ff280ee9f01fb5c329e634ed8b0ae62ca6f2002306883bc213c1a24d"
-      },
-      "causal_attribution": "Unresolved. The guard message is not proof of an intrinsic model defect, a backend cause, or measured digital zero amplitude.",
-      "count_as_pass": false,
-      "source_scope": "Actual Torch diagnostic source403; its ordinary Torch generation path is unchanged in405. CUDA Graph diagnostic is actual source404;405 only changes idle host-cache release.",
-      "sampling": {
-        "text": "你好，这是本地语音测试。",
-        "seed": 42,
-        "temperature": 0.7,
-        "top_p": 0.7,
-        "top_k": 30,
-        "max_frames": 180,
-        "opening_retries": 0,
-        "references": 0
-      }
-    }
+  "retained_limitations": [
+    "Two Qwen whole-clip transcript mismatches retained, one unique PCM. Third ASR has another homophone error. All critical line/short/chunk checks passed both primary recognizers; no human MOS/naturalness rating is claimed.",
+    "Prior original seed42 repetition and low-VRAM norm-copy capture failures remain historical failures. Fresh fixed-source cases passed; no seed/prompt/budget/retry workaround was used.",
+    "A healthy Studio unload dropped model references but retained about6.42GiB RSS and1457MiB process GPU allocation. Runtime/allocator residual is not fully classified; process exit cleared own workers. Do not claim unload returns RSS/VRAM to zero.",
+    "New-host optional workflow templates0.11.82 versus requested0.11.96 warning was observed. Native imported v0.4 canvases passed; full optional-template dependency health is not claimed.",
+    "Full-model VRAM residency, multi-GPU, arbitrary dialect/emotion, cross-backend PCM identity and acceleration speed gains are outside this validation scope."
   ],
-  "historical_evidence_policy": "Source40023-clip results remain historical; scoped unchanged-component audit evidence may be retained only with precise400-to405 delta coverage.",
-  "external_status": {
-    "publication_scope": "This scoped engineering acceptance does not assert023 publication or Registry activation."
-  },
   "distribution_boundary": {
-    "GitHub_release_code_only": true,
-    "models_in_code_release": false,
-    "Python_interpreter_in_code_release": false,
-    "native_R2_dependency": "Separately verified immutable610MB v0.2.0 asset; no rebuild",
-    "full_environment": "Author-provided complete Windows bundle, separately qualified within the recorded scope",
-    "roadmap_and_validation_trees_exported": false
+    "release": "Code-only node and portable update; no Python runtime or model weights",
+    "native_runtime": "Unchanged separately pinned v0.2.0 R2T2 runtime",
+    "private_excluded": [
+      "roadmap.md",
+      "validation/"
+    ],
+    "workflows": "16 canvas-format v0.4 JSONs, no API workflows"
   },
-  "scoped_update_transaction": {
-    "scope": "Updater code/asset protocol byte-identical. Actual public021->022 is historical; public022->023 latest transaction required separately.",
-    "historical": {
-      "path": "E:\\codex-record\\drama3-upgrade\\release-candidate\\0.2.2-audit20-20261028\\actual-online021-to022-retry.json",
-      "bytes": 334205,
-      "sha256": "b47b2b3ea9d8896267b163025253859fdd74ff541c718a0fdc4447c9d268163e"
-    }
+  "unchanged_dependency_and_updater_sha256": {
+    "requirements.txt": "3ca831e29176f441363c23d6efec65dd7c6f2eacfe82c3c60be6abe1e6adef86",
+    "acceleration-requirements.txt": "440811e0d471b8cf19e1b5f640ab2ffa20d2706c654592e0c920161894954b55",
+    "acceleration-manifest.json": "8338e0a28494d6261840c0a6d4e8694af63a201a3c209340d1ad17e915d12a45",
+    "upstream-lock.json": "2e8657c5bfce8fd5acdf7a43a812c4f1678c3edbc3ebc7acf653b6a95dab9b03",
+    "tools/update_portable.py": "db5dc06f5117b42a474ba99a7603e07ba270013baffca29702c9ecd7532c58d5",
+    "drama3_t8/updater.py": "34e7208432950730398fd507da2c9419fe49f9414800cd9092aefbfa82b13f62",
+    "Start-Drama3.cmd": "b09da463b292919b34df5bb6f874a9b3bc47f5c7bece12aa9f49b8a093b09c33",
+    "Update-Drama3.cmd": "04ffb55ed48866119883a802f91f64181bcf4c5519600463d6258a7664bdb502"
   },
-  "final_review_before_recording": "Two actual weakref failures reproduced and fixed;242pass/1explicit skip on final restored policy. Independent20round review includes corrected documentation-only ASR conclusion. Prior positive inference evidence retains its original scope.",
-  "accepted_utc": "2026-10-28T15:27:43.903113+00:00",
-  "acceptance_policy": "Passed means the eight named, source-bound release gates meet their stated scope. It does not mean every generative seed, every model/parameter combination, all historical diagnostics or fair performance comparisons passed.",
-  "parent_private_draft": {
-    "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\historical022-acceptance-report.json",
-    "bytes": 50637,
-    "sha256": "cdddfe00c186951ac1d3652b66650a1fb2803edfd7d39bc4eb3e5e3d81a55dd2"
-  },
-  "performance_scope": {
-    "fair_Torch_vs_CUDA_speedup_qualified": false,
-    "reason": "The original Torch benchmark case stalled; an earlier CUDA eager EOS on pre-correction math is not a successful same-quality baseline. No replacement seed/text/budget/retry is used to claim a speedup."
-  },
-  "post_publication_required_check": "Actual original022 automatic updater must be exercised against stable023 latest separately.",
-  "preliminary_root_review": {
-    "path": "E:\\codex-record\\drama3-upgrade\\pinned-host-unload-order-candidate-r35\\final-acceptance-r38\\acceptance-report-0.2.1.reviewed.json",
-    "bytes": 45351,
-    "sha256": "6e64fb126cd86128ffcb59028cfd2b793ac55838ce389591ade91859aa468f26"
-  },
-  "incremental022": {
-    "path": "E:\\codex-record\\drama3-upgrade\\audit20-release021-20261028-root\\audit20-and-fix-022-receipt.json",
-    "bytes": 3967,
-    "sha256": "8fad05123ba59384317b017dca279a2025ed33049fe5175a4d44f84e1108025b"
-  },
-  "incremental023": {
-    "path": "E:\\codex-record\\drama3-upgrade\\audit20-round2-022-root\\audit20-final-fix-023-receipt.json",
-    "bytes": 4162,
-    "sha256": "f346dacb1eaa0eece4364bf4438a92857a4cf237c0074c5118403332d77f2dba"
-  }
+  "external_status": "Registry publication/approval and actual GitHub stable/latest observation are tracked separately after this local acceptance. This report never asserts Registry Active.",
+  "post_publication_required_check": "Observe actual unmodified public0.2.3 check_and_update reaching official stable0.2.4 with all1303 member hashes and protected-sentinel preservation. Keep that receipt separate to avoid changing an accepted embedded manifest recursively."
 }
