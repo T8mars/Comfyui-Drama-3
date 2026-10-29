@@ -15,6 +15,30 @@ def ensure_healthy():
             'then disable CUDA Graph for this configuration. '+_capture_failure)
 
 
+def norm_residency_reason(layers, devices, tower, tower_device):
+    """Reject host-resident custom norms before any capture can begin.
+
+    A low-VRAM host can leave ordinary nn.Module parameters on CPU. These
+    norms cast a temporary weight in forward; eager warmup does not make the
+    parameter resident. RAM expert banks are intentionally outside this check.
+    """
+    from .norms import ZeroCenteredRMSNorm, GatedRMSNorm
+    if len(layers) != len(devices):
+        return 'CUDA Graph layer/device plan is incomplete'
+    roots = [(f'backbone.{i}', layer, device) for i, (layer, device) in enumerate(zip(layers, devices))]
+    roots.append(('tower', tower, tower_device))
+    for prefix, root, device in roots:
+        device = torch.device(device)
+        for name, module in root.named_modules():
+            if not isinstance(module, (ZeroCenteredRMSNorm, GatedRMSNorm)):
+                continue
+            source = module.weight.device
+            if source.type != device.type or (device.index is not None and source.index != device.index):
+                path = prefix + ('.' + name if name else '') + '.weight'
+                return f'CUDA Graph requires resident normalization weights: {path} is on {source}, execution is on {device}'
+    return None
+
+
 def _clone(value):
     if isinstance(value,torch.Tensor):return value.clone()
     if isinstance(value,tuple):return tuple(_clone(v) for v in value)

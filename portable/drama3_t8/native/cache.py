@@ -70,6 +70,34 @@ class StaticAttentionState:
         return out.transpose(1, 2).reshape(query.shape[0], count, -1)
 
 
+class AudioTowerState(StaticAttentionState):
+    """Keep single-row GQA on the Fish Audio grouped SDPA path.
+
+    A host may enable reduced-precision math SDPA. Passing unequal Q/KV
+    head counts with ``enable_gqa`` can select that path for masked decode.
+    Folding each KV head's query heads into rows (fish-speech 5415669,
+    fish_omni/layers.py::grouped_attention) avoids the GQA fallback and its
+    extra rounding without changing the host's global attention settings.
+    Use this upstream path on older hosts as well: small rounding differences
+    in their legacy audio-tower decode can change sampled residual codes.
+    The full-capacity mask stays device-owned for CUDA graph replay.
+    """
+
+    def decode(self, query, key, value, kv_heads):
+        count = key.shape[2]
+        batch, heads, _, head_dim = query.shape
+        if count != 1 or heads == kv_heads:
+            return super().decode(query, key, value, kv_heads)
+        self.key.index_copy_(2, self.position[:count], key)
+        self.value.index_copy_(2, self.position[:count], value)
+        grouped = query.reshape(batch, kv_heads, heads // kv_heads, head_dim)
+        out = F.scaled_dot_product_attention(grouped, self.key, self.value,
+            attn_mask=self.bias[:, :, -count:])
+        return out.reshape(batch, heads, 1, head_dim).transpose(1, 2).reshape(batch, count, -1)
+
+
+AudioTowerKV = AudioTowerState
+
 try:
     from comfy.text_encoders.llama import FixedKVBias as TowerKV
 except ImportError:

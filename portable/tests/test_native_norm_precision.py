@@ -24,6 +24,47 @@ from drama3_t8.native.loader import _OpsConfig
 from drama3_t8.native.model import Drama3Model
 
 
+@pytest.mark.parametrize('kind', ['zero_centered', 'gated'])
+@pytest.mark.parametrize('location', ['backbone', 'tower'])
+def test_graph_rejects_offloaded_norm_before_capture_without_moving_it(monkeypatch, kind, location):
+    from drama3_t8.native.graphs import norm_residency_reason
+    from drama3_t8.native.norms import GatedRMSNorm, ZeroCenteredRMSNorm
+    def forbidden():
+        raise AssertionError('Residency inspection must not initialize CUDA')
+    monkeypatch.setattr(torch.cuda, '_lazy_init', forbidden)
+    cls = ZeroCenteredRMSNorm if kind == 'zero_centered' else GatedRMSNorm
+    norm = cls(8, device='cpu', dtype=torch.bfloat16)
+    weight = norm.weight
+    before = weight.detach().clone()
+    layer = torch.nn.Sequential(norm) if location == 'backbone' else torch.nn.Identity()
+    tower = norm if location == 'tower' else torch.nn.Identity()
+    reason = norm_residency_reason([layer], [torch.device('cuda:0')], tower, torch.device('cuda:0'))
+    assert location in reason and 'cpu' in reason and 'cuda:0' in reason
+    assert norm.weight is weight and weight.device.type == 'cpu'
+    torch.testing.assert_close(weight, before, rtol=0, atol=0)
+
+
+def test_norm_residency_check_preserves_ram_expert_bank():
+    from drama3_t8.native.graphs import norm_residency_reason
+    layer = torch.nn.Module()
+    layer.register_parameter('expert_bank', torch.nn.Parameter(torch.ones(2, 8)))
+    original = layer.expert_bank
+    assert norm_residency_reason([layer], [torch.device('cuda:0')], torch.nn.Identity(), 'cuda:0') is None
+    assert layer.expert_bank is original and original.device.type == 'cpu'
+
+
+def test_norm_residency_rejects_incomplete_layer_device_plan():
+    from drama3_t8.native.graphs import norm_residency_reason
+    assert 'plan' in norm_residency_reason([torch.nn.Identity()], [], torch.nn.Identity(), 'cuda:0')
+
+
+def test_norm_residency_accepts_matching_cpu_parameters():
+    from drama3_t8.native.graphs import norm_residency_reason
+    from drama3_t8.native.norms import ZeroCenteredRMSNorm
+    norm = ZeroCenteredRMSNorm(8, device='cpu')
+    assert norm_residency_reason([norm], ['cpu'], norm, 'cpu') is None
+
+
 def _official_zero_centered(x, weight, eps):
     # Fish Audio ZeroCenteredRMSNorm.forward: shift the weight in FP32.
     out = x.float()
