@@ -8,9 +8,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Drama-3 T8 Launcher")]
-[assembly: AssemblyVersion("0.3.1.0")]
+[assembly: AssemblyVersion("0.3.2.0")]
 
 internal static class StartDrama3
 {
@@ -18,6 +20,156 @@ internal static class StartDrama3
     private static string logPath;
     private static string statePath;
     private static int port = 7863;
+    private static ProcessFamily family;
+    private static int existingPid;
+    private static long existingStarted;
+    private static string existingPython;
+    private delegate bool ConsoleHandler(uint signal);
+    private static readonly ConsoleHandler CloseHandler = OnConsoleClose;
+    [DllImport("kernel32.dll")] private static extern bool SetConsoleCtrlHandler(ConsoleHandler handler, bool add);
+    [DllImport("kernel32.dll")] private static extern IntPtr GetConsoleWindow();
+    [DllImport("kernel32.dll", SetLastError=true)] private static extern bool AllocConsole();
+    [DllImport("kernel32.dll")] private static extern bool FreeConsole();
+    [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr window);
+    [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr window, int command);
+    [DllImport("user32.dll", CharSet=CharSet.Unicode)] private static extern int GetClassName(IntPtr window, StringBuilder name, int maximum);
+
+    private static bool EnsureVisibleConsole(string[] arguments)
+    {
+        IntPtr window = GetConsoleWindow();
+        StringBuilder kind = new StringBuilder(128);
+        if (window != IntPtr.Zero) GetClassName(window, kind, kind.Capacity);
+        if (window == IntPtr.Zero || kind.ToString() != "ConsoleWindowClass")
+        {
+            // A pseudoconsole's HWND is only a message window, not a visible
+            // terminal. Start a classic host before creating the owned job.
+            List<string> command = new List<string>();
+            command.Add(Quote(Assembly.GetExecutingAssembly().Location));
+            foreach (string argument in arguments) command.Add(Quote(argument));
+            ProcessStartInfo host = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "conhost.exe"), String.Join(" ", command.ToArray()));
+            host.UseShellExecute = true; host.WindowStyle = ProcessWindowStyle.Normal;
+            using (Process process = Process.Start(host)) { if (process == null) throw new IOException("无法创建后台控制窗口。"); }
+            return false;
+        }
+        ShowWindow(window, 5);
+        // The first call can inherit SW_HIDE from the caller's STARTUPINFO.
+        ShowWindow(window, 9);
+        return true;
+    }
+
+    // The owner joins before starting Python, so descendants inherit membership
+    // without a spawn/assignment race. Only this process owns the job handle.
+    private sealed class ProcessFamily : IDisposable
+    {
+        [StructLayout(LayoutKind.Sequential)] private struct BasicLimits
+        {
+            public long ProcessTime, JobTime;
+            public uint Flags;
+            public UIntPtr MinimumWorkingSet, MaximumWorkingSet;
+            public uint ActiveProcessLimit;
+            public UIntPtr Affinity;
+            public uint Priority, Scheduling;
+        }
+        [StructLayout(LayoutKind.Sequential)] private struct Limits
+        {
+            public BasicLimits Basic;
+            public ulong ReadOperations, WriteOperations, OtherOperations, ReadBytes, WriteBytes, OtherBytes;
+            public UIntPtr ProcessMemory, JobMemory, PeakProcessMemory, PeakJobMemory;
+        }
+        [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)] private static extern IntPtr CreateJobObject(IntPtr attributes, string name);
+        [DllImport("kernel32.dll", SetLastError=true)] private static extern bool SetInformationJobObject(IntPtr job, int kind, ref Limits limits, uint size);
+        [DllImport("kernel32.dll", SetLastError=true)] private static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+        [DllImport("kernel32.dll", SetLastError=true)] private static extern bool QueryInformationJobObject(IntPtr job, int kind, IntPtr buffer, uint length, out uint returned);
+        [DllImport("kernel32.dll", SetLastError=true)] private static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool member);
+        [DllImport("kernel32.dll")] private static extern bool TerminateJobObject(IntPtr job, uint code);
+        [DllImport("kernel32.dll")] private static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
+        [DllImport("kernel32.dll")] private static extern bool TerminateProcess(IntPtr process, uint code);
+        [DllImport("kernel32.dll")] private static extern bool CloseHandle(IntPtr handle);
+        private IntPtr handle;
+        public ProcessFamily()
+        {
+            handle = CreateJobObject(IntPtr.Zero, null);
+            if (handle == IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error());
+            SetKillOnClose(true);
+            using (Process owner = Process.GetCurrentProcess())
+            {
+                if (!AssignProcessToJobObject(handle, owner.Handle))
+                {
+                    int error = Marshal.GetLastWin32Error(); CloseHandle(handle); handle = IntPtr.Zero;
+                    throw new Win32Exception(error, "无法建立子进程回收保护，已停止启动。");
+                }
+            }
+        }
+        private void SetKillOnClose(bool enabled)
+        {
+            Limits limits = new Limits(); limits.Basic.Flags = enabled ? 0x2000u : 0u;
+            if (!SetInformationJobObject(handle, 9, ref limits, (uint)Marshal.SizeOf(typeof(Limits))))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+        public void Stop() { if (handle != IntPtr.Zero) TerminateJobObject(handle, 0); }
+        public void Reap()
+        {
+            if (handle == IntPtr.Zero) return;
+            // Normal app exit also reaps helpers before preserving the exit code.
+            int owner = Process.GetCurrentProcess().Id;
+            IntPtr buffer = Marshal.AllocHGlobal(1024 * 1024);
+            try
+            {
+                for (int attempt=0; attempt<10; attempt++)
+                {
+                    uint returned;
+                    if (!QueryInformationJobObject(handle, 3, buffer, 1024 * 1024, out returned)) { Stop(); return; }
+                    int count = Marshal.ReadInt32(buffer, 4), children = 0;
+                    for (int i=0; i<count; i++)
+                    {
+                        int pid = Marshal.ReadIntPtr(buffer, 8 + i * IntPtr.Size).ToInt32();
+                        if (pid == owner) continue;
+                        IntPtr process = OpenProcess(1u | 0x100000u | 0x1000u, false, pid);
+                        if (process == IntPtr.Zero) continue;
+                        try { bool member; if (IsProcessInJob(process, handle, out member) && member) { children++; TerminateProcess(process, 0); } }
+                        finally { CloseHandle(process); }
+                    }
+                    if (children == 0) return;
+                    Thread.Sleep(20);
+                }
+                Stop();
+            }
+            finally { Marshal.FreeHGlobal(buffer); }
+        }
+        public void Dispose()
+        {
+            if (handle == IntPtr.Zero) return;
+            Reap(); SetKillOnClose(false); CloseHandle(handle); handle = IntPtr.Zero;
+        }
+    }
+
+    private static bool OnConsoleClose(uint signal)
+    {
+        if (signal != 0 && signal != 1 && signal != 2 && signal != 5 && signal != 6) return false;
+        if (family != null) { family.Stop(); return true; }
+        if (existingPid != 0)
+        {
+            // A second interactive window may control only the verified service
+            // from this exact package, never an arbitrary process on the port.
+            try
+            {
+                using (Process service = Process.GetProcessById(existingPid))
+                {
+                    if (service.StartTime.ToUniversalTime().Ticks == existingStarted &&
+                        String.Equals(service.MainModule.FileName, existingPython, StringComparison.OrdinalIgnoreCase)) service.Kill();
+                }
+                string launcher = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Start-Drama3.exe");
+                int self = Process.GetCurrentProcess().Id;
+                foreach (Process owner in Process.GetProcessesByName("Start-Drama3"))
+                {
+                    using (owner) try { if (owner.Id != self && String.Equals(owner.MainModule.FileName, launcher, StringComparison.OrdinalIgnoreCase)) owner.Kill(); }
+                    catch (Exception) { }
+                }
+            }
+            catch (Exception) { }
+        }
+        return false;
+    }
 
     private static void Log(string message, bool error)
     {
@@ -82,6 +234,13 @@ internal static class StartDrama3
                 }
                 catch (Exception error) { Failure(4, "工作台正在运行，但浏览器未能自动打开。请手动访问 " + url + "\n" + error.Message); }
             }
+            if (!noBrowser && !Console.IsOutputRedirected && !Console.IsInputRedirected)
+            {
+                existingPid = pid; existingStarted = started; existingPython = python;
+                Log("此窗口正在控制现有工作台。关闭窗口即可停止服务并释放内存。", false);
+                try { using (Process service = Process.GetProcessById(pid)) service.WaitForExit(); }
+                finally { existingPid = 0; }
+            }
             return true;
         }
         catch (Exception error)
@@ -141,7 +300,9 @@ internal static class StartDrama3
                 catch (Exception error) { Log("无法保存启动状态：" + error.Message, false); }
                 Log("工作台地址：http://127.0.0.1:" + port + "/", false);
             }
-            child.WaitForExit();
+            // A parameterless wait can hang on inherited stdout handles even
+            // after the app exits. Process disposal closes the async readers.
+            while (!child.WaitForExit(250)) { }
             return child.ExitCode;
         }
     }
@@ -175,13 +336,17 @@ internal static class StartDrama3
 
     private static int Main(string[] arguments)
     {
+        bool check = arguments.Length == 1 && arguments[0] == "--check";
+        if (!check && Environment.GetEnvironmentVariable("DRAMA_LAUNCHER_HEADLESS") != "1")
+            if (!EnsureVisibleConsole(arguments)) return 0;
         try { Console.OutputEncoding = new UTF8Encoding(false); }
         catch (IOException) { }
+        try { Console.Title = "Drama-3 T8 · 关闭窗口停止服务"; } catch (Exception) { }
+        SetConsoleCtrlHandler(CloseHandler, true);
         string root = Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory);
         string python = Path.Combine(root, "runtime", "python", "python.exe");
         string updater = Path.Combine(root, "tools", "update_portable.py");
         string app = Path.Combine(root, "app.py");
-        bool check = arguments.Length == 1 && arguments[0] == "--check";
         statePath = Path.Combine(root, "userdata", "launcher-state.txt");
         try
         {
@@ -231,6 +396,8 @@ internal static class StartDrama3
                         return Failure(3, "已有启动进程尚未提供工作台页面，请检查启动日志；没有重复启动 Python。");
                     }
                     Log("Drama-3 T8 · " + root, false);
+                    family = new ProcessFamily();
+                    Log("保持此窗口运行。关闭窗口将停止 Studio、转写及子进程，释放模型内存。", false);
                     int updated = Run(python, root, new string[] { "-X", "utf8", updater, "--automatic" }, false);
                     if (updated == 75) return 0; // Same stop-without-launch behavior as Start-Drama3.cmd.
                     if (updated != 0)
@@ -243,7 +410,7 @@ internal static class StartDrama3
                     if (finished != 0) return Failure(finished, "Drama-3 已退出。退出码：" + finished);
                     return finished;
                 }
-                finally { if (owned) mutex.ReleaseMutex(); }
+                finally { if (family != null) { family.Dispose(); family = null; } if (owned) mutex.ReleaseMutex(); }
             }
         }
         catch (Exception error)

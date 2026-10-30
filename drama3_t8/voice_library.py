@@ -409,6 +409,8 @@ class VoiceLibrary:
         if not isinstance(bindings, dict) or not bindings or len(bindings) > 64:
             raise ValueError("Cast bindings must contain 1 to 64 named roles")
         snapshot = {"bindings": {}, "defaults": _json({} if defaults is None else defaults)}
+        occupied = {item.get('speaker') for item in bindings.values() if isinstance(item,dict) and type(item.get('speaker')) is int}
+        voice_slots = {}
         for role, binding in bindings.items():
             role = _text(role, "role", 120, False)
             if role in snapshot["bindings"] or not isinstance(binding, dict):
@@ -417,9 +419,15 @@ class VoiceLibrary:
             version = self.get_version(binding.get("version_id") or voice["latest_version_id"])
             if version["voice_id"] != voice["id"]:
                 raise ValueError("Cast version does not belong to this voice")
-            speaker = binding.get("speaker", 0)
+            speaker = binding.get("speaker")
+            if speaker is None:
+                speaker = voice_slots.get(voice['id'])
+                if speaker is None:
+                    speaker = next((value for value in range(16) if value not in occupied), None)
             if type(speaker) is not int or not 0 <= speaker < 16:
                 raise ValueError("Cast speaker must be an integer from 0 to 15")
+            occupied.add(speaker)
+            voice_slots.setdefault(voice['id'],speaker)
             groups = self._reference_groups(binding.get("reference_groups", {}), voice["id"])
             snapshot["bindings"][role] = {"voice_id": voice["id"], "voice_name": voice["name"], "version_id": version["id"],
                                           "speaker": speaker, "defaults": _json({} if binding.get("defaults") is None else binding["defaults"]),
@@ -509,6 +517,9 @@ class VoiceLibrary:
         from .state import Session
         if not isinstance(selections, (list, tuple)) or not selections or len(selections) > 64:
             raise ValueError("Select 1 to 64 voice versions")
+        from .scene_voice_bindings import validate_role_voice_collisions
+        if all(isinstance(item,dict) for item in selections):
+            validate_role_voice_collisions(selections)
         direction = _text(direction, "direction", 32000)
         references = []
         for binding in selections:

@@ -434,9 +434,14 @@ class DramaEngine:
             take.metadata['system_context'] = system_context
         return session.append(take)
 
-    def revise(self, session, note, sampling=None, on_codes=None, progress=None):
+    def revise(self, session, note, sampling=None, on_codes=None, progress=None, *, replace_delivery_tags=False):
+        if type(replace_delivery_tags) is not bool:
+            raise ValueError('replace_delivery_tags must be a boolean')
         if not session.takes:
             raise ValueError("Generate a take before giving a director revision")
+        from .revision_text import replace_opening_delivery
+        def revision_lines(lines):
+            return [replace_opening_delivery(line,scene=True)[0] for line in lines] if replace_delivery_tags and note.strip() else lines
         previous=session.takes[-1]
         if 'render_infill' in previous.metadata:
             from .state import validate_session
@@ -446,7 +451,7 @@ class DramaEngine:
                 base=previous
                 while 'render_infill' in base.metadata:base=base.sources[0]
                 lines=[line for line in policy['full_target_transcript'].splitlines() if line.strip()]
-                return self.scene(lines,base.metadata.get('scene',''),base.metadata.get('characters',''),
+                return self.scene(revision_lines(lines),base.metadata.get('scene',''),base.metadata.get('characters',''),
                     session.references,sampling,progress,session=session,note=note,on_codes=on_codes,
                     generation_mode=base.metadata.get('generation_mode','together'),
                     split_long_text=base.metadata.get('scene_chunking',{}).get('enabled',False),
@@ -468,7 +473,7 @@ class DramaEngine:
                     script=script[len(prefix):]
                 lines=script.replace(SEPARATOR,"\n").splitlines()
             lines=[line for line in lines if line.strip()]
-            return self.scene(lines,previous.metadata.get("scene",""),previous.metadata.get("characters",""),
+            return self.scene(revision_lines(lines),previous.metadata.get("scene",""),previous.metadata.get("characters",""),
                               session.references,sampling,progress,session=session,note=note,on_codes=on_codes,
                               generation_mode=previous.metadata.get('generation_mode','together'),
                               split_long_text=previous.metadata.get('scene_chunking',{}).get('enabled',False),
@@ -487,10 +492,40 @@ class DramaEngine:
             if raw_tag is not None and raw_tag.group(0) != tag.group(0):
                 raise ValueError('Take raw_request_text differs from its actual speaker')
             request = tag.group(0) + ' ' + request if raw_tag is None else request
-        result = self.speak(request, session, sampling, on_codes, progress, note=note,
-                            system_context=previous.metadata.get('system_context',''))
+        from .revision_text import replace_opening_delivery
+        request, replaced_delivery = replace_opening_delivery(request) if replace_delivery_tags and note.strip() else (request, [])
+        if replace_delivery_tags and note.strip():
+            # The official Drama Space's free-form director example uses a
+            # Direction/Line user turn. Keep speech/transcript separate from
+            # this instruction and retain the real leading speaker identity.
+            context_style, context_removed = replace_opening_delivery(direction_tags(session.direction))
+            replaced_delivery = [*context_removed, *replaced_delivery]
+            line = with_speaker_tag(directed_text(request, context_style))
+            actual_tag = SPEAKER_TAG.match(line.lstrip(WHITE_SPACE))
+            body = line.lstrip(WHITE_SPACE)[actual_tag.end():].lstrip(WHITE_SPACE)
+            import re
+            direction_tags(note)  # Validate controls before flattening the note.
+            clean_note = ' '.join(re.sub(r'[\[\]<>|]', ' ', note).split())
+            sentences = re.split(r'(?<=[.!?。！？])\s+', body)
+            directed = ' '.join('[' + clean_note + '] ' + sentence for sentence in sentences)
+            current = actual_tag.group(0) + ' Direction: ' + clean_note + '\nLine: ' + directed
+            drama = self.load_model()
+            prompt = tts_prompt(drama.tokenizer, drama.config, current, session.references, session.takes,
+                                system_context=previous.metadata.get('system_context',''))
+            generated = self._take(prompt, current, original, sampling or Sampling(), on_codes, progress,
+                                   output_policy='speech')
+            generated = replace(generated, metadata={**generated.metadata, 'raw_request_text':request,
+                                'director_instruction_format':'direction_line',
+                                'system_context':previous.metadata.get('system_context','')})
+            result = session.append(generated)
+        else:
+            result = self.speak(request, session, sampling, on_codes, progress, note=note,
+                                system_context=previous.metadata.get('system_context',''))
         revised = result.takes[-1]
-        take = replace(revised, transcript=original)
+        take = replace(revised, transcript=original, metadata={**revised.metadata,
+            'director_note':note, 'revision_source_take_id':previous.take_id,
+            'replace_delivery_tags':replace_delivery_tags,
+            'replaced_delivery_controls':replaced_delivery})
         return replace(result, takes=(*result.takes[:-1], take))
 
     def scene(self, lines, scene="", characters="", references=None, sampling=None, progress=None, session=None, note="",on_codes=None,generation_mode='together',split_long_text=False,chunk_bytes=300,*,system_context=""):

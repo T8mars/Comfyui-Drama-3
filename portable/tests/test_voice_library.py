@@ -49,6 +49,20 @@ def rewrite_bundle(source, destination, mutate):
     return destination
 
 
+def test_cast_default_slots_separate_different_voices_and_preserve_aliases(tmp_path, session):
+    library = VoiceLibrary(tmp_path / "library")
+    female, _ = add(library, session, name="女主")
+    male, _ = add(library, session, name="导演")
+    cast = library.create_cast("双人选角", {"女主": {"voice_id": female["id"]},
+                                          "导演": {"voice_id": male["id"]},
+                                          "女主别名": {"voice_id": female["id"]}})
+    assert cast["bindings"]["女主"]["speaker"] != cast["bindings"]["导演"]["speaker"]
+    assert cast["bindings"]["女主"]["speaker"] == cast["bindings"]["女主别名"]["speaker"]
+    with pytest.raises(ValueError, match="独立角色编号"):
+        library.create_cast("错误选角", {"女主": {"voice_id": female["id"], "speaker": 0},
+                                         "导演": {"voice_id": male["id"], "speaker": 0}})
+
+
 def test_catalog_import_and_preview_do_not_import_torch(tmp_path, session, audio):
     library = VoiceLibrary(tmp_path / "lazy")
     _, version = add(library, session, audio)

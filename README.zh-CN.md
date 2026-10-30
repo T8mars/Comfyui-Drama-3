@@ -8,6 +8,8 @@ T8star 制作的 [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) 
 
 ## 本地 Studio
 
+导演修改提供**覆盖原有情绪／语速标签**开关，Studio 默认开启；新要求使用[官方 Direction/Line 格式](https://huggingface.co/spaces/fishaudio/Drama-3/blob/c368729ab9347dda6635c5272ad31e6521114b79/server.py#L799)，旧版本保持原样。来源试听独立显示，右侧标明生成版本，局部编辑默认选择整段。多角色台词写作 `导演：台词`，中英文冒号均可，人物描述才有明确的角色对应。情绪和语速仍是模型生成控制，不是严格的时长保证。
+
 白粉 Studio 将音色、剧本、候选与交付放在同一个本地工作区。完整 Windows 整合包由作者提供：[下载地址](https://pan.quark.cn/s/264edb7e36bd)。完整包自带匹配的 Python 与依赖，无需系统 Python 或另开 ComfyUI 服务。双击 `Start-Drama3.exe`（也可使用 `Start-Drama3.cmd`），先确认模型路径，再进入**创作工程**。
 
 1. **建立选角。** 上传干净参考录音即可试听、自动本地转写并手动校稿，也可从长录音中选择短片段。命名、标签、试听与整理音色，为每个角色固定声音版本和参考组。
@@ -15,6 +17,15 @@ T8star 制作的 [Fish Audio DRAMA-3](https://huggingface.co/fishaudio/drama-3) 
 3. **交付或续做。** 导出 WAV、角色分轨、SRT 和清单；需要迁移设备时，导出完整工程 ZIP 继续制作。
 
 DRAMA 原生支持无需训练的参考音色条件生成，参考音质、准确台词与演出方式都会影响结果。无参考试音得到满意声音后，可将候选保存为音色并绑定固定版本，再继续这个角色。
+
+## 0.3.2 更新
+
+- **选声更清楚：** 中间区域提供互斥的「单独选角／选择选角组」。可以逐个从音色库选择音色与固定版本，也可使用整组选角，均支持参考试听；角色名映射到实际剧本编号，冲突绑定会明确拒绝。
+- **导演修改：** 可覆盖原有开头情绪／语速标签，使用官方 Direction/Line 格式；保留原始版本。情绪和节奏由模型生成，不承诺严格语速。
+- **局部编辑：** 来源独立试听，补写自动准备当前来源并核对版本和音频指纹，右侧显示其他结果也能正常提交；保留整段选择和最近有效时间对齐。
+- **常驻后台窗口：** 使用 Studio 时保持 EXE/CMD 窗口开启。关闭窗口会停止本包服务及辅助子进程；正常退出也会清理辅助进程。
+
+模型与 Python 依赖无需更新。[验证范围](https://github.com/T8mars/Comfyui-Drama-3/blob/v0.3.2/portable/acceptance-report.json) 区分真实 Studio 生成、纯浏览器状态检查与既有画布验证。旧 EXE 需按下方说明单独替换。
 
 ## 0.3.1 更新
 
@@ -101,7 +112,7 @@ GitHub 的 `Drama3-T8-Portable-<版本>-code.zip` **只含代码，不含 Python
 
 完整包提供 `Start-Drama3.exe`，`Start-Drama3.cmd` 继续可用，两者均在启动前检查 GitHub 稳定版 Release。代码更新 ZIP 不安装或替换 EXE 启动器。手动更新请先关闭 Studio，再运行 `Update-Drama3.cmd`。更新器核验大小/SHA-256，备份替换文件，事务失败自动回滚；保留模型、Python、`userdata`、输出、音色库/工作区与自定义路径。离线检查失败仍可启动，不会运行 pip；依赖变动需使用匹配的完整环境。离线时可继续使用原版。手动解压代码 ZIP 属于直接覆盖，不经过更新器的 SHA 校验和事务回滚；优先使用 `Update-Drama3.cmd`。
 
-需要修复旧启动器时，先退出 Studio，再用[单独提供的 Start-Drama3.exe](https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.3.1/Start-Drama3.exe) 替换整合包根目录的同名文件。它依赖已有完整整合包，不是独立安装程序。
+修复后台窗口与退出清理，需要先关闭所有 Studio 启动窗口，再用[0.3.2 版 Start-Drama3.exe](https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.3.2/Start-Drama3.exe) 替换整合包根目录的同名文件。启动后保持窗口开启，关闭即停止本包服务及辅助进程。它依赖已有完整整合包，不是独立安装程序。
 
 ## 来源与许可证
 

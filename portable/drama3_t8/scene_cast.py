@@ -14,7 +14,7 @@ SEPARATOR = "<|audio_separator|>"
 _UNICODE_LINE_BREAKS = "\u0085\u2028\u2029"
 _NAMED_LINE = re.compile(
     r"^(?P<indent>[ \t]*)(?P<directions>(?:\[[^\[\]\r\n]*\][ \t]*)*)"
-    r"(?P<name>[^<>:\r\n\u0085\u2028\u2029\[\]]+):[ \t]*"
+    r"(?P<name>[^<>:：\r\n\u0085\u2028\u2029\[\]]+)[:：][ \t]*"
 )
 _EXPLICIT_LINE = re.compile(r"^(?P<indent>[ \t]*)(?P<tag><\|speaker:[0-9]+\|>)[ \t]*")
 
@@ -25,7 +25,7 @@ def validate_scene_speaker_map(mapping):
         raise ValueError("Scene speaker map must be an object")
     for name, speaker in mapping.items():
         if (not isinstance(name, str) or not name or name != name.strip()
-                or len(name) > 48 or any(char in "<>:[]" + _UNICODE_LINE_BREAKS or ord(char) < 32 or ord(char) == 127 for char in name)):
+                or len(name) > 48 or any(char in "<>:：[]" + _UNICODE_LINE_BREAKS or ord(char) < 32 or ord(char) == 127 for char in name)):
             raise ValueError("Scene speaker map names must be nonempty canonical role names, at most 48 characters")
         if type(speaker) is not int or not 0 <= speaker < 16:
             raise ValueError("Scene speaker map IDs must be integers from 0 to 15")
@@ -50,6 +50,10 @@ def _history_body(take):
 
 
 def _scene_lines(take):
+    if take.metadata.get('director_instruction_format')=='direction_line':
+        # This is one actual user turn; its literal "Line:" header is not
+        # another character when reusing the performance in a scene.
+        return (take.prompt_text,)
     lines = take.metadata.get("script_lines")
     if lines:
         return tuple(lines)

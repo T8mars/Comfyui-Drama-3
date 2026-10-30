@@ -155,19 +155,20 @@ class T8DramaGenerate(io.ComfyNode):
                 io.Int.Input("top_k", default=30, min=0, tooltip="0 保留全部候选，其余值限制候选数量"),
                 io.Int.Input("max_frames", default=600, min=1, max=8192), exact_seed_input(),
                 io.Int.Input("opening_retries",default=0,min=0,max=1,optional=True),
-                io.Combo.Input("sampling_preset",options=["custom","stable","expressive"],default="custom",optional=True)],
+                io.Combo.Input("sampling_preset",options=["custom","stable","expressive"],default="custom",optional=True),
+                io.Boolean.Input("replace_delivery_tags",default=False,optional=True,tooltip="导演修改时覆盖原台词开头的情绪和语速标签，保留角色、方言及行中事件")],
             outputs=[SessionType.Output()])
 
     @classmethod
     def execute(cls, engine, mode, text, session=None, lookahead="", seed=42, temperature=.7,
-                top_p=.7, top_k=30, max_frames=600, chunk_bytes=300, seed_text="",opening_retries=0,sampling_preset="custom"):
+                top_p=.7, top_k=30, max_frames=600, chunk_bytes=300, seed_text="",opening_retries=0,sampling_preset="custom",replace_delivery_tags=False):
         sampling = Sampling(sampling_seed(seed, seed_text), temperature, top_k, top_p, max_frames,opening_retries).with_preset(sampling_preset)
         session = session or Session()
         progress = _NodeProgress(max_frames)
         if mode == "speech":
             result = engine.speak(text, session, sampling, progress=progress)
         elif mode == "revision":
-            result = engine.revise(session, text, sampling, progress=progress)
+            result = engine.revise(session, text, sampling, progress=progress,replace_delivery_tags=replace_delivery_tags)
         elif mode == "long":
             result = engine.long_form(text, session, sampling, chunk_bytes=chunk_bytes, progress=progress)
         elif mode == "stream":

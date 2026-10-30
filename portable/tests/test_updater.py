@@ -374,6 +374,7 @@ def test_windows_launcher_finishes_preparsed_block_even_when_updater_replaces_cm
     assert result.returncode == 0, result.stderr
     try:
         (portable / "Start-Drama3.cmd").write_bytes((project / "Start-Drama3.cmd").read_bytes())
+        (portable / 'drama3_t8/console_launcher.py').write_bytes((project / 'drama3_t8/console_launcher.py').read_bytes())
         (portable / "tools").mkdir()
         (portable / "tools/update_portable.py").write_text(
             "from pathlib import Path\nroot=Path(__file__).resolve().parents[1]\n"

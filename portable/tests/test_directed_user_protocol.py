@@ -160,6 +160,45 @@ def test_new_native_raw_request_preserves_inline_effect_without_old_automatic_st
     assert old.prompt_text=='<|speaker:2|> [calm] [laughs] 原文。'
 
 
+def test_revision_replaces_opening_warm_delivery_and_keeps_events_and_accent(engine,tokenizer):
+    parent=engine.speak('<|speaker:2|> [四川话] [warmly] 原文。[laughs]',Session(),Sampling())
+    original=parent.takes[-1]
+    revised=engine.revise(parent,'angry, faster',Sampling(),replace_delivery_tags=True)
+    assert current(engine.requests[-1]['prompt'],tokenizer)=='<|speaker:2|> Direction: angry, faster\nLine: [angry, faster] [四川话] 原文。[laughs]'
+    assert original.prompt_text=='<|speaker:2|> [四川话] [warmly] 原文。[laughs]'
+    assert revised.takes[-1].metadata['director_note']=='angry, faster'
+    assert revised.takes[-1].metadata['revision_source_take_id']==original.take_id
+    assert revised.takes[-1].metadata['replaced_delivery_controls']==['warmly']
+    kept=engine.revise(parent,'angry, faster',Sampling(),replace_delivery_tags=False)
+    assert '[warmly]' in current(engine.requests[-1]['prompt'],tokenizer)
+    assert kept.takes[-1].metadata['replaced_delivery_controls']==[]
+
+
+def test_director_instruction_overrides_saved_emotion_context_but_preserves_history(engine,tokenizer):
+    parent=engine.speak('<|speaker:2|> 原文。',Session(direction='calm'),Sampling())
+    original=parent.takes[-1]
+    revised=engine.revise(parent,'angry, faster',Sampling(),replace_delivery_tags=True)
+    assert current(engine.requests[-1]['prompt'],tokenizer)=='<|speaker:2|> Direction: angry, faster\nLine: [angry, faster] 原文。'
+    assert original.prompt_text=='<|speaker:2|> [calm] 原文。' and parent.direction=='calm'
+    assert revised.takes[-1].transcript=='原文。'
+    assert revised.takes[-1].metadata['director_instruction_format']=='direction_line'
+    from drama3_t8.scene_cast import _scene_lines
+    assert _scene_lines(revised.takes[-1])==(revised.takes[-1].prompt_text,)
+
+
+def test_chinese_colon_cast_labels_are_identical_to_ascii_colons(engine,tokenizer):
+    refs=(Reference('<|speaker:0|> 参考。',torch.ones(10,2,dtype=torch.long)),)
+    for delimiter in (':','：'):
+        lines=[f'导演{delimiter} [angry] 现在开始。',f'女主{delimiter} [warmly] 知道啦。']
+        source=Session(refs,(),direction='clear')
+        result=engine.scene(lines,characters='导演：生气\n女主：亲切',session=source)
+        assert result.takes[-1].metadata['scene_speaker_map']=={'导演':0,'女主':1}
+        assert result.takes[-1].transcript=='现在开始。\n知道啦。'
+        assert '<|speaker:1|> [clear] [warmly] 知道啦。' in current(engine.requests[-1]['prompt'],tokenizer)
+        system=render(engine.requests[-1]['prompt'],tokenizer).split('<|im_end|>',1)[0]
+        assert '导演: <|speaker:0|>' in system and '女主: <|speaker:1|>' in system
+
+
 @pytest.mark.parametrize('raw',['different spoken words','<|speaker:3|> 原文。'])
 def test_imported_raw_request_mismatch_is_not_silently_used(engine,raw):
     source=take('<|speaker:2|> 原文。')

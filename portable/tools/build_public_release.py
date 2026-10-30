@@ -79,7 +79,7 @@ def node_files(include_github=False):
                 allowed = is_update_path(relative.as_posix())
             if relative.parts[0] == 'workflows':
                 allowed = path.suffix.lower() == '.json' and not path.name.lower().endswith('.api.json')
-            if relative.parts[:2] in {('drama3_t8', name) for name in ('studio.py', 'studio_editor.py', 'bootstrap.py', 'updater.py')}:
+            if relative.parts[:2] in {('drama3_t8', name) for name in ('studio.py', 'studio_editor.py', 'bootstrap.py', 'updater.py', 'console_launcher.py')}:
                 allowed = False
         else:
             allowed = False
@@ -208,7 +208,7 @@ def sync_node_source():
     validate_canvas_workflows(NODE / 'workflows')
     # Shared inference source is copied into the node independently of the studio.
     for p in files(ROOT / 'drama3_t8'):
-        if p.name in {'studio.py', 'studio_editor.py', 'bootstrap.py', 'updater.py'} or p.suffix.lower() not in SOURCE_SUFFIXES:
+        if p.name in {'studio.py', 'studio_editor.py', 'bootstrap.py', 'updater.py', 'console_launcher.py'} or p.suffix.lower() not in SOURCE_SUFFIXES:
             continue
         copy(p, NODE / 'drama3_t8' / p.relative_to(ROOT / 'drama3_t8'))
     for name in ['editor_core.js','drama3_editor.js','seed-compat.js']:

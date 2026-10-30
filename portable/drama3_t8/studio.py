@@ -207,6 +207,8 @@ class Studio:
                         row["error"] += "；" + self._fault_unload_error
 
     def submit(self, payload):
+        from .scene_voice_bindings import prepare_scene_voice_bindings
+        payload = prepare_scene_voice_bindings(payload)
         encoded_payload = json.dumps(payload, ensure_ascii=False, allow_nan=False)
         payload = json.loads(encoded_payload)
         job_id = uuid.uuid4().hex
@@ -434,8 +436,11 @@ class Studio:
         return session.session_id
 
     def session_for(self, payload):
+        from .scene_voice_bindings import prepare_scene_voice_bindings
+        payload = prepare_scene_voice_bindings(payload)
         if payload.get("session_id"):
-            return self.get_session(payload["session_id"])
+            session=self.get_session(payload["session_id"])
+            return replace(session,direction=payload['direction']) if 'direction' in payload else session
         references = []
         if payload.get("voice_versions"):
             from .creative_studio import creative_manager
@@ -783,6 +788,13 @@ class Studio:
                 "project":f"/api/files/session/{session_path.name}"}
 
     def generate_session(self, mode, payload, session, sampling, progress, on_codes=None):
+        override=payload.get('replace_delivery_tags',False)
+        if type(override) is not bool:
+            raise ValueError('replace_delivery_tags must be a boolean')
+        if override and mode not in {'revise','infill'} and (session.direction.strip() or mode=='scene' and payload.get('characters','').strip()):
+            from .revision_text import replace_opening_delivery
+            payload={**payload,'text':'\n'.join(replace_opening_delivery(line,scene=mode in {'scene','dialogue'})[0]
+                for line in payload.get('text','').split('\n'))}
         if mode == "tts":
             result = self.engine.speak(payload["text"], session, sampling, on_codes, progress)
         elif mode == "dialogue":
@@ -791,7 +803,8 @@ class Studio:
                                       session=session, on_codes=on_codes,generation_mode=payload.get('generation_mode','together'),
                                       split_long_text=payload.get('split_long_text',False),chunk_bytes=payload.get('chunk_bytes',300))
         elif mode == "revise":
-            result = self.engine.revise(session, payload["note"], sampling, on_codes, progress)
+            options={key:payload[key] for key in ('replace_delivery_tags',) if key in payload}
+            result = self.engine.revise(session, payload["note"], sampling, on_codes, progress, **options)
         elif mode == "scene":
             result = self.engine.scene([s for s in payload["text"].splitlines() if s.strip()], payload.get("scene", ""),
                                        payload.get("characters", ""), session.references, sampling, progress,

@@ -30,7 +30,7 @@ def spoken_text(text, scene=False):
     # that '<|speaker:0|> Meet at 9:30.' retains its spoken colon and words.
     text=re.sub(r"\[[^\[\]]*\]", "", text)
     if scene:
-        text=re.sub(r"(?m)^[^\n<>:\[\]]{1,48}:\s*", "", text)
+        text=re.sub(r"(?m)^[^\n<>:：\[\]]{1,48}[:：]\s*", "", text)
     text=re.sub(r"<\|speaker:\d+\|>|<\|audio_separator\|>|<\|endofturn\|>", "", text)
     text=re.sub(r"</?[A-Za-z][^>]*>", "", text)
     return "\n".join(re.sub(r"[ \t]+", " ", line).strip() for line in text.splitlines()).strip()
@@ -196,9 +196,11 @@ def scene_prompt(tokenizer, config, lines, scene="", characters="", references=(
     for description, location in ((scene, "scene description"), (characters, "characters"), (system_context,"task context")):
         if description.strip():
             check_text(description, location)
-    lines,takes,_=directed_scene_lines(lines,references,takes,direction,note)
+    lines,takes,mapping=directed_scene_lines(lines,references,takes,direction,note)
+    assignments = '\n'.join(f'{name}: <|speaker:{speaker}|>' for name,speaker in mapping.items()) if mapping and any((scene,characters,system_context)) else ''
     description = "\n".join(p for p in (system_context, f"Scene: {scene}" if scene else "",
-                           f"Characters:\n{characters}" if characters else "") if p)
+                           f"Characters:\n{characters}" if characters else "",
+                           'Speaker assignments:\n'+assignments if assignments else '') if p)
     if characters and not references:
         # The report's scene task uses character descriptions before its explicit line-output instruction.
         instruction = description + "\nVoice every line of the script in order, with <|audio_separator|> between consecutive lines."

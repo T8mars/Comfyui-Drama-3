@@ -31,10 +31,22 @@ test('bad persisted state cannot silently set invalid booleans or fractional/non
  const state=harness(null);
  for(const value of ['NaN','Infinity','32.5','31','3001']){state.budget.value=value;assert.throws(state.read,/整数/);}
 });
-test('actual form wiring sends these scene options only from the scene page',()=>{
+test('actual form sends scene options only from the scene page',async()=>{
  const app=fs.readFileSync(new URL('../web/app.js',import.meta.url),'utf8');
- assert.match(app,/if\(page==="scene"\)\{try\{Object\.assign\(payload,window\.readSceneChunkOptions\(\)\)/);
- assert.match(app,/catch\(error\)\{notice\(error.message\);return\}/);
- const html=fs.readFileSync(new URL('../web/index.html',import.meta.url),'utf8');
- assert.match(html,/id="scene-split-long-text"/);assert.match(html,/src="\/scene-options.js"/);
+ const start=app.indexOf('$("generate-form").onsubmit=async e=>{'),end=app.indexOf('$("voice-form").onsubmit=',start);
+ assert.ok(start>=0&&end>start);
+ for(const page of ['scene','generate']){
+  const nodes=new Map(),requests=[];let reads=0;
+  const get=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,hidden:true,elements:[]});return nodes.get(id);};
+  get('text').value='<|speaker:0|> 对白。';get('chunk-bytes').value='300';get('take-index').value='-1';
+  const context={page,submissionPending:false,audioSelectionGeneration:0,$:get,notice(){},submitFeedback(){},refreshJobs:async()=>{},document:{querySelectorAll:()=>[]},
+   api:async(path,options)=>{requests.push(JSON.parse(options.body));return {job_id:'queued'};},
+   window:{syncGenerationMode(){},getReferenceSpeakers:()=>({}),watchAudioJob(){},
+    readSceneChunkOptions:()=>{reads++;return {split_long_text:true,chunk_bytes:101};}}};
+  vm.createContext(context);vm.runInContext(app.slice(start,end),context);
+  await get('generate-form').onsubmit({preventDefault(){},currentTarget:get('generate-form')});
+  assert.equal(requests.length,1);assert.equal(reads,page==='scene'?1:0);
+  assert.equal(requests[0].chunk_bytes,page==='scene'?101:300);
+  assert.equal(requests[0].split_long_text,page==='scene'?true:undefined);
+ }
 });

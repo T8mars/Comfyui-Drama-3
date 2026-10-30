@@ -6,6 +6,8 @@ import shutil
 import subprocess
 import time
 import base64
+import sys
+import json
 
 import pytest
 
@@ -19,15 +21,27 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 internal static class Stub {
     static string Encode(string value) { return Convert.ToBase64String(Encoding.UTF8.GetBytes(value)); }
     static int Number(string name) { string value=Environment.GetEnvironmentVariable(name); return value==null?0:Int32.Parse(value); }
     static int Main(string[] args) {
+        if(args.Length==1 && args[0]=="--helper") {
+            File.WriteAllText(Environment.GetEnvironmentVariable("DRAMA_LAUNCHER_HELPER_PID"),Process.GetCurrentProcess().Id.ToString());
+            TcpListener listener=new TcpListener(IPAddress.Loopback,Number("DRAMA_LAUNCHER_HELPER_PORT"));listener.Start();
+            Thread.Sleep(30000);listener.Stop();return 0;
+        }
         bool update=args.Length>2 && Path.GetFileName(args[2])=="update_portable.py";
         string line=(update?"update":"app")+"\t"+Encode(Environment.CurrentDirectory);
         foreach(string arg in args) line+="\t"+Encode(arg);
         File.AppendAllText(Environment.GetEnvironmentVariable("DRAMA_LAUNCHER_TEST_LOG"),line+"\n",new UTF8Encoding(false));
         if(update)return Number("DRAMA_LAUNCHER_UPDATE_EXIT");
+        if(Number("DRAMA_LAUNCHER_SPAWN_HELPER")!=0) {
+            ProcessStartInfo helper=new ProcessStartInfo(Process.GetCurrentProcess().MainModule.FileName,"--helper");
+            helper.UseShellExecute=false;helper.CreateNoWindow=true;Process.Start(helper);
+        }
         Thread.Sleep(Number("DRAMA_LAUNCHER_HOLD_MS"));
         return Number("DRAMA_LAUNCHER_APP_EXIT");
     }
@@ -59,7 +73,8 @@ def package(folder,compiled):
     (folder/'tools/update_portable.py').write_text('# no execution: compiled stub records arguments',encoding='utf-8')
     (folder/'app.py').write_text('# no execution: compiled stub records arguments',encoding='utf-8')
     env={**os.environ,'DRAMA_LAUNCHER_TEST_LOG':str(folder/'actual-child-arguments.tsv'),
-        'DRAMA_LAUNCHER_UPDATE_EXIT':'0','DRAMA_LAUNCHER_APP_EXIT':'0','DRAMA_LAUNCHER_HOLD_MS':'0'}
+        'DRAMA_LAUNCHER_UPDATE_EXIT':'0','DRAMA_LAUNCHER_APP_EXIT':'0','DRAMA_LAUNCHER_HOLD_MS':'0',
+        'DRAMA_LAUNCHER_HEADLESS':'1'}
     return folder,env
 
 
@@ -194,3 +209,99 @@ def test_failed_compile_preserves_existing_launcher_and_cleans_only_own_temporar
         compiled[0].build_launcher(target,source=bad)
     assert target.read_bytes()==before and bad.is_file()
     assert not list(tmp_path.glob('.drama-launcher-*.exe'))
+
+
+@pytest.mark.parametrize('shutdown',['normal_exit','terminate_owner','close_console','allocate_console'])
+def test_owned_app_and_grandchild_release_port_when_launcher_stops(tmp_path,compiled,shutdown):
+    import ctypes
+    import socket
+    import psutil
+    folder,env=package(tmp_path,compiled)
+    with socket.socket() as listener:
+        listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
+    env.update(DRAMA_LAUNCHER_SPAWN_HELPER='1',DRAMA_LAUNCHER_HELPER_PORT=str(port),
+        DRAMA_LAUNCHER_HELPER_PID=str(folder/'helper.pid'),
+        DRAMA_LAUNCHER_HOLD_MS='1500' if shutdown=='normal_exit' else '30000')
+    if shutdown=='allocate_console':env.pop('DRAMA_LAUNCHER_HEADLESS')
+    startup=subprocess.STARTUPINFO();startup.dwFlags|=subprocess.STARTF_USESHOWWINDOW;startup.wShowWindow=0
+    flags=subprocess.CREATE_NEW_CONSOLE if shutdown=='close_console' else FLAGS
+    output=(folder/'owner-output.log').open('wb')
+    owner=subprocess.Popen([str(folder/'Start-Drama3.exe'),'--no-browser','--port',str(port)],env=env,
+        stdout=output,stderr=output,creationflags=flags,startupinfo=startup)
+    tracked=[]
+    try:
+        deadline=time.monotonic()+8
+        while time.monotonic()<deadline:
+            state=folder/'userdata/launcher-state.txt';helper=folder/'helper.pid'
+            if state.is_file() and helper.is_file():
+                try:
+                    tracked=[int(state.read_text('utf-8').splitlines()[0]),int(helper.read_text())]
+                    with socket.create_connection(('127.0.0.1',port),timeout=.1):break
+                except (ValueError,OSError):pass
+            time.sleep(.02)
+        else:pytest.fail('Owned helper failed to listen')
+        assert all(psutil.pid_exists(pid) for pid in tracked)
+        control_pid=psutil.Process(tracked[0]).ppid() if shutdown=='allocate_console' else owner.pid
+        if shutdown=='terminate_owner':owner.terminate()
+        elif shutdown in {'close_console','allocate_console'}:
+            probe='import ctypes,sys,json; k=ctypes.WinDLL("kernel32"); k.GetConsoleWindow.restype=ctypes.c_void_p; k.FreeConsole(); assert k.AttachConsole(int(sys.argv[1])); h=k.GetConsoleWindow(); u=ctypes.WinDLL("user32"); u.IsWindowVisible.argtypes=[ctypes.c_void_p]; print(json.dumps({"hwnd":h,"visible":bool(u.IsWindowVisible(h))}))'
+            window=subprocess.run([sys.executable,'-c',probe,str(control_pid)],capture_output=True,text=True,creationflags=FLAGS,timeout=5)
+            assert window.returncode==0,window.stderr
+            information=json.loads(window.stdout);hwnd=information['hwnd'];assert hwnd
+            if shutdown=='allocate_console':assert information['visible'],information
+            user=ctypes.WinDLL('user32',use_last_error=True)
+            user.PostMessageW.argtypes=[ctypes.c_void_p,ctypes.c_uint,ctypes.c_size_t,ctypes.c_ssize_t]
+            assert user.PostMessageW(hwnd,0x10,0,0)
+        owner.wait(timeout=8)
+        if shutdown=='normal_exit':assert owner.returncode==0
+        deadline=time.monotonic()+4
+        while any(psutil.pid_exists(pid) for pid in tracked) and time.monotonic()<deadline:time.sleep(.02)
+        assert not any(psutil.pid_exists(pid) for pid in tracked)
+        with socket.socket() as listener:listener.bind(('127.0.0.1',port))
+    finally:
+        if owner.poll() is None:owner.terminate();owner.wait(timeout=5)
+        for pid in tracked:
+            try:
+                process=psutil.Process(pid)
+                if Path(process.exe()).resolve()==(folder/'runtime/python/python.exe').resolve():process.kill()
+            except psutil.NoSuchProcess:pass
+        output.close()
+
+
+def test_cmd_fallback_supervisor_reaps_real_python_app_and_worker(tmp_path):
+    import socket
+    import psutil
+    root=tmp_path/'CMD fallback 中文'
+    (root/'drama3_t8').mkdir(parents=True)
+    (root/'drama3_t8/__init__.py').write_text('',encoding='utf-8')
+    shutil.copy2(ROOT/'drama3_t8/console_launcher.py',root/'drama3_t8/console_launcher.py')
+    with socket.socket() as listener:
+        listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
+    (root/'worker.py').write_text('import socket,time,sys\ns=socket.socket();s.bind(("127.0.0.1",int(sys.argv[1])));s.listen();time.sleep(30)\n',encoding='utf-8')
+    (root/'app.py').write_text('import subprocess,sys,time,os\nfrom pathlib import Path\nPath("app.pid").write_text(str(os.getpid()))\np=subprocess.Popen([sys.executable,"worker.py",sys.argv[1]])\nPath("worker.pid").write_text(str(p.pid))\ntime.sleep(30)\n',encoding='utf-8')
+    owner=subprocess.Popen([sys.executable,'-X','utf8','-m','drama3_t8.console_launcher',str(root/'app.py'),str(port)],
+        cwd=root,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,creationflags=FLAGS)
+    tracked=[]
+    try:
+        deadline=time.monotonic()+8
+        while time.monotonic()<deadline:
+            if (root/'app.pid').is_file() and (root/'worker.pid').is_file():
+                try:
+                    tracked=[int((root/name).read_text()) for name in ['app.pid','worker.pid']]
+                    with socket.create_connection(('127.0.0.1',port),timeout=.1):break
+                except (ValueError,OSError):pass
+            time.sleep(.02)
+        else:pytest.fail('CMD supervisor worker failed to listen')
+        owner.terminate();owner.wait(timeout=5)
+        deadline=time.monotonic()+4
+        while any(psutil.pid_exists(pid) for pid in tracked) and time.monotonic()<deadline:time.sleep(.02)
+        assert not any(psutil.pid_exists(pid) for pid in tracked)
+        with socket.socket() as listener:listener.bind(('127.0.0.1',port))
+    finally:
+        if owner.poll() is None:owner.terminate();owner.wait(timeout=5)
+        for pid in tracked:
+            try:
+                process=psutil.Process(pid)
+                if Path(process.exe()).resolve()==Path(sys.executable).resolve():process.kill()
+            except psutil.NoSuchProcess:pass
+        owner.communicate()

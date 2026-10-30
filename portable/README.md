@@ -8,6 +8,8 @@ A local voice creation studio and native ComfyUI nodes for [Fish Audio DRAMA-3](
 
 ## Local Studio
 
+Director revisions offer **Replace previous emotion/speed tags**, enabled by default in Studio. The new direction uses the [official Direction/Line format](https://huggingface.co/spaces/fishaudio/Drama-3/blob/c368729ab9347dda6635c5272ad31e6521114b79/server.py#L799); original takes remain unchanged. Source auditions have their own player, and the output identifies the generated version. Edit regions initially cover the whole recording. For scenes, write `Director: dialogue` (Chinese `：` also works) so character descriptions map to the intended speaker. Emotion and pace remain model-generated controls rather than strict timing guarantees.
+
 The white-and-pink Studio brings voices, scripts, takes and delivery into one local workspace. The complete Windows bundle is distributed by the author: [download](https://pan.quark.cn/s/264edb7e36bd). The complete bundle includes its matched Python environment and dependencies; no system Python or separate ComfyUI server is required. Run `Start-Drama3.exe` (or `Start-Drama3.cmd`), confirm model paths, then open **Creative Desk**.
 
 1. **Build your cast.** Upload a clean reference, preview it immediately and edit its automatic local transcript, or select a short region from a recording. Name, tag, preview and organize voices; save explicit voice versions and reference groups for each character.
@@ -15,6 +17,15 @@ The white-and-pink Studio brings voices, scripts, takes and delivery into one lo
 3. **Deliver or continue later.** Export a WAV, role stems, SRT and manifest, or export a complete project ZIP to move the project and continue on another machine.
 
 DRAMA supports native reference-voice conditioning without training. Reference quality, transcription and delivery affect the result. For a new unreferenced voice, audition a take, save it as a voice reference and bind that version before continuing the character.
+
+## New in 0.3.2
+
+- **Clear voice casting:** the middle panel offers mutually exclusive individual casting and saved cast groups. Select each voice/version from the library or use one fixed group, with reference playback. Named roles map to the actual script speaker IDs; conflicting voice assignments are rejected.
+- **Director revisions:** replace previous opening emotion/speed tags using the official Direction/Line format. Original takes remain unchanged; emotion and pace are model controls, with no strict speed guarantee.
+- **Source-aware editing:** the selected source has its own player. Infill automatically prepares that source and checks its exact version/audio identity, even when the right player shows another result. Full-recording selection and nearest valid edit boundaries remain available.
+- **Visible service console:** keep the EXE/CMD window open while using Studio. Closing it stops the owned service and helper processes. The launcher also cleans up helpers on normal exit.
+
+Models and Python dependencies are unchanged. [Validation scope](https://github.com/T8mars/Comfyui-Drama-3/blob/v0.3.2/portable/acceptance-report.json) separates actual Studio generation, browser-only checks and earlier canvas validation. Updating an older EXE requires the separate launcher attachment below.
 
 ## New in 0.3.1
 
@@ -101,7 +112,7 @@ GitHub's `Drama3-T8-Portable-<version>-code.zip` contains **code only: no Python
 
 The full bundle provides `Start-Drama3.exe`; `Start-Drama3.cmd` remains available. Both check stable GitHub Releases before starting. The code-only update ZIP does not install or replace the EXE launcher. Close Studio before running `Update-Drama3.cmd` manually. The updater verifies size/SHA-256, backs up replaced files and rolls back failed transactions. Models, Python, `userdata`, outputs, libraries/workspaces and custom paths are preserved. Updates do not run pip; a dependency change requires a compatible full environment. Offline checks allow the installed version to start. Manually extracting a code ZIP directly overwrites files and does not run the updater's SHA verification or transaction rollback; prefer `Update-Drama3.cmd`.
 
-For the launcher fix, close Studio and replace the bundle's `Start-Drama3.exe` with the [separate launcher download](https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.3.1/Start-Drama3.exe). It requires the existing full bundle and is not a standalone Studio installer.
+For the console/cleanup fix, close all Studio launcher windows and replace the bundle's `Start-Drama3.exe` with the [0.3.2 launcher](https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.3.2/Start-Drama3.exe). Keep its console open; closing it stops that bundle's service and helpers. It requires the existing complete bundle and is not a standalone Studio installer.
 
 ## Sources and licenses
 
