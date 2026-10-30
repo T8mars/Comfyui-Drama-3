@@ -211,12 +211,19 @@ def create_app(root=ROOT):
 
     @app.post("/api/transcribe")
     async def transcribe_file(file: UploadFile, language: str = Form("auto"),
-                              context: str = Form(""), hotwords: str = Form("")):
+                              context: str = Form(""), hotwords: str = Form(""),
+                              start_seconds: float = Form(0), end_seconds: str = Form("")):
+        from drama3_t8.asr_reference import reference_interval
+        try:
+            start_seconds, selected_end = reference_interval(start_seconds, end_seconds.strip())
+        except (ValueError, TypeError) as exc:
+            raise HTTPException(400, str(exc)) from exc
         path = await store_upload(file, AUDIO_SUFFIXES)
         input_id = path.name
         try:
             return {"job_id": app.state.studio.submit({"mode": "transcribe", "input_id": input_id,
-                "language": language, "context": context, "hotwords": hotwords, "name": Path(file.filename or "audio.wav").name})}
+                "language": language, "context": context, "hotwords": hotwords, "name": Path(file.filename or "audio.wav").name,
+                "start_seconds": start_seconds, "end_seconds": selected_end})}
         except BaseException:
             path.unlink(missing_ok=True)
             raise

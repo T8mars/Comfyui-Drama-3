@@ -156,6 +156,8 @@ class VoiceLibrary:
                     id TEXT PRIMARY KEY, name TEXT NOT NULL, snapshot TEXT NOT NULL, created REAL NOT NULL);
             """)
             db.execute("INSERT INTO library_meta(version) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM library_meta)", (SCHEMA,))
+            from .catalog_trash import initialize
+            initialize(db)
             version = db.execute("SELECT version FROM library_meta").fetchone()
             if version[0] != SCHEMA:
                 raise ValueError("Unsupported voice library schema")
@@ -210,7 +212,7 @@ class VoiceLibrary:
                        (voice_id, name, json.dumps(tags, ensure_ascii=False), int(favorite), notes, 0, now, now, legacy_id))
         return self.get_voice(voice_id)
 
-    def get_voice(self, voice_id):
+    def get_voice(self, voice_id, *, include_deleted_versions=False):
         with self._db() as db:
             row = db.execute("SELECT * FROM voices WHERE id=?", (_id(voice_id),)).fetchone()
         if row is None:
@@ -219,7 +221,7 @@ class VoiceLibrary:
         result["tags"] = json.loads(result["tags"])
         result["favorite"], result["archived"] = bool(result["favorite"]), bool(result["archived"])
         result["created_at"], result["updated_at"] = result.pop("created"), result.pop("updated")
-        versions = self.list_versions(voice_id)
+        versions = self.list_versions(voice_id, include_deleted=include_deleted_versions)
         result["versions"] = versions
         result["latest_version_id"] = versions[-1]["id"] if versions else None
         result["transcript"] = versions[-1]["transcript"] if versions else ""
@@ -230,7 +232,9 @@ class VoiceLibrary:
         if type(favorites_only) is not bool or type(include_archived) is not bool:
             raise ValueError("Library filters must be booleans")
         with self._db() as db:
-            ids = [row[0] for row in db.execute("SELECT id FROM voices ORDER BY name COLLATE NOCASE,id")]
+            from .catalog_trash import hidden
+            deleted = hidden(db, "voice")
+            ids = [row[0] for row in db.execute("SELECT id FROM voices ORDER BY created DESC,id DESC") if row[0] not in deleted]
         results = []
         for voice_id in ids:
             voice = self.get_voice(voice_id)
@@ -329,10 +333,12 @@ class VoiceLibrary:
             raise
         return self.get_version(version_id)
 
-    def list_versions(self, voice_id):
+    def list_versions(self, voice_id, *, include_deleted=False):
         with self._db() as db:
             rows = db.execute("SELECT * FROM versions WHERE voice_id=? ORDER BY created,id", (_id(voice_id),)).fetchall()
-        return [self._version(row) for row in rows]
+            from .catalog_trash import hidden
+            deleted = hidden(db, "version")
+        return [self._version(row) for row in rows if include_deleted or row["id"] not in deleted]
 
     def get_version(self, version_id):
         with self._db() as db:
@@ -373,6 +379,9 @@ class VoiceLibrary:
                     voice = self.get_voice(old[0])
                     if voice["latest_version_id"]:
                         result["mapping"][legacy_id] = {"voice_id": voice["id"], "version_id": voice["latest_version_id"]}
+                        continue
+                    if self.list_versions(old[0], include_deleted=True):
+                        # Deleted versions stay deleted across legacy catalog refreshes.
                         continue
                 reference = Path(row["path"])
                 reference = reference if reference.is_absolute() else base_dir / reference
@@ -437,8 +446,31 @@ class VoiceLibrary:
 
     def list_casts(self):
         with self._db() as db:
-            ids = [row[0] for row in db.execute("SELECT id FROM casts ORDER BY name COLLATE NOCASE,id")]
+            from .catalog_trash import hidden
+            deleted = hidden(db, "cast")
+            ids = [row[0] for row in db.execute("SELECT id FROM casts ORDER BY created DESC,id DESC") if row[0] not in deleted]
         return [self.get_cast(cast_id) for cast_id in ids]
+
+    def trash_item(self, kind, item_id, *, restore=False):
+        from .catalog_trash import mark
+        item_id = _id(item_id)
+        if kind == "voice":
+            label = self.get_voice(item_id)["name"]
+        elif kind == "cast":
+            label = self.get_cast(item_id)["name"]
+        elif kind == "version":
+            version = self.get_version(item_id)
+            label = self.get_voice(version["voice_id"])["name"] + " · " + (version["delivery"] or item_id[:8])
+        else:
+            raise ValueError("不支持的音色资料类型")
+        with self._db() as db:
+            mark(db, kind, item_id, label, restore=restore)
+        return {"kind": kind, "id": item_id, "restored": restore}
+
+    def trash_items(self):
+        from .catalog_trash import entries
+        with self._db() as db:
+            return entries(db)
 
     def _reference_groups(self, groups, voice_id):
         if not isinstance(groups, dict) or len(groups) > 32:
@@ -531,7 +563,7 @@ class VoiceLibrary:
                 if not required <= selected_versions:
                     raise ValueError("Explicit version selection leaves a cast reference missing")
             selected.update(binding["voice_id"] for binding in cast["bindings"].values())
-        voices = [self.get_voice(item) for item in sorted(selected)]
+        voices = [self.get_voice(item, include_deleted_versions=selected_versions is not None) for item in sorted(selected)]
         if not voices:
             raise ValueError("Select at least one voice")
         manifest = {"format": "drama3-voice-library", "schema": SCHEMA, "voices": [], "versions": [],

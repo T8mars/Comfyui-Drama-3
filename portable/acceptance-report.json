@@ -1,28 +1,116 @@
 {
-  "schema": "drama3.release-acceptance.v1",
-  "version": "0.3.0",
+  "schema": "drama3.patch-release-acceptance.v1",
+  "version": "0.3.1",
   "status": "passed",
-  "validation_scope": "current_release",
-  "acceptance_scope": "basic_working_execution_per_user_request",
-  "generated_at": "2026-10-30T04:51:00.149197-04:00",
+  "validation_scope": "UI, reference ASR/API, catalog, launcher and code-update patch; not a new full model/canvas qualification",
+  "generated_at": "2026-10-30T11:17:40.082653+00:00",
+  "baseline": {
+    "version": "0.3.0",
+    "commit": "deadb205fe0cdd66f4bacb58c0aafa04159b3883",
+    "report": "https://github.com/T8mars/Comfyui-Drama-3/blob/v0.3.0/portable/acceptance-report.json",
+    "scope": "Earlier actual ComfyUI canvas and native-generation validation is retained as baseline, not rerun or relabelled as new 0.3.1 inference."
+  },
+  "cpu_regressions": {
+    "passed": 228,
+    "skipped": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped_reasons": [
+      "This filesystem does not permit symlink creation"
+    ],
+    "modules": [
+      "test_catalog_usability",
+      "test_creative_studio_api",
+      "test_reference_asr_interval",
+      "test_asr_language_aliases",
+      "test_updater",
+      "test_packaging",
+      "test_launcher_exe"
+    ],
+    "cuda_policy": "CPU guard blocks torch.cuda._lazy_init; no model generation in this regression group",
+    "evidence": {
+      "id": "release031/pytest-r2.xml",
+      "sha256": "01e461b939ebbf8c3b678bfdd9b6a7ebb0fa1a40c1968d515734e2049c0d1001"
+    }
+  },
+  "real_ui": {
+    "automatic_reference_ASR": {
+      "status": "passed",
+      "backend": "r2t2",
+      "editable_result_preserved": true,
+      "evidence": {
+        "id": "reference-asr-revise-real-ui-r1/failed.json",
+        "sha256": "89a28cacb76e7b3bfbe374938760318408659d1763553b48c8ab83fc3a05f617"
+      },
+      "scope_note": "ASR phase succeeded; that older driver later stopped on a test-session lookup error. Its unrelated failure is retained."
+    },
+    "reference_previews": {
+      "status": "passed",
+      "scope": "Native browser playback advances for ordinary reference, Creative Desk reference and transcription upload",
+      "evidence": {
+        "id": "floating-dock-preview-ui-r1/receipt.json",
+        "sha256": "cbac653fccf0c18bcaa884da794773372f9f9554ee07eb4bf1f57c271c71df32"
+      }
+    },
+    "stale_ASR_result_and_manual_edit_protection": {
+      "status": "passed",
+      "method": "isolated browser fixtures, not model inference",
+      "evidence": {
+        "id": "reference-asr-race-fixture-r1/receipt.json",
+        "sha256": "8ea0dedabf62c8d8c369b9fe0f38d2f5f02ae0648174fe554b21e406a2a71dd4"
+      }
+    },
+    "cast_delete_restore_and_selected_takes": {
+      "status": "passed",
+      "evidence": {
+        "id": "usability-ui-r4/receipt.json",
+        "sha256": "d5b268cec842f68dfda049027364c464515426389550919aa3bc8ccc4145dd8b"
+      }
+    },
+    "nearest_edit_times_and_fixed_dock": {
+      "status": "passed",
+      "examples": {
+        "4.960": "4.950",
+        "5.040": "5.050"
+      },
+      "evidence": {
+        "id": "auto-time-final-ui-r1/receipt.json",
+        "sha256": "4a392d503d8823dccea128f4c74e582222339278b796c3c1debf760e1554ccae"
+      }
+    },
+    "director_revision": {
+      "status": "completed_and_played",
+      "duration_seconds": 15.232290249433106,
+      "finish_reason": "eos",
+      "length_limit_reached": false,
+      "scope_note": "Real UI submission, EOS completion and playback checked; no emotion/naturalness/transcript accuracy score assigned.",
+      "profile": "Torch GDN and experts; Graph off; 1 GiB expert cache, for this test only",
+      "previous_attempts": "Explicit CUDA was refused by the RAM admission check; a slower FLA/Torch configuration was cancelled. Neither is counted as passed.",
+      "evidence": {
+        "id": "finish-existing-revise-ui-r1/receipt.json",
+        "sha256": "1d832ed281ce9374fcbc5645e7e4e57e82bfa4ee8c4d6db5ab37f10b38567cf8"
+      }
+    }
+  },
   "source_sha256": {
-    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
     "LICENSE": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db",
-    "README.md": "81c252189a6816c7cc011f77c6d873533a016a2c1b9a50614a04bbb8f512431f",
-    "README.zh-CN.md": "2e4d3217d1fbadf06a7ad1f7ac32ce2e0093ae4e8567d40b414edf73200c26e8",
+    "README.md": "2850c1d9dcc4f877a12752bdb4091a71d2ea53a8b01addd4815985487d8143b7",
+    "README.zh-CN.md": "12f49832f5ab093efb9539aab85141ddc5f6df377bd4026312ee7b2515cc590b",
     "Start-Drama3.cmd": "c7f53a53fd7cbef9e1a33fc05f82181df839ff6071b47d32b080f61aa20c27e7",
     "Update-Drama3.cmd": "04ffb55ed48866119883a802f91f64181bcf4c5519600463d6258a7664bdb502",
     "acceleration-manifest.json": "8338e0a28494d6261840c0a6d4e8694af63a201a3c209340d1ad17e915d12a45",
     "acceleration-requirements.txt": "440811e0d471b8cf19e1b5f640ab2ffa20d2706c654592e0c920161894954b55",
-    "app.py": "01d06469cea81b49924a4d08b1c10552f783c943495e44fc42255b909d8a87a8",
-    "drama3_t8/__init__.py": "ed22912b4657d84c3e9f41dc6ba319022f3dea0b305c18da3ba53a5c3bb8b6d8",
+    "app.py": "6bd78db1b0d2b48aa09cb223ec1b373870589bb5f0fde7a3ccaa874cdf44d604",
+    "drama3_t8/__init__.py": "98146ee148c973cde51126b6744c10a8b6b593d8191e47212c9185411b410b16",
     "drama3_t8/alignment.py": "38603b9a4e35c944cecd84de9b048df5d9ef6360da5044111f8a3d00d83a4540",
     "drama3_t8/asr_language.py": "5f2a81aad1532c49f347d550739070fc33f095959070f27e7f5910c3b2f96be6",
+    "drama3_t8/asr_reference.py": "c1d367f6ee45bb5c955e7894600968898b5505b085bd7cd71495164f2d8e206e",
     "drama3_t8/audio.py": "bbc88a53ab5f90cdfaa92f7a09980dca1adbdb0a7a0a681d175c241c48c37246",
     "drama3_t8/audio_processing.py": "eb498e750306a45539ee38e319a22b690437d088b59b4010c39b1cdb57a32570",
     "drama3_t8/batch.py": "a0715a8ed3e65737a9f754675b90c90381902c6b18a468e4c8d21f22ba52dbc2",
     "drama3_t8/bootstrap.py": "60eb99dc36482924c9dfb73bc40df508a809c8d6a1a42d58c231924126441657",
-    "drama3_t8/creative_api.py": "28b059792ac147172735407a640fd99c8e27b4b40a24fed15cbddbd4b2c1ec2c",
+    "drama3_t8/catalog_trash.py": "e546bb188579a33ecd0f2deac9e2cf7fa9718b7804b560406776e14b07a75f59",
+    "drama3_t8/creative_api.py": "c24aeed4a7918b8c90b6efc80c4d5adbf4055cda8f2f73ad911745ac51da240c",
     "drama3_t8/creative_audio.py": "fac6fb65c820cc653c252f110ac1cd7933aac84a62f15bb97451cd0f1d40660f",
     "drama3_t8/creative_benchmark.py": "a44bdfd1ffaf41abbcd511f18171dd5066f33cdefc8aa3300932f4c38c12aed3",
     "drama3_t8/creative_bundle.py": "cc3572aa063ecef20f416b544fa4aee215c19ce2c1c77b3b63ca5f64d98f90d3",
@@ -31,9 +119,9 @@
     "drama3_t8/creative_nodes.py": "0c3e197c7589badbf6634e5dce215bbe0dac183ada91e29eacc0ddccbd931a24",
     "drama3_t8/creative_progress.py": "a5e2974d4cda10a6de7a7eec3b10394f7e1402a3ce47df3608188e5cdf2746f8",
     "drama3_t8/creative_quality.py": "2f10864e2e0a798de7f9ba39b943e4dd700ee88b82b417cdd4e6c1388f645283",
-    "drama3_t8/creative_studio.py": "2e4c6a9765466017bed2dad0d31fe9f88ba9c2f37f2510ce15e4b278be05687f",
+    "drama3_t8/creative_studio.py": "305221b77d7214dc82ebe604e3ec27a6042e758d4fd548c6a28efb6a06b91490",
     "drama3_t8/creative_transcript.py": "3fcc14cacb10a7782b009629d8ab3bff963d7a2b96f12c8f7c2d09a5920449d8",
-    "drama3_t8/creative_workspace.py": "15be7dbc476b92d2ad927c41a4c61de6a4f0a4c62f930fbac2276c07e7f612c4",
+    "drama3_t8/creative_workspace.py": "bebecc529d2d27bfa60716554013dc72b8158beb89fc928440f10d0e8805c50b",
     "drama3_t8/dialogue.py": "0bbf13fa24955fca911801b6ba5b9ad07ad7c3cf9a9699f316d5d68b2c1ae6ae",
     "drama3_t8/editor.py": "e52faf7bb488f8c998afe64537bcb91fd31d23392cdcec164631fe8ba1bad9a8",
     "drama3_t8/editor_routes.py": "7681c7359265d3841a98d66d28a46be19cf1c92e0a4ae3b8cb77c622e2cb07b3",
@@ -90,7 +178,7 @@
     "drama3_t8/scene_conditioning.py": "ca45630763dde7c6562cf7ff0877ee822cd2d8d5aef949f515e21466e125a20d",
     "drama3_t8/source_identity.py": "d5558ab7d6905fe90cae7d52191dc3db63a7713b226db40cc149282eeff04f4c",
     "drama3_t8/state.py": "9c4ceba7a5bf1e1d6d3d067e1308e5e35f1ff4bdf0714c533287c593d538cf25",
-    "drama3_t8/studio.py": "283943f87c8e046364b6c49ab60348e667768dfb4e6bb8eae0f8e5cf12fabfb2",
+    "drama3_t8/studio.py": "fdf776f303ad78b47a30bedbff6fd4a7051ee0f84a04741ebeb9d98980772352",
     "drama3_t8/studio_editor.py": "9715698ecdb49167aee8dbc95253a722fa944f9015baeb788b2f63589782be6c",
     "drama3_t8/subtitles.py": "94f3ebffee710f682c131cbae2507feceb72783b1f7e68dbca51319055c83d64",
     "drama3_t8/transcript.py": "54c6e0b1d3e57bfa53c971e252338c422dd3538533c122353adeb1d6932d01af",
@@ -110,7 +198,7 @@
     "drama3_t8/vendor_qwen/inference/qwen3_asr.py": "5c485b53ede6cb78ebae3e5163e30d9015ce4b67f84e71a7754c44431c24042b",
     "drama3_t8/vendor_qwen/inference/qwen3_forced_aligner.py": "a5cecd2994a7742be145408088f3608e48fc0870e3a22744df0b21f98af1bb04",
     "drama3_t8/vendor_qwen/inference/utils.py": "db89e24f94c803a49fe83ad9960660cdcfc18d91defcf20a7264f79facaf2d47",
-    "drama3_t8/voice_library.py": "5bea07d0c2d2ae27a793ab33ad6b0d385378f10d74fd7b8aa1a984aa11f448c7",
+    "drama3_t8/voice_library.py": "1782778bc060a97d867472bf197f024c82ab75639179ab45845bc3d171759109",
     "drama3_t8/workspace_lock.py": "8ed7521639b9dc7db458b1e38e0f90b98a0d133e45a10923ce61473877e05d5c",
     "licenses/CONFUCIUS-MODEL_LICENSE": "064483c5ba1dc20907038108da4f45d5b37cd0a41a351c8a8bb98ba1af48c505",
     "licenses/CONFUCIUS-MODEL_LICENSE_zh": "6ed2e9946bd0b0185a6c690565cf2f8de23044a513be6e1ec7c97e6995ce241b",
@@ -138,15 +226,12 @@
     "licenses/QWEN3-ASR/LICENSE-UPSTREAM": "a44a6081c73ad75f0255bb2bb5cab74ef1829565a895a24e53a4f11290ab7655",
     "licenses/QWEN3-ASR/NOTICE-UPSTREAM.md": "d3bc5205fa682adf6e19682629fae5170771c2dc8ea54f1cdd886096644bff9b",
     "requirements.txt": "2087c073bec22a312c5da1cbf7361202073e3cb44da00d1658243f2c9194bdc5",
-    "tools/StartDrama3.cs": "abf7b9f95105609f844fc79ad7cc181c1fdd53efca673abfc3c533d227424f19",
+    "tools/StartDrama3.cs": "3fb71d91528e91fda7f0afb4e3caa8b439f489071dcfa575b8e189660aa29104",
     "tools/build_launcher.py": "401c03fc4b1545d739d50e8c9f3fb007b23199607c76b755a1720dfea55918ae",
-    "tools/build_portable.py": "6b9735c225f6546fc1f39e5631bb6345e82fa8d88065fdb3ee304612f7bd6439",
-    "tools/build_public_release.py": "74a079aae4534e90cdd6e5ee4586e10efe0266ef9aa3c35bd0c0f43bf9fc4313",
     "tools/check_runtime.py": "d0175269cff79ca56d6335f382d6c32349c41649b52a3d3c1bd68faf730309fd",
     "tools/convert_model.py": "44a3308cb60bd6e764f1ec41e75fccd4a2b557e2b4c65fe45622186b9f1ad0eb",
     "tools/download_models.py": "cad3f9b1149a1d8e4de525b6f2806027c41ca6b0148d4266f0efa4b6ee07281b",
     "tools/extract_text_head.py": "f559d66b2e395d2c37aaa11dc8daa5d33f96d08f44dfa5628761dafc1f8bf463",
-    "tools/finalize_manifest.py": "d0a7b4476b4449bd1bb4cd22856e2a1783ad5e4e8c758e8a2e95547462250a4f",
     "tools/safetensors_stream.py": "574b33e227935eed15b88e9b8d09f50fa9a70647f97a3174641156409e3b7018",
     "tools/update_portable.py": "db5dc06f5117b42a474ba99a7603e07ba270013baffca29702c9ecd7532c58d5",
     "upstream-lock.json": "2e8657c5bfce8fd5acdf7a43a812c4f1678c3edbc3ebc7acf653b6a95dab9b03",
@@ -1329,630 +1414,31 @@
     "vendor/ComfyUI/utils/install_util.py": "138faf156cf71411e6a984877158ad03916cd9de3f992a610131605b367ea206",
     "vendor/ComfyUI/utils/json_util.py": "5782c2228070755b9ecbc1ecabba264f4dcad855405b627244f205a221fabd61",
     "vendor/ComfyUI/utils/mime_types.py": "79924df98bc7283d8688e4a8304b7f0780c1c77eb9b16f62f61bbb207d06fa18",
-    "web/app.js": "ae08e383bf765b623a611624a5892757bd633f1f85de2d6f6a3b604aabbe245f",
-    "web/creative.css": "a539fe7d0616d23bc0940b5b91d9185fd88450840329a054c50069c86e1e0cbc",
-    "web/creative.js": "6ea416b0bd1f146e10822f74e614683595adbc647357a5f084099c6ebff74461",
+    "web/app.js": "a89a719dee4cc62dff4a61b9675b46469207706dc951d3f5e3b74ec18582b65b",
+    "web/creative.css": "d4549e467a740c4ab604f33e215b74a378676368d97197145d5ec00c912a5332",
+    "web/creative.js": "b5732eba6567ef56acbd5603c9f84ca630fda119c2fd114c0eaa1956b7636f20",
     "web/drama3_editor.js": "ac90c58eb6e261823d59e610a0f70d98a733db35ddca4b7190744e61a60b18ec",
     "web/editor_core.js": "31ccb27abfdd1e013ae342d1e8fb8b362a4991c58290fe53c1b1e21a49ae6bea",
-    "web/index.html": "3f7124f2d6d5c688e6a66318a56b2ed7cf2c0dd4a303cb6c70b9461042984565",
+    "web/index.html": "14d758760b753c03002a771bb3f8668a6df2d913205a97f237af68bd243fbabe",
     "web/infill-options.js": "71ee904159215cf3b5b208fc3cd174c262089c97e8438c73721efb3e3afd2c9f",
     "web/live.js": "80432b370ebedb3d6b1a56c3750463775a3690536725784b50149d1b5470e4b8",
+    "web/reference-asr.js": "2c29c5c25697810268d24f86220e8d98bd2f1f53b8867ef8387ca5f3d8f932e4",
+    "web/reference-preview.js": "6ce9f04fd7245b91c525b0107d1b53db8e28223aa74c7ff500df2f3c81857a3c",
     "web/sampling-controls.js": "a3e8db71ae530bf2b81ca2f07b7013beed069ce3f4145687af0cdba0bd808fd3",
     "web/scene-options.js": "953a5a3091d9a28f8e28fa1094275ad26c8a007c2e4f1d488d410a1fbddf4ee8",
     "web/seed-compat.js": "5afc372e2c2959483c181c1832339cdeafac0a102c2200e993b6a387adbf6c5f",
     "web/studio-editor.js": "d0649c7377ac39752ecc4b91db36a48411d2fe54ed334ee1e627199b1248c0b6",
     "web/studio-extras.css": "8ee8a60e41a48e8baf1c1feef1c004f5a34a00fa5acb776c7561453c6b0d5e04",
+    "web/studio-usability.js": "eaa6a106929d90e01313230496205cd6396fa812da38eb03ef4e2991ec597e51",
     "web/styles.css": "266140153916f6594997c8ee041e3a00728b170558853ce9c9a06f8e5ab9c2eb",
-    "web/transcribe.js": "d16c94481b28236cba4d66511a6d2a0bbf571b26f1d7adfe8c3ec6461a1896ab",
-    "web/workspace-tools.js": "c7481ff47d02f586f090aa8165794c07e9563f379e7f73fdfd5a8236c2fe5cf4"
-  },
-  "gates": {
-    "cpu_regressions": {
-      "status": "passed",
-      "scope": "Two full frozen baselines plus changed-scope regressions; not a third full tests/ claim",
-      "evidence": [
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\000-receipt-6a1080617d1c.json",
-          "sha256": "6a1080617d1c69d1f48f7f11b9897aeaaca02f307f029a17f8e4c1d2433ce1d2"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\001-junit-dbe9b14a353c.xml",
-          "sha256": "dbe9b14a353c88b5fec63696c3e8e65b97909e7404eedce4f7fe716534389cc6"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\002-sources-before-84c359733847.json",
-          "sha256": "84c359733847f2d82d03974fc32434513971d5693e940c4b7a048a9095f81714"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\003-sources-after-84c359733847.json",
-          "sha256": "84c359733847f2d82d03974fc32434513971d5693e940c4b7a048a9095f81714"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\004-environment-bc6afebb6b4b.json",
-          "sha256": "bc6afebb6b4b26a29ed265ac8c8e6008ecbf0b51792a29f9098f9214aecc1955"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\005-receipt-ee4f429f1211.json",
-          "sha256": "ee4f429f1211faa5f7c63989b040d500d1b57341222fc1c839b6139968f8602c"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\006-junit-8f4693daf1a6.xml",
-          "sha256": "8f4693daf1a6c7f7e5e038bcd3c9acf58321cde14c4b0abd20b98050a69f4dcb"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\007-sources-before-3fd5112effa2.json",
-          "sha256": "3fd5112effa247380bee138f798717f16c06c525603329a809b71090fa57f304"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\008-sources-after-3fd5112effa2.json",
-          "sha256": "3fd5112effa247380bee138f798717f16c06c525603329a809b71090fa57f304"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\009-environment-cf922a262887.json",
-          "sha256": "cf922a2628875cda04417718b309abf8b4efc106e90a5dcd8223ad3dd5a37f61"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\010-receipt-2337530124b4.json",
-          "sha256": "2337530124b478292af1ca874e2943410f2f507146d25cb4fc48837066caada2"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\011-junit-dee064654f3c.xml",
-          "sha256": "dee064654f3c3312563c6459adcf55ec50a5ba9a627b3797f68868e2f6ae92b1"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\012-sources-before-7d597ea21155.json",
-          "sha256": "7d597ea211550df9a546712cbfd93836485d5a592e4792d3d9f8cafe41408a3a"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\013-sources-after-7d597ea21155.json",
-          "sha256": "7d597ea211550df9a546712cbfd93836485d5a592e4792d3d9f8cafe41408a3a"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\014-environment-bc5ba723ebb4.json",
-          "sha256": "bc5ba723ebb495d032b4649c4a989a5dea9012835d5b8f3a0129f01522f8368f"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\015-receipt-ec785ff9c979.json",
-          "sha256": "ec785ff9c979092c97b4597a85ac65156bada6c8d843c9c1b770ddda96854ae7"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\016-junit-5d0380f52fca.xml",
-          "sha256": "5d0380f52fca2056729950338b7cac32d290656127f09ec5cae960b311f2cb37"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\017-sources-before-7d597ea21155.json",
-          "sha256": "7d597ea211550df9a546712cbfd93836485d5a592e4792d3d9f8cafe41408a3a"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\018-sources-after-7d597ea21155.json",
-          "sha256": "7d597ea211550df9a546712cbfd93836485d5a592e4792d3d9f8cafe41408a3a"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\019-environment-adf2ef1bbd79.json",
-          "sha256": "adf2ef1bbd79a1a83f4d9fa3ebe662efdf65b37dbf2219820a53b872b908f4fb"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\020-receipt-0443dbb980fa.json",
-          "sha256": "0443dbb980fafb307878318618292d957a6ea7f895672ced2d7c3f37772fd317"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\021-junit-1c25b3a4edab.xml",
-          "sha256": "1c25b3a4edabdf09e88afe3783787bae0ff4ba20551253e3889f951fe6f8c8fa"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\022-receipt-f623688edd6c.json",
-          "sha256": "f623688edd6cb782c345d4d00ea0e1283a0d6dc0e8e5fadb1bd1a9aecf836e9e"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\087-source-bridge-f73382f5ae5f.json",
-          "sha256": "f73382f5ae5fbcde720b83b8c0386fac477a176c0419660502fbbddff01ae629"
-        }
-      ],
-      "observations": {
-        "k037_r9": {
-          "passed": 2228,
-          "skipped": 72,
-          "subtests_passed": 5
-        },
-        "k040_r10": {
-          "passed": 2228,
-          "skipped": 72,
-          "subtests_passed": 5
-        },
-        "k037_r14": {
-          "passed": 128,
-          "skipped": 2,
-          "scope": "five impacted modules"
-        },
-        "k040_r14": {
-          "passed": 128,
-          "skipped": 2,
-          "scope": "five impacted modules"
-        },
-        "root_exe_final": {
-          "passed": 96,
-          "skipped": 2,
-          "torch_imported": false,
-          "scope": "EXE/packaging/final-guard modules"
-        },
-        "r11_scope_correction": "56 passed/2 skipped in test_packaging.py only; copied environment.scope Entire tests/ is inaccurate"
-      }
-    },
-    "native_numerics": {
-      "status": "passed",
-      "scope": "Basic functional execution and checked scope; no perceptual MOS claim",
-      "evidence": [
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\023-receipt-796405d54bb8.json",
-          "sha256": "796405d54bb872664de5ed3b427f50267f1636949927e00d457a7c15bfeab46b"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\024-junit-0cc6f46b447c.xml",
-          "sha256": "0cc6f46b447c149a3aac9584059a25b16f2ae938af5fd4b76ae003df2b6099c8"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\025-receipt-041cafbeb455.json",
-          "sha256": "041cafbeb455367e77c7ae6ac938eb942ff04af1beba29b9588dcd721346031b"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\026-junit-8dd865f4fdcc.xml",
-          "sha256": "8dd865f4fdcc8c80705b2a482ff83f33c7c5b141f91eb65353df0c7221944711"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\027-receipt-a88fb7b4b2e1.json",
-          "sha256": "a88fb7b4b2e14c1816eb56f37763a126beec222f7ba23763cb3a8494c0a965cf"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\028-junit-38b15d6225bf.xml",
-          "sha256": "38b15d6225bf9525ee77f990025988e43e2d3b34a514d671441371becc87b73e"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\029-quantized-errors-faf9981f72bf.json",
-          "sha256": "faf9981f72bfe730584876cb2c4dcff794a5638e4e7ed710e8aaeada5eb25bd2"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\030-actual-pin-report-ec0acf43d3b9.json",
-          "sha256": "ec0acf43d3b9c3ec2a61bd2948c290b38e868d9e4fe82f044908188fd80286b5"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\031-actual-attention-report-ccc0c8dfb9dd.json",
-          "sha256": "ccc0c8dfb9dddae61b6f9895fdb1dda9deeb2ab2e40ccf199e12e5507e9ec484"
-        }
-      ],
-      "observations": {
-        "passed": 45,
-        "parts": [
-          34,
-          7,
-          4
-        ],
-        "scope": "Real tiny CUDA norms/quantized experts/BF16/graphs plus ownership040 and attention042; not full checkpoint or voice quality"
-      }
-    },
-    "canvas_old_host": {
-      "status": "passed",
-      "scope": "Basic functional execution and checked scope; no perceptual MOS claim",
-      "evidence": [
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\032-canvas-manifest-0dde9c0bc6ae.json",
-          "sha256": "0dde9c0bc6aec4c4feab1630a82db1b34ce3edbe28a181408d179ee8dc8d3fed"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\033-source-freeze-9009599f9aa6.json",
-          "sha256": "9009599f9aa635220cadfbf00cb7cec381e0cdd097c4b79ef62a896e0800a74c"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\034-root-server-final-r4-c4c34ab94bb3.json",
-          "sha256": "c4c34ab94bb38623fabc3e81f0ecbc4de71a54a1eaa5807f3ada4e6f8d6d0892"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\035-actual-native-files-9f02cb124bd0.json",
-          "sha256": "9f02cb124bd013b1ed8979b55ba724b8e332995b1951c398a2460dbbb117013a"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\036-voice-project-9ae23a819719.json",
-          "sha256": "9ae23a819719c75ea12db16b2d2b6cbd09a996fc43c28faf77187dfeeb50f24b"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\037-actual-native-files-35210d1ed641.json",
-          "sha256": "35210d1ed6410ccd03e776fad13fcb674c2e45480d5af25cfbbd2014548d8aa7"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\038-project-resume-20261030072154440542-755b5dc697f9.json",
-          "sha256": "755b5dc697f989dce4fa1706de89a3873c65208ed0f8224726df3dd5dd4100fc"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\039-native-canvas030-comfy040-r2.project-ad8eb99c0f71.json",
-          "sha256": "ad8eb99c0f7129ff739089a1becfb646af484b2844bb4fdc3d9630cb09fba42f"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\040-all-native-wavs-d9981ae1a6b5.json",
-          "sha256": "d9981ae1a6b547844ca7bc9f30789b5a7c0700f7abb8a0b827ed50c02840f1f3"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\041-dual-blind-receipt-6c4a0ee6d581.json",
-          "sha256": "6c4a0ee6d5818756fd3e3bc35e3f357cd4a7bfed86d983e75a6f8fe3bd88d57a"
-        }
-      ],
-      "observations": {
-        "host_version": "0.40.0",
-        "phases": {
-          "voice-project": {
-            "manifest_status": "native_actual_canvas_and_files_technical_checked_audio_content_pending",
-            "prompt_id": "a5339c67-63cc-4b5b-a929-7d67fa9d7759",
-            "clicking_run": true,
-            "manual_run_clicked": true,
-            "project_id": "29f615668b8e46fdb6330ef9079ba401",
-            "technical_status": "native_canvas_technical_project_voice_delivery_bundle_checked",
-            "generated_count": 2
-          },
-          "project-resume": {
-            "manifest_status": "native_actual_canvas_and_files_technical_checked_audio_content_pending",
-            "prompt_id": "48a8d622-e3bd-4da6-905f-2b2869c378a4",
-            "clicking_run": true,
-            "manual_run_clicked": true,
-            "project_id": "29f615668b8e46fdb6330ef9079ba401",
-            "technical_status": "native_canvas_technical_project_voice_delivery_bundle_checked",
-            "generated_count": 0
-          }
-        },
-        "candidate_generation_sources": [
-          "d1132263e92dfe4f4bbc33a2ecad1e482aa8d4ba3bfc9a413ff3db2427c99e4e"
-        ],
-        "delivery_scope": "Actual 48k PCM24, role stem/master and complete ZIP technical checks; see technical files",
-        "content_scope": "4 actual host WAVs form only 2 unique SHA; dual blind ASR preserves L01 homophone spelling mismatch; not MOS"
-      },
-      "method": "visible_ui",
-      "headless": true,
-      "render_mode": "Actual rendered headless browser controls; user authorized background operation",
-      "no_direct_generation_API_submission": true
-    },
-    "canvas_new_host": {
-      "status": "passed",
-      "scope": "Basic functional execution and checked scope; no perceptual MOS claim",
-      "evidence": [
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\042-canvas-manifest-875c928e988a.json",
-          "sha256": "875c928e988a24a3035478fda5e8b9485f6b3cfb94d5c0eaac574a8884d40b24"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\043-source-freeze-36d3c573c8ae.json",
-          "sha256": "36d3c573c8aee594065f07a86f9fe2d8002e6eef9e6a14cebb038f39f09fd0d0"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\044-root-server-final-r4-fca22406b428.json",
-          "sha256": "fca22406b42817f51e24abfcbb7a9f7ecd1cc21d921bbb2079d474d57cc8b2b9"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\045-actual-native-files-56fc58244c9a.json",
-          "sha256": "56fc58244c9acd27fbdf533552b8bada2caabf69827780dbeae6d19210f5db35"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\046-voice-project-8562a2379173.json",
-          "sha256": "8562a23791734bad87fa394da879a2fca6124ae0b8142316fa7e221dc6b48ee6"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\047-actual-native-files-9ae3bccf6366.json",
-          "sha256": "9ae3bccf63663e2dc772ba6bb4cb424e5031829c2abbf9462d6baaed86bf9c42"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\048-project-resume-20261030073529373882-f8bc05e93644.json",
-          "sha256": "f8bc05e936448fd8062942eb3fc58620c918a41086092914d6d8d0c4e4bea5eb"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\049-native-canvas030-comfy042-r2.project-fc93fc388d89.json",
-          "sha256": "fc93fc388d895a2c74c21fc656f91e1704d619b8bc23b1a108775b9a54258c43"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\040-all-native-wavs-d9981ae1a6b5.json",
-          "sha256": "d9981ae1a6b547844ca7bc9f30789b5a7c0700f7abb8a0b827ed50c02840f1f3"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\041-dual-blind-receipt-6c4a0ee6d581.json",
-          "sha256": "6c4a0ee6d5818756fd3e3bc35e3f357cd4a7bfed86d983e75a6f8fe3bd88d57a"
-        }
-      ],
-      "observations": {
-        "host_version": "0.42.0",
-        "phases": {
-          "voice-project": {
-            "manifest_status": "native_actual_canvas_and_files_technical_checked_audio_content_pending",
-            "prompt_id": "ceee2711-fdbf-41fd-871c-967030da3efe",
-            "clicking_run": true,
-            "manual_run_clicked": true,
-            "project_id": "bcd51631d54a4ae1ac9472d3634b9688",
-            "technical_status": "native_canvas_technical_project_voice_delivery_bundle_checked",
-            "generated_count": 2
-          },
-          "project-resume": {
-            "manifest_status": "native_actual_canvas_and_files_technical_checked_audio_content_pending",
-            "prompt_id": "25d18f2a-558e-4ed7-b494-412bf593d278",
-            "clicking_run": true,
-            "manual_run_clicked": true,
-            "project_id": "bcd51631d54a4ae1ac9472d3634b9688",
-            "technical_status": "native_canvas_technical_project_voice_delivery_bundle_checked",
-            "generated_count": 0
-          }
-        },
-        "candidate_generation_sources": [
-          "d1132263e92dfe4f4bbc33a2ecad1e482aa8d4ba3bfc9a413ff3db2427c99e4e"
-        ],
-        "delivery_scope": "Actual 48k PCM24, role stem/master and complete ZIP technical checks; see technical files",
-        "content_scope": "4 actual host WAVs form only 2 unique SHA; dual blind ASR preserves L01 homophone spelling mismatch; not MOS"
-      },
-      "method": "visible_ui",
-      "headless": true,
-      "render_mode": "Actual rendered headless browser controls; user authorized background operation",
-      "no_direct_generation_API_submission": true
-    },
-    "real_model_checks": {
-      "status": "passed",
-      "scope": "Basic functional execution and checked scope; no perceptual MOS claim",
-      "evidence": [
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\040-all-native-wavs-d9981ae1a6b5.json",
-          "sha256": "d9981ae1a6b547844ca7bc9f30789b5a7c0700f7abb8a0b827ed50c02840f1f3"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\041-dual-blind-receipt-6c4a0ee6d581.json",
-          "sha256": "6c4a0ee6d5818756fd3e3bc35e3f357cd4a7bfed86d983e75a6f8fe3bd88d57a"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\050-dual-blind-receipt-7515edde5af3.json",
-          "sha256": "7515edde5af3c659a1bdc2c6139894d259518b3e016d92b50fdaab82bed971a3"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\051-cam-cpu-receipt-78ddae4ea2fc.json",
-          "sha256": "78ddae4ea2fcd2f620f0b1aad0fd0f2a5d05223c2d7d8000a3aa207a0d2e3081"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\052-最终回执-23dc13-b3ed1bbb93d4.json",
-          "sha256": "b3ed1bbb93d4987b6a017bffe1ecb39cdf3bc4787a0f2dffaaf9c8a8d1606903"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\053-final-project-0a73cf-1a865f7affc4.json",
-          "sha256": "1a865f7affc497c5223e91e9eff4688ba942d041797cd700210e62b4ff0d077f"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\native-canvas030-comfy040-r2\\data\\workspace\\projects\\29f615668b8e46fdb6330ef9079ba401\\artifacts\\08b7fa0b2a404f96901a496f4f3a27ae\\L02_take1.wav",
-          "sha256": "cc245eb5761f9a00190120a65254f1c4d353e3effe9b28a279106b34082ffe8c"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\native-canvas030-comfy040-r2\\data\\workspace\\projects\\29f615668b8e46fdb6330ef9079ba401\\artifacts\\33783965e4ea423ea8057df5bbaff342\\L01_take1.wav",
-          "sha256": "88413a30ae6416a38cd5a4f243aa20b1ab1a842d3c73fcac9d8433bb92e1b092"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\native-canvas030-comfy042-r2\\data\\workspace\\projects\\bcd51631d54a4ae1ac9472d3634b9688\\artifacts\\196c34be6206404b9c893e42033b9f72\\L01_take1.wav",
-          "sha256": "88413a30ae6416a38cd5a4f243aa20b1ab1a842d3c73fcac9d8433bb92e1b092"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\native-canvas030-comfy042-r2\\data\\workspace\\projects\\bcd51631d54a4ae1ac9472d3634b9688\\artifacts\\fd7fa6a8f2c84a79bdfd3f97dfb58e07\\L02_take1.wav",
-          "sha256": "cc245eb5761f9a00190120a65254f1c4d353e3effe9b28a279106b34082ffe8c"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-basic-seal-r1\\scope-and-optional-benchmark.json",
-          "sha256": "512f1fd7cc5f1559e1b13cca7cc3d53fd643c39d1cf081ab10500dd5a4ebfc48"
-        }
-      ],
-      "observations": {
-        "native_actual_wavs": 4,
-        "native_unique_audio_sha": 2,
-        "blind_asr_backends": [
-          "r2t2",
-          "qwen"
-        ],
-        "blind_context_and_hotwords": "empty; expected text not sent",
-        "literal_asr_mismatch_retained": "L01 expected 演得 / both recognizers 演的; homophone variation retained without rewriting the raw ASR",
-        "director_scope": "Actual source-bound revised candidate, unchanged source PCM/reference tensors and selection; later dual-ASR and nearest configured CAM reference evidence are separate",
-        "not_claimed": [
-          "MOS",
-          "naturalness/acting pass",
-          "speaker identity probability",
-          "all dialects",
-          "all sampling/backend combinations"
-        ]
-      }
-    },
-    "studio_ui": {
-      "status": "passed",
-      "scope": "Basic functional execution and checked scope; no perceptual MOS claim",
-      "evidence": [
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\058-manifest-71c8fa6eb4dd.json",
-          "sha256": "71c8fa6eb4dd7d85506d152b418868fefd0cde5ac2aad49ac14f4455010038a0"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\059-controlled-microphone-driver-actual-receipt-r-f004681c86cf.json",
-          "sha256": "f004681c86cfdbd9ed420495e7392c470832fbf90d336e63302765deb73394ef"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\060-最终回执-79d6338e9ebd.json",
-          "sha256": "79d6338e9ebd58554e1fdc398fee1526396880cdfa6b536b8d7a200caf7fdac4"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\061-manifest-852e787aff21.json",
-          "sha256": "852e787aff21b285f7471c0afb63e3c6013c2dcfa22aef417004290adbbcf242"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\052-最终回执-23dc13-b3ed1bbb93d4.json",
-          "sha256": "b3ed1bbb93d4987b6a017bffe1ecb39cdf3bc4787a0f2dffaaf9c8a8d1606903"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\062-full-exe-check-r1-5fb65fe53e40.json",
-          "sha256": "5fb65fe53e40cef2992d94c604f1e72d73037a6e54e73e66c389d326c4175579"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\063-full-exe-actual-start-r1-2bd894529ef0.json",
-          "sha256": "2bd894529ef0460be08b384e259e5106775df38d31d6010a4a6287be4a24dcfa"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\064-full-exe-actual-start-r1.stdout-e756c4cf77c8.log",
-          "sha256": "e756c4cf77c8d8a73cb9abdcd6217e644d93a5d8a091204bdacefb1bf1d92988"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\065-full-exe-actual-start-r1.stderr-1cf92601788f.log",
-          "sha256": "1cf92601788f8d16fa335af5e556c68682154fad873b74c78ef0ec6dc04695fc"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\066-applied-receipt-551deff8ade5.json",
-          "sha256": "551deff8ade5d9694afb16766139cb639a4250138a41e2d4c56160085edb3566"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\067-guarded-receipt-a22a4f0c8e30.json",
-          "sha256": "a22a4f0c8e30d4db8e506f0d39590d816003af34bcb7382bc85f1224ee500ba5"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\068-manifest-1f58c00ed7f4.json",
-          "sha256": "1f58c00ed7f403b30546049860aca0aefc585faef72473b9fe5bccdd1f214cce"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\069-manifest-152155584e4e.json",
-          "sha256": "152155584e4e964436adce929ededadb95250863ca0b9a400bfe71ed54a41718"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\070-manifest-bed6e07ddd88.json",
-          "sha256": "bed6e07ddd88147244046edc52e54272116fcc936220d5b2dce00cda2e329f88"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\final030\\Drama3-T8-Portable\\Start-Drama3.exe",
-          "sha256": "39d0033fabc30dde8f466d3a595a948db1be6b613778ff55b3e046a14f5fd543"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-basic-seal-r1\\scope-and-optional-benchmark.json",
-          "sha256": "512f1fd7cc5f1559e1b13cca7cc3d53fd643c39d1cf081ab10500dd5a4ebfc48"
-        }
-      ],
-      "observations": {
-        "existing_scope": [
-          "voice library and immutable cast",
-          "project bundle/private voices",
-          "custom paths",
-          "selected take lock",
-          "48k LUFS delivery with stems and SRT",
-          "controlled browser recording/VAD",
-          "actual cancel/resume with previous WAV bytes retained",
-          "source-bound director revision",
-          "source-safe infill and technical near-silence negative case",
-          "complete EXE starts updater and own Python Studio"
-        ],
-        "exe": {
-          "exe_pid": 47708,
-          "full_python_pid": 40052,
-          "port": 7863,
-          "bytes": 7168,
-          "root_registered": true
-        },
-        "recording_limit": "Controlled replay MediaRecorder, not physical microphone certification",
-        "source_limit": "Earlier UI remains under its archived source; no relabeling 9d688... or older UI as d113...",
-        "blocking_pending": "Full actual benchmark job 63b4b518b8c245e18a429edac4abc785 not yet finally accepted"
-      },
-      "method": "visible_ui",
-      "headless": true,
-      "render_mode": "Actual rendered headless browser controls; user authorized background operation",
-      "no_direct_generation_API_submission": true,
-      "optional_acceleration_qualification": "not_completed; resource guard stopped matrix, no recommendation saved; not treated as a passing matrix"
-    },
-    "portable_update": {
-      "status": "passed",
-      "scope": "Previously passed genuine 0.2.4 full-bundle transaction plus exact current updater/CLI byte continuity and new-file allowlist checks; final archive is separately checked after sealing, without a ZIP self-hash cycle",
-      "evidence": [
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\072-说明-afbb9475b502.md",
-          "sha256": "afbb9475b502c65807e2daa4370145f4efb0e5c85a70632d16eace18a5af1b4d"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\073-evidence-2cacb7b7c6e9.json",
-          "sha256": "2cacb7b7c6e91e74ac4ad69c506b8f4dff4d2692c9f1838ff8445911ef8331a8"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\074-evidence-index-c09f0750099c.json",
-          "sha256": "c09f0750099c5e4140114764c0d27fea0194f1789e773fff34e8c3cf2e5f3f74"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\075-portable-update-8a61fbf36374.json",
-          "sha256": "8a61fbf3637494c51e13f79abe510f7917b0dbac8ec18f139682566dea4517f3"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\local-update-qualification030-r1\\Drama3-T8-Portable-0.3.0-code.zip",
-          "sha256": "5c2391b604dbfd15f7ce4389e1806c0becd54917af0de9105ad4f595e20b07ee"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\update030-real-full-offline-r1-transaction.json",
-          "sha256": "453082f9312470b4f392926bcc98363707289a06b059bcee5caeebfe24042378"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\update030-real-full-offline-r1-verified.json",
-          "sha256": "593764874440acba4994733aa8f159ea7090880aa31130ba16b94d92ff2b7a7c"
-        }
-      ],
-      "observations": {
-        "qualification_scope": "Actual old full0.2.4 to qualification0.3.0 transaction; 1330 code members and 58050 protected files",
-        "current_algorithm_byte_continuity": [
-          "drama3_t8/updater.py",
-          "tools/update_portable.py"
-        ],
-        "new_license_paths_accepted_by_current_and_actual_old024_receiver": true,
-        "pending": [
-          "native old024 rollback",
-          "final exact payload/ZIP installation",
-          "public latest/repeat-current"
-        ],
-        "no_hash_cycle": "Seal source-bound acceptance first; build final ZIP; put ZIP SHA/final install transaction in external manifest/sidecar, not back inside the ZIP"
-      }
-    },
-    "requirements_audit": {
-      "status": "passed",
-      "scope": "Basic functional execution and checked scope; no perceptual MOS claim",
-      "evidence": [
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\079-integrity-dependencies-dbd3cd9bc455.json",
-          "sha256": "dbd3cd9bc4558ce3b4702f9c0ee7356ba4b3d5c6b4ee1ef9b7fe88c75505e04e"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\080-layout-audit-dfdfce7cd715.json",
-          "sha256": "dfdfce7cd71510036e0a511dcecfab18f94390c191c4873523988a719e7ecf0d"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\081-preflight-89eff53bfb0a.json",
-          "sha256": "89eff53bfb0a3f45c6f7f676e9ccff993caeb43f0a1c0db1d33e3362a74f12d4"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\082-final030-layout-receipt-r2-83137ab06c7e.json",
-          "sha256": "83137ab06c7e642ef965adcf540e723423a603ea034867023c68710c7a00ea64"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\083-local-license-mapping-and-runtime-model-audit-39febd6bc5a7.json",
-          "sha256": "39febd6bc5a742c707fad6b0d2e1b8a39a32fa110925ea7814dcd150f73890c1"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\084-local-additions-handoff-receipt-c0f182442709.json",
-          "sha256": "c0f1824427092874ca45d7871947e839f7867366037c0214e70cb526028442bd"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\085-local-license-allowlist-contracts-5b5811ef2260.json",
-          "sha256": "5b5811ef22607a19598b947ef3359844997cd4d35f5a029f235776f25ef79627"
-        },
-        {
-          "path": "E:\\codex-record\\drama3-upgrade\\creative-development-20261029\\release030-evidence-index-r1\\captured\\086-imageio-ffmpeg-0.6.0-wheel-receipt-d307de02b362.json",
-          "sha256": "d307de02b362c15b0a6310d0d52b5b0f285196bd619550dca67291f68fea8f32"
-        }
-      ],
-      "observations": {
-        "self_contained_project_requirements": 44,
-        "python_prefix": "final030/Drama3-T8-Portable/runtime/python",
-        "transformers": "4.57.1",
-        "torch": "2.8.0+cu128",
-        "full_bundle_scope": "Matched Python/dependencies/models; GitHub code ZIP excludes Python/models",
-        "new_launcher": "Uses installed Windows .NET Framework and bundled existing Python, no second Python/PyInstaller/dependency download",
-        "dependency_update_limit": "Code updater does not pip-upgrade an old runtime",
-        "legal_scope": "Existing local upstream/license mapping evidence; no new legal or HF publication claim"
-      }
-    }
+    "web/time-selection.js": "10d3c4735c689f4f77e32f9a61af3b89f81f6bad959b96e44e52b8d27bc22c98",
+    "web/transcribe.js": "123c671671129a7f08c14f8f3d2c88cf76996d1ff881e76866e64a98cd1876b5",
+    "web/workspace-tools.js": "6fddd8c1a683cc6dabc0b2106759af03f4dc69b755506a4a0445105452926ee8"
   },
   "limits": [
-    "Full acceleration matrix stopped at row 19 with ReaderResourceError. Eighteen generated outputs are preserved; no complete quality matrix or qualified speed profile is claimed.",
-    "Independent ASR preserves homophone spelling differences; no MOS, acting score or identity probability is claimed.",
-    "The two native host checks used their recorded explicit launch arguments, including disabled dynamic VRAM.",
-    "Final ZIP and exact-final-asset update results remain separate external sidecars to avoid self-referential hashes."
+    "Models and Python environment are unchanged and excluded from the code update.",
+    "Code auto-updates preserve the EXE; the new launcher is a separate optional download.",
+    "Acceleration comparison and additional TTS matrices were not repeated; no new speed recommendation.",
+    "Exact final archive SHA/CRC and isolated previous-version installation are verified separately after packaging, avoiding an archive/report hash cycle."
   ]
 }

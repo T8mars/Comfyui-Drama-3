@@ -387,6 +387,37 @@ class CreativeStudio:
             if active and self.studio.get_job(active)["payload"].get("project_id") == project_id:
                 raise WorkspaceBusy("该工程正在生成或质检，请等待任务结束后再保存或选片")
 
+    def catalog_trash_item(self, kind, item_id, payload=None, *, restore=False):
+        from .workspace_lock import WorkspaceBusy
+        payload = payload or {}
+        with self.studio._activity_lock:
+            if kind in {"project", "candidate"}:
+                project_id = item_id if kind == "project" else payload.get("project_id")
+                self.assert_project_idle(project_id)
+                if any(job["status"] in {"queued", "running"} and job["payload"].get("project_id") == project_id
+                       for job in self.studio.jobs()):
+                    raise WorkspaceBusy("该工程还有排队或运行任务，请等待完成或先取消")
+                return self.workspace.trash_item(project_id, item_id if kind == "candidate" else None,
+                    restore=restore, expected_revision=payload.get("expected_revision"))
+            if kind in {"voice", "version", "cast"}:
+                result = self.voices.trash_item(kind, item_id, restore=restore)
+                if kind == "voice":
+                    legacy = self.voices.get_voice(item_id).get("legacy_id")
+                    if legacy:
+                        self.studio.trash_item("reference", legacy, restore=restore)
+                return result
+            if kind == "job":
+                return self.studio.trash_item(kind, item_id, restore=restore)
+            raise ValueError("不支持的删除类型")
+
+    def trash_view(self):
+        from datetime import datetime
+        rows = self.voices.trash_items() + self.workspace.trash_items() + self.studio.trash_items()
+        def stamp(row):
+            value = row["deleted_at"]
+            return float(value) if isinstance(value, (int, float)) else datetime.fromisoformat(value).timestamp()
+        return sorted(rows, key=stamp, reverse=True)
+
     def export_voices(self, payload):
         target = self.downloads / f"voices-{uuid.uuid4().hex}.zip"
         result = self.voices.export_bundle(target, **{key: payload[key] for key in ("voice_ids", "cast_ids", "include_sources") if key in payload})

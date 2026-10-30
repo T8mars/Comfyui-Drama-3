@@ -35,7 +35,8 @@ let optionsLoaded=false, observedAlignment=null, alignmentGeneration=0, loadedSe
 function loadReferenceSpeakers(){try{const saved=JSON.parse(localStorage.getItem('drama-reference-speakers')||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))return Object.fromEntries(Object.entries(saved).filter(([id,value])=>/^[0-9a-f]{32}$/.test(id)&&Number.isInteger(value)&&value>=0&&value<16));}catch{}return {};}
 let referenceSpeakers=loadReferenceSpeakers();
 window.getReferenceSpeakers=()=>referenceSpeakers;
-function selectInterval(start,end){$('start-seconds').value=start.toFixed(3);$('end-seconds').value=end.toFixed(3);drawWave();}
+function selectInterval(start,end){try{const duration=waveBuffer?.duration||$('audio').duration||Infinity,range=window.DramaTimeSelection.nearestRange(start,end,duration);$('start-seconds').value=range.start.toFixed(3);$('end-seconds').value=range.end.toFixed(3);let info=$('edit-selection-info');if(!info){info=document.createElement('p');info.id='edit-selection-info';info.className='hint';$('wave-hint').after(info);}info.textContent=`选区 ${range.start.toFixed(3)}–${range.end.toFixed(3)} 秒 · ${(range.end-range.start).toFixed(3)} 秒 · 已自动对齐到最近 0.05 秒；新片段长度默认由模型自动决定。`;drawWave();return range;}catch(error){notice(error.message);throw error;}}
+window.snapCurrentEditRange=()=>selectInterval(Number($('start-seconds').value),Number($('end-seconds').value));
 function drawWave(){const c=$('edit-wave'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#fff4f8';ctx.fillRect(0,0,c.width,c.height);if(!waveBuffer)return;
  const data=waveBuffer.getChannelData(0),stride=Math.max(1,Math.floor(data.length/c.width));ctx.strokeStyle='#ee5e9e';ctx.beginPath();
  for(let x=0;x<c.width;x++){let lo=0,hi=0;for(let i=x*stride;i<Math.min((x+1)*stride,data.length);i++){lo=Math.min(lo,data[i]);hi=Math.max(hi,data[i]);}ctx.moveTo(x,65+lo*55);ctx.lineTo(x,65+hi*55);}ctx.stroke();
@@ -46,6 +47,7 @@ $('edit-wave').onpointerdown=e=>{if(!waveBuffer)return;dragStart=Math.max(0,Math
 $('edit-wave').onpointermove=e=>{if(dragStart===null||!waveBuffer)return;const end=Math.max(0,Math.min(1,(e.clientX-e.target.getBoundingClientRect().left)/e.target.getBoundingClientRect().width))*waveBuffer.duration;selectInterval(Math.min(dragStart,end),Math.max(dragStart,end));};
 $('edit-wave').onpointerup=()=>{dragStart=null};
 for(const id of ['start-seconds','end-seconds'])$(id).addEventListener('input',drawWave);
+for(const id of ['start-seconds','end-seconds'])$(id).addEventListener('change',()=>{try{const duration=waveBuffer?.duration||$('audio').duration||Infinity;$(id).value=window.DramaTimeSelection.nearestValue(Number($(id).value),duration).toFixed(3);drawWave();}catch(error){notice(error.message);}});
 async function selectedSession(){if(!$('session').value)throw Error('请先选择会话');return $('session').value;}
 function clearEditorPreview(){window.dismissAudioPreview?.();window.stopLivePreview?.();$('output-links').hidden=true;waveBuffer=null;$('audio').pause();$('audio').removeAttribute('src');$('word-timeline').replaceChildren();drawWave();}
 window.clearEditorPreview=clearEditorPreview;

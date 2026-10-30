@@ -134,14 +134,17 @@ def test_app_exit_is_propagated_without_an_interactive_pause(tmp_path,compiled):
 
 
 def test_mutex_blocks_same_directory_for_entire_app_but_not_another_directory(tmp_path,compiled):
+    import socket
+    with socket.socket() as listener:
+        listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
     folder,env=package(tmp_path/'first',compiled);env['DRAMA_LAUNCHER_HOLD_MS']='2500'
-    first=subprocess.Popen([str(folder/'Start-Drama3.exe')],env=env,cwd=folder.parent,
+    first=subprocess.Popen([str(folder/'Start-Drama3.exe'),'--no-browser','--port',str(port)],env=env,cwd=folder.parent,
         stdout=subprocess.PIPE,stderr=subprocess.PIPE,creationflags=FLAGS)
     try:
         deadline=time.monotonic()+5
         while len(events(env))<2 and time.monotonic()<deadline:time.sleep(.02)
         assert len(events(env))==2 and first.poll() is None
-        duplicate=run(folder,env)
+        duplicate=run(folder,env,'--no-browser')
         assert duplicate.returncode==0 and len(events(env))==2
         other,other_env=package(tmp_path/'second',compiled)
         distinct=run(other,other_env)
@@ -150,6 +153,38 @@ def test_mutex_blocks_same_directory_for_entire_app_but_not_another_directory(tm
     finally:
         if first.poll() is None:first.wait(timeout=5)
         first.communicate()
+
+
+def test_running_service_reopens_address_without_starting_any_more_children(tmp_path,compiled):
+    import http.server
+    import threading
+    class Health(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            assert self.path=='/api/status'
+            body=b'{"application":"drama3-t8"}'
+            self.send_response(200);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
+        def log_message(self,*args):pass
+    server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Health)
+    threading.Thread(target=server.serve_forever,daemon=True).start()
+    folder,env=package(tmp_path,compiled);env['DRAMA_LAUNCHER_HOLD_MS']='2500'
+    first=subprocess.Popen([str(folder/'Start-Drama3.exe'),'--no-browser','--port',str(server.server_port)],env=env,
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,creationflags=FLAGS)
+    try:
+        deadline=time.monotonic()+5
+        while len(events(env))<2 and time.monotonic()<deadline:time.sleep(.02)
+        result=run(folder,env,'--no-browser')
+        assert result.returncode==0 and '工作台已在运行' in result.stdout
+        assert str(server.server_port) in result.stdout and len(events(env))==2 and first.poll() is None
+    finally:
+        first.wait(timeout=5);first.communicate();server.shutdown();server.server_close()
+
+
+def test_real_failure_is_durable_and_noninteractive_execution_never_hangs(tmp_path,compiled):
+    folder,env=package(tmp_path,compiled);env['DRAMA_LAUNCHER_APP_EXIT']='17'
+    result=run(folder,env,'--no-browser')
+    assert result.returncode==17 and '启动日志' in result.stderr
+    logs=list((folder/'userdata/logs').glob('launcher-*.log'))
+    assert len(logs)==1 and '退出码：17' in logs[0].read_text(encoding='utf-8')
 
 
 def test_failed_compile_preserves_existing_launcher_and_cleans_only_own_temporary(tmp_path,compiled):

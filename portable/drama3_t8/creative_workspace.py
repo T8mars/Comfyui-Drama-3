@@ -408,18 +408,20 @@ class CreativeWorkspace:
             raise ValueError("工程路径越出工作区")
         return directory
 
-    def _read(self, project_id):
+    def _read(self, project_id, *, include_deleted=False):
         path = self._directory(project_id) / "project.json"
         if not path.is_file():
             raise FileNotFoundError("创作工程不存在")
         project = json.loads(path.read_text(encoding="utf-8"))
         if project.get("schema_version") != SCHEMA_VERSION or project.get("project_id") != project_id:
             raise ValueError("不支持或损坏的创作工程")
+        if project.get("deleted_at") and not include_deleted:
+            raise FileNotFoundError("工程已移入回收站，请先恢复")
         _json_bytes(project)
         return project
 
     @contextmanager
-    def _operation(self, project_id):
+    def _operation(self, project_id, *, include_deleted=False):
         directory = self._directory(project_id)
         if not (directory / "project.json").is_file():
             raise FileNotFoundError("创作工程不存在")
@@ -431,7 +433,7 @@ class CreativeWorkspace:
         try:
             owner = WorkspaceLock(directory / "project.lock")
             try:
-                yield self._read(project_id)
+                yield self._read(project_id, include_deleted=include_deleted)
             finally:
                 owner.close()
         finally:
@@ -483,9 +485,11 @@ class CreativeWorkspace:
         result = []
         for directory in sorted(self.projects.iterdir()):
             if _ID.fullmatch(directory.name) and (directory / "project.json").is_file():
-                project = self._read(directory.name)
+                project = self._read(directory.name, include_deleted=True)
+                if project.get("deleted_at"):
+                    continue
                 result.append({key: project[key] for key in ("project_id", "name", "revision", "created_at", "updated_at")}
-                              | {"line_count": len(project["lines"]), "candidate_count": len(project["candidates"])})
+                              | {"line_count": len(project["lines"]), "candidate_count": sum(not c.get("deleted_at") for c in project["candidates"].values())})
         return sorted(result, key=lambda item: item["updated_at"], reverse=True)
 
     def _candidate_view(self, project_id, candidate):
@@ -513,8 +517,9 @@ class CreativeWorkspace:
     def _view(self, project):
         result = deepcopy(project)
         result["candidates"] = {key: self._candidate_view(project["project_id"], value)
-                                for key, value in project["candidates"].items()}
+                                for key, value in project["candidates"].items() if not value.get("deleted_at")}
         for line in result["lines"]:
+            line["candidate_ids"] = [key for key in line["candidate_ids"] if key in result["candidates"]]
             # Shared atomic Scene candidates can cover hundreds of lines.
             # Expand once per candidate, not once per attached line; callers
             # still receive an independent project view, never durable objects.
@@ -524,6 +529,50 @@ class CreativeWorkspace:
 
     def get_project(self, project_id):
         return self._view(self._read(project_id))
+
+    def trash_item(self, project_id, candidate_id=None, *, restore=False, expected_revision=None):
+        if type(restore) is not bool:
+            raise ValueError("恢复选项必须是布尔值")
+        with self._operation(project_id, include_deleted=candidate_id is None) as project:
+            if expected_revision is not None and expected_revision != project["revision"]:
+                raise ProjectConflict("工程已更新，请刷新后再删除")
+            item = project
+            if candidate_id is not None:
+                item = project["candidates"].get(candidate_id)
+                if item is None:
+                    raise ValueError("候选不存在")
+                if not restore:
+                    if item["status"] in {"queued", "running"}:
+                        raise ValueError("正在生成的候选不能删除")
+                    if any(line["locked"] and line["selected_candidate_id"] == candidate_id for line in project["lines"]):
+                        raise ValueError("请先解锁选中的候选，再删除")
+                    for line in project["lines"]:
+                        if line["selected_candidate_id"] == candidate_id:
+                            line["selected_candidate_id"] = None
+            if restore:
+                item.pop("deleted_at", None)
+            else:
+                item["deleted_at"] = _now()
+            self._save(project)
+        return {"kind": "candidate" if candidate_id else "project", "id": candidate_id or project_id,
+                "project_id": project_id, "restored": restore}
+
+    def trash_items(self):
+        result = []
+        for directory in self.projects.iterdir():
+            if not _ID.fullmatch(directory.name) or not (directory / "project.json").is_file():
+                continue
+            project = self._read(directory.name, include_deleted=True)
+            if project.get("deleted_at"):
+                result.append(dict(kind="project", id=directory.name, project_id=directory.name,
+                                   label=project["name"], deleted_at=project["deleted_at"]))
+                continue
+            for key, candidate in project["candidates"].items():
+                if candidate.get("deleted_at"):
+                    result.append(dict(kind="candidate", id=key, project_id=directory.name,
+                                       label=project["name"] + " · " + candidate.get("transcript", key)[:80],
+                                       deleted_at=candidate["deleted_at"]))
+        return result
 
     def update_project(self, project_id, patch, expected_revision=None, *, before_commit=None):
         patch = _object(patch, "工程修改")
@@ -615,7 +664,7 @@ class CreativeWorkspace:
         else:
             units = [[i] for i in range(len(lines))]
         jobs, context = [], {}
-        usable = {key: self._usable(project["project_id"], candidate) for key, candidate in project["candidates"].items()}
+        usable = {key: not candidate.get("deleted_at") and self._usable(project["project_id"], candidate) for key, candidate in project["candidates"].items()}
         for unit_index, indexes in enumerate(units):
             unit_lines = [_plain_line(lines[i]) for i in indexes]
             roles = list(dict.fromkeys(line["role"] for line in unit_lines))
@@ -653,7 +702,7 @@ class CreativeWorkspace:
                 digest = fingerprint(inputs)
                 selected_here = {lines[i]["selected_candidate_id"] for i in indexes}
                 matches = [candidate for candidate in project["candidates"].values()
-                           if (candidate.get("fingerprint") == digest or (candidate["candidate_id"] in selected_here and
+                           if not candidate.get("deleted_at") and (candidate.get("fingerprint") == digest or (candidate["candidate_id"] in selected_here and
                                candidate.get("compatible_fingerprint") == digest))
                            and candidate.get("line_ids") == [line["line_id"] for line in unit_lines]]
                 completed = next((candidate for candidate in reversed(matches) if usable[candidate["candidate_id"]]), None)
@@ -1037,7 +1086,7 @@ class CreativeWorkspace:
         with self._operation(project_id) as project:
             line = next((item for item in project["lines"] if item["line_id"] == line_id), None)
             candidate = project["candidates"].get(candidate_id)
-            if line is None or candidate_id not in line["candidate_ids"] or candidate is None:
+            if line is None or candidate_id not in line["candidate_ids"] or candidate is None or candidate.get("deleted_at"):
                 raise ValueError("候选不属于该台词")
             if selected is True and not self._usable(project_id, candidate):
                 raise InvalidCheckpoint("只能选择完整、未损坏的候选")
@@ -1088,7 +1137,7 @@ class CreativeWorkspace:
                 if cancelled and cancelled():
                     break
                 candidate = project["candidates"][candidate_id]
-                if not self._usable(project_id, candidate):
+                if candidate.get("deleted_at") or not self._usable(project_id, candidate):
                     continue
                 if candidate.get("quality"):
                     candidate.setdefault("quality_history", []).append(deepcopy(candidate["quality"]))
@@ -1119,7 +1168,7 @@ class CreativeWorkspace:
         target = Path(target).expanduser().resolve()
         with self._operation(project_id) as project:
             packed = deepcopy(project)
-            included = set(project["candidates"]) if include_all else {
+            included = {key for key, candidate in project["candidates"].items() if not candidate.get("deleted_at")} if include_all else {
                 line["selected_candidate_id"] for line in project["lines"] if line["selected_candidate_id"]}
             # Context Sessions must travel with selected takes, even if their
             # corresponding source-line candidate was not selected for export.

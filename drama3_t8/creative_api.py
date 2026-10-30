@@ -46,6 +46,18 @@ def register_creative_routes(app, root, store_upload):
     def library(request: Request, query: str = "", tags: str = "", favorites: bool = False, archived: bool = False):
         return checked(desk(request).library_view, query, tags, favorites, archived)
 
+    @router.delete("/catalog/{kind}/{item_id}")
+    def delete_catalog_item(kind: str, item_id: str, request: Request, payload: dict):
+        return checked(desk(request).catalog_trash_item, kind, item_id, payload)
+
+    @router.get("/trash")
+    def trash(request: Request):
+        return checked(desk(request).trash_view)
+
+    @router.post("/trash/restore")
+    def restore_trash(request: Request, payload: dict):
+        return checked(desk(request).catalog_trash_item, payload.get("kind"), payload.get("id"), payload, restore=True)
+
     @router.get("/configuration")
     def configuration(request: Request):
         return checked(desk(request).configuration)

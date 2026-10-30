@@ -59,7 +59,7 @@ $('asr-use').onclick=async()=>{
   if(source!==displayedASR)throw Error('当前转写结果已改变，请重新选择参考稿。');
   if(!source)file=$('asr-form').elements.file.files[0];
   if(!file)throw Error('请先选择与稿件对应的参考音频。');
-  const transfer=new DataTransfer();transfer.items.add(file);$('voice-form').elements.file.files=transfer.files;
+  const transfer=new DataTransfer();transfer.items.add(file);$('voice-form').elements.file.files=transfer.files;$('voice-form').elements.file.dispatchEvent(new CustomEvent('change',{bubbles:true,detail:{referenceTranscript:text}}));
   $('voice-form').elements.transcript.value=text;$('voice-form').closest('details').open=true;showPage('voices');notice('对应的原始音频与参考稿已填入，请核对后保存音色。');
  }catch(err){notice(err.message)}finally{button.disabled=false}
 };

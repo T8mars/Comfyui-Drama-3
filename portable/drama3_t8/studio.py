@@ -139,6 +139,8 @@ class Studio:
                 CREATE TABLE IF NOT EXISTS voice_references(id TEXT PRIMARY KEY,name TEXT,transcript TEXT,path TEXT);
                 CREATE TABLE IF NOT EXISTS sessions(id TEXT PRIMARY KEY,path TEXT,summary TEXT,updated REAL);
             """)
+            from .catalog_trash import initialize
+            initialize(db)
             db.execute("UPDATE jobs SET status='interrupted',error='程序重启中断了此任务，请重新提交' WHERE status IN ('running','queued')")
             for table, folder in (("sessions", "sessions"), ("voice_references", "references")):
                 for row in db.execute(f"SELECT id,path FROM {table}").fetchall():
@@ -275,8 +277,11 @@ class Studio:
         return path if path.is_absolute() else self.data / path
 
     def jobs(self):
+        deleted = set()
         try:
             with self.connect() as db:
+                from .catalog_trash import hidden
+                deleted = hidden(db, "job")
                 rows = db.execute("""SELECT * FROM jobs WHERE status IN ('running','queued')
                     OR id IN (SELECT id FROM jobs ORDER BY created DESC LIMIT 100)
                     ORDER BY created DESC""").fetchall()
@@ -292,7 +297,42 @@ class Studio:
                     merged[job_id] = dict(row)
             cancelable = set(self.cancel_events)
         return [self._job_view(row, row["id"] in cancelable)
-                for row in sorted(merged.values(), key=lambda row: row["created"], reverse=True)]
+                for row in sorted(merged.values(), key=lambda row: row["created"], reverse=True) if row["id"] not in deleted]
+
+    def trash_item(self, kind, item_id, *, restore=False):
+        from .catalog_trash import mark
+        if not isinstance(item_id, str) or not re.fullmatch(r"[0-9a-f]{32}", item_id):
+            raise ValueError("无效资料编号")
+        if kind == "reference":
+            with self.connect() as db:
+                row = db.execute("SELECT name FROM voice_references WHERE id=?", (item_id,)).fetchone()
+                if row is None:
+                    return {"kind": kind, "id": item_id, "restored": restore}
+                mark(db, kind, item_id, row[0], restore=restore)
+            return {"kind": kind, "id": item_id, "restored": restore}
+        if kind != "job":
+            raise ValueError("不支持的历史资料类型")
+        with self._activity_lock:
+            job = self.get_job(item_id)
+            if job["status"] in {"queued", "running"}:
+                raise ValueError("任务尚未结束，请先取消或等待完成")
+            label = job["payload"].get("text") or job["payload"].get("name") or job["payload"].get("mode") or item_id
+            with self.connect() as db:
+                mark(db, kind, item_id, str(label)[:160], restore=restore)
+                session_id = (job.get("result") or {}).get("session_id")
+                if session_id:
+                    owner = db.execute("""SELECT 1 FROM jobs j WHERE j.id!=?
+                        AND json_valid(j.result) AND json_extract(j.result,'$.session_id')=?
+                        AND NOT EXISTS(SELECT 1 FROM catalog_trash t WHERE t.kind='job' AND t.item_id=j.id)
+                        LIMIT 1""", (item_id, session_id)).fetchone()
+                    if restore or owner is None:
+                        mark(db, "session", session_id, str(label)[:160], restore=restore)
+        return {"kind": kind, "id": item_id, "restored": restore}
+
+    def trash_items(self):
+        from .catalog_trash import entries
+        with self.connect() as db:
+            return [row for row in entries(db) if row["kind"] == "job"]
 
     def get_job(self, job_id):
         with self._activity_lock:
@@ -319,11 +359,15 @@ class Studio:
 
     def references(self):
         with self.connect() as db:
-            return [dict(r) for r in db.execute("SELECT id,name,transcript FROM voice_references ORDER BY name")]
+            from .catalog_trash import hidden
+            deleted = hidden(db, "reference")
+            return [dict(r) for r in db.execute("SELECT id,name,transcript FROM voice_references ORDER BY rowid DESC") if r["id"] not in deleted]
 
     def sessions(self):
         with self.connect() as db:
-            return [dict(r) for r in db.execute("SELECT id,summary,updated FROM sessions ORDER BY updated DESC")]
+            from .catalog_trash import hidden
+            deleted = hidden(db, "session")
+            return [dict(r) for r in db.execute("SELECT id,summary,updated FROM sessions ORDER BY updated DESC") if r["id"] not in deleted]
 
     def asr_languages(self, backend=None):
         """Advertise the selected implementation's actual manual languages."""
@@ -574,6 +618,9 @@ class Studio:
             waveform, rate = read_audio(path)
             transcript = payload.get("transcript", "")
             if mode == "transcribe":
+                from .asr_reference import reference_asr_audio
+                waveform, source_interval = reference_asr_audio(waveform, rate,
+                    payload.get("start_seconds", 0), payload.get("end_seconds"))
                 result = self.engine.transcribe_detailed(waveform, rate, language=payload.get("language"),
                     context=payload.get("context", ""), hotwords=payload.get("hotwords", ""), check_cancel=progress)
                 progress()
@@ -583,6 +630,7 @@ class Studio:
                     text_file.write_text(result["text"], encoding="utf-8")
                     metadata.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
                 return {**result, "transcript": result["text"],
+                        "source_interval": source_interval,
                         "source_audio": f"/api/files/input/{path.name}",
                         "source_name": payload.get("name", path.name),
                         "text_file": f"/api/files/output/{text_file.name}",
