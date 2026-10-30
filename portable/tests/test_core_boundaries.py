@@ -285,13 +285,16 @@ def test_prompt_audio_cannot_silently_truncate_float_codes(tokenizer, config, ki
 def test_revision_routes_scene_and_preserves_normal_spoken_transcript():
     engine = DramaEngine("model", "codec")
     seen = {}
-    def speak(text, session, sampling, *args):
-        seen["request"] = text
+    def speak(text, session, sampling, *args, note="", system_context=""):
+        seen.update(request=text, note=note, system_context=system_context)
         return session.append(take())
     engine.speak = speak
     normal = Session(takes=(replace(take(), transcript="[sad] <|speaker:0|> Hello."),))
     revised = engine.revise(normal, "warmer")
-    assert seen["request"] == "[warmer] Hello."
+    # revise passes the real speaker + pure source text and a distinct note;
+    # canonical speak applies that note to its actual current-user prompt.
+    assert seen["request"] == "<|speaker:0|> Hello."
+    assert seen["note"] == "warmer" and seen["system_context"] == ""
     assert revised.takes[-1].transcript == "Hello."
     assert len(normal.takes) == 1 and len(revised.takes) == 2
     def scene(*args, **kwargs):

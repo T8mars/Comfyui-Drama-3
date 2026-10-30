@@ -71,16 +71,16 @@ def test_direction_reference_and_history_contract(
     refs = references[:reference_count]
     original_codes = [ref.codes.clone() for ref in refs]
     original_history = history[0].frames.clone()
-    direction = "Original direction:\n  <|speaker:0|> stays calm.\t\n角色：猫主管；只说指定文字。\n"
+    direction = "  [calm]\n 保留句尾笑意。\t "
     text = "<|speaker:0|> [deadpan] 成了午睡。"
     lookahead = "<|speaker:0|> [curious] 下一句。"
     lines = [text, "<|speaker:1|> [excited] 全国推广。"]
     instruction = {"tts": prompts.TTS_INSTRUCTION, "line": prompts.LINE_INSTRUCTION,
                    "stream": prompts.STREAM_INSTRUCTION}[protocol]
 
-    segments = prompts.system_segments(refs, instruction, direction)
+    segments = prompts.system_segments(refs, instruction)
     literals = [item for item in segments if isinstance(item, str) and item == direction]
-    assert len(literals) == 1 and literals[0] is direction
+    assert not literals
     code_objects = [item for item in segments if torch.is_tensor(item)]
     assert len(code_objects) == len(refs)
     assert all(item is ref.codes for item, ref in zip(code_objects, refs))
@@ -88,26 +88,23 @@ def test_direction_reference_and_history_contract(
     options = dict(references=refs, takes=history, direction=direction)
     if protocol == "tts":
         rows = prompts.tts_prompt(tokenizer, config, text, **options)
-        expected_current = tokenizer.encode(text).ids
+        expected_current = tokenizer.encode(prompts.directed_text(text,direction)).ids
     elif protocol == "line":
         rows = prompts.scene_prompt(tokenizer, config, lines, **options)
-        expected_current = tokenizer.encode(("\n" + prompts.SEPARATOR + "\n").join(lines)).ids
+        expected_current = tokenizer.encode(("\n" + prompts.SEPARATOR + "\n").join(prompts.directed_text(line,direction,scene=True) for line in lines)).ids
     else:
         rows = prompts.streaming_prompt(tokenizer, config, text, lookahead, **options)
-        expected_current = (tokenizer.encode(text).ids + tokenizer.encode(prompts.END_OF_TURN).ids
+        expected_current = (tokenizer.encode(prompts.directed_text(text,direction)).ids + tokenizer.encode(prompts.END_OF_TURN).ids
                             + tokenizer.encode(lookahead).ids)
 
-    # Exact text tokens must appear once in system, before the first reference
-    # audio; without references they must remain before completed audio history.
-    spans = _text_spans(rows, tokenizer, direction)
-    assert len(spans) == 1
+    # Delivery belongs to the exact current user body, never ahead of refs.
     system_end = rows[:, 0].tolist().index(tokenizer.token_to_id("<|im_end|>"))
-    assert spans[0][1] <= system_end
+    system = tokenizer.decode(rows[:system_end,0].tolist(),skip_special_tokens=False)
+    assert prompts.direction_tags(direction) not in system
     semantic = ((rows[:, 0] >= config.semantic_start_token_id)
                 & (rows[:, 0] <= config.semantic_end_token_id))
     audio_positions = torch.nonzero(semantic, as_tuple=False)[:, 0].tolist()
     first_audio = audio_positions[0]
-    assert spans[0][1] <= first_audio
     header = prompts.REFERENCE_INSTRUCTION if refs else instruction
     header_spans = _text_spans(rows, tokenizer, header)
     assert len(header_spans) == 1 and header_spans[0][1] <= system_end

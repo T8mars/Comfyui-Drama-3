@@ -1,7 +1,10 @@
 import pytest
 import hashlib
+import io
+import tarfile
 import json
 import os
+import subprocess
 from pathlib import Path
 import sys
 import time
@@ -9,6 +12,7 @@ from types import SimpleNamespace
 import zipfile
 from tools import build_portable
 from tools import build_public_release as public
+from tools import build_launcher as launcher
 
 
 def put(root, name, content=b"fixture"):
@@ -16,6 +20,20 @@ def put(root, name, content=b"fixture"):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(content)
     return path
+
+
+def compiled_launcher_manifest(target, manifest, source=None):
+    """Use the real C# compiler, never a fabricated EXE header or hash."""
+    if not launcher._compiler().is_file():
+        pytest.skip('Windows .NET Framework C# compiler is required for full Windows EXE fixtures')
+    source = Path(source or build_portable.ROOT)
+    product = launcher.build_launcher(target / 'Start-Drama3.exe', source=source/'tools/StartDrama3.cs')
+    manifest['files'].append('Start-Drama3.exe')
+    manifest['launcher'] = {'path':'Start-Drama3.exe','bytes':product.stat().st_size,
+        'sha256':hashlib.sha256(product.read_bytes()).hexdigest(),
+        'inputs':{name:hashlib.sha256((source/name).read_bytes()).hexdigest()
+                  for name in ('tools/build_launcher.py','tools/StartDrama3.cs')}}
+    return manifest
 
 
 @pytest.mark.parametrize("suffix", [".dll", ".safetensors", ".json"])
@@ -165,6 +183,8 @@ def test_copy_file_does_not_retry_non_windows_or_unrelated_replace_errors(tmp_pa
 
 
 def test_full_zip_commit_retries_windows_busy_error_without_unlinking_old_archive(tmp_path, monkeypatch):
+    # This fixture exercises archive/layout mechanics, not release qualification.
+    monkeypatch.setattr(build_portable, 'validate_final_archive', lambda *args: None)
     target = tmp_path / 'package'
     monkeypatch.setattr(build_portable, 'TARGET', target)
     monkeypatch.setattr(build_portable, '_WINDOWS', True, raising=False)
@@ -175,6 +195,7 @@ def test_full_zip_commit_retries_windows_busy_error_without_unlinking_old_archiv
     monkeypatch.setattr(build_portable, 'time', SimpleNamespace(sleep=wait), raising=False)
     put(target, 'app.py', b'current code')
     put(target, 'package-manifest.json', b'{}')
+    manifest=compiled_launcher_manifest(target, {'version':build_portable.__version__,'files':['app.py']})
     archive = put(target.parent, f'Drama3-T8-Portable-{build_portable.__version__}-win64.zip', b'old archive')
     original = build_portable.os.replace
     attempts = []
@@ -187,7 +208,7 @@ def test_full_zip_commit_retries_windows_busy_error_without_unlinking_old_archiv
         original(temporary, final)
 
     monkeypatch.setattr(build_portable.os, 'replace', briefly_busy)
-    build_portable.write_archive({'version': build_portable.__version__, 'files': ['app.py']})
+    build_portable.write_archive(manifest)
     with zipfile.ZipFile(archive) as z:
         assert z.read(target.name + '/app.py') == b'current code'
     assert len(attempts) == 2 and delays == [.05]
@@ -224,6 +245,20 @@ def test_duplicate_extra_model_filenames_are_rejected_before_copying(tmp_path, m
     assert not target.exists()
 
 
+@pytest.mark.parametrize("source_kind", ["runtime", "models"])
+def test_selected_external_sources_cannot_contain_the_package(tmp_path, monkeypatch, source_kind):
+    root = tmp_path / "source"
+    root.mkdir()
+    monkeypatch.setattr(build_portable, "ROOT", root)
+    source = tmp_path / "verified external environment" / source_kind
+    target = source / "recursive-package"
+    monkeypatch.setattr(sys, "argv", ["build_portable.py", "--target", str(target),
+        "--runtime-source" if source_kind == "runtime" else "--models-source", str(source)])
+    with pytest.raises(ValueError, match="separate"):
+        build_portable.main()
+    assert not target.exists()
+
+
 @pytest.mark.parametrize("name", ["../private.txt", "web/../../private.txt", "web\\private.txt", "/private.txt",
     "C:/private.txt", "RoadMap.MD", "web/RoadMap.MD", "userdata/voices.json", "outputs/private.wav", "package-manifest.json"])
 def test_zip_only_rejects_invalid_or_private_manifest_paths(tmp_path, monkeypatch, name):
@@ -252,11 +287,15 @@ def miniature_source(root):
     for name in root_files:
         put(root, name)
     put(root, 'upstream-lock.json', b'{}')
+    put(root, '.gitattributes', b'* -text\n')
+    put(root, 'comfyui-drama3-T8/.gitattributes', b'* -text\n')
     for name in ['README.md', 'README.zh-CN.md', 'LICENSE', 'upstream-lock.json']:
         put(root, 'comfyui-drama3-T8/' + name, b'stale attached node metadata')
     for name in ['check_runtime.py','download_models.py','convert_model.py','quantize_converted.py',
-                 'safetensors_stream.py','extract_text_head.py','update_portable.py','make_workflows.py','build_portable.py','build_public_release.py']:
+                 'safetensors_stream.py','extract_text_head.py','update_portable.py','make_workflows.py','build_portable.py','build_public_release.py','finalize_manifest.py']:
         put(root, 'tools/' + name)
+    for name in ['build_launcher.py','StartDrama3.cs']:
+        put(root, 'tools/'+name, (Path(launcher.__file__).parent/name).read_bytes())
     for name in ['editor_core.js','drama3_editor.js','seed-compat.js']:
         put(root, 'web/' + name, b'current web source')
         put(root, 'comfyui-drama3-T8/web/' + name, b'stale web source')
@@ -291,6 +330,10 @@ def miniature_source(root):
 
 
 def test_full_layout_uses_requested_target_current_nodes_and_complete_model_inventory(tmp_path, monkeypatch):
+    if not launcher._compiler().is_file():
+        pytest.skip('Windows .NET Framework C# compiler is required for the full Windows layout')
+    # This fixture exercises archive/layout mechanics, not release qualification.
+    monkeypatch.setattr(build_portable, 'validate_final_archive', lambda *args: None)
     root, target = tmp_path / 'source', tmp_path / 'distribution/Chinese 空格 package'
     miniature_source(root)
     monkeypatch.setattr(build_portable, 'ROOT', root)
@@ -299,7 +342,7 @@ def test_full_layout_uses_requested_target_current_nodes_and_complete_model_inve
     metadata_paths=[]
     def distributions(*,path):
         metadata_paths.extend(path)
-        return []
+        return [SimpleNamespace(metadata={"Name": "transformers"}, version="4.57.1")]
     monkeypatch.setattr(build_portable.importlib.metadata, 'distributions', distributions)
     extra = put(tmp_path, 'external/quant.SAFETENSORS', b'not model weights')
     old_archive = put(target.parent, 'Drama3-T8-Portable-0.0.1-win64.zip', b'old release remains')
@@ -310,6 +353,13 @@ def test_full_layout_uses_requested_target_current_nodes_and_complete_model_inve
     manifest = json.loads((target / 'package-manifest.json').read_text(encoding='utf-8'))
     assert metadata_paths == [str(root / 'runtime/python/Lib/site-packages')]
     assert 'web/stale-file.js' not in manifest['files']
+    assert 'Start-Drama3.exe' in manifest['files']
+    assert (target/'Start-Drama3.exe').read_bytes()[:2]==b'MZ'
+    assert manifest['launcher']['sha256']==hashlib.sha256((target/'Start-Drama3.exe').read_bytes()).hexdigest()
+    assert manifest['launcher']['inputs']['tools/StartDrama3.cs']==hashlib.sha256((root/'tools/StartDrama3.cs').read_bytes()).hexdigest()
+    for name in ['build_launcher.py','StartDrama3.cs']:
+        assert 'tools/'+name not in manifest['files']
+        assert not (target/'tools'/name).exists()
     assert private.read_bytes() == b'user voices remain' and output.read_bytes() == b'user output remains'
     assert old_archive.read_bytes() == b'old release remains'
     # The public v0.1.11 updater only accepts the original six tool paths.
@@ -317,6 +367,10 @@ def test_full_layout_uses_requested_target_current_nodes_and_complete_model_inve
     assert 'tools/convert_model.py' in manifest['files']
     assert 'tools/quantize_converted.py' not in manifest['files']
     assert not (target / 'tools/quantize_converted.py').exists()
+    assert 'tools/finalize_manifest.py' not in manifest['files']
+    assert not (target / 'tools/finalize_manifest.py').exists()
+    assert not (target / '.gitattributes').exists()
+    assert (target / 'comfyui-drama3-T8/.gitattributes').read_bytes() == b'* -text\n'
     for name in ['editor_core.js','drama3_editor.js','seed-compat.js']:
         assert (target / 'comfyui-drama3-T8/web' / name).read_bytes() == b'current web source'
     assert (target / 'comfyui-drama3-T8/drama3_t8/engine.py').read_bytes() == b'current engine source'
@@ -392,15 +446,41 @@ def test_public_code_and_node_assets_exclude_weights_runtime_and_research_and_ke
             assert record['sha256'] == hashlib.sha256(archive.read(name)).hexdigest()
 
 
-def test_source_sync_refreshes_editor_and_seed_without_publishing_runtime(public_source, tmp_path):
+@pytest.mark.parametrize('autocrlf', ['true', 'false'])
+def test_source_sync_refreshes_editor_and_seed_without_publishing_runtime(public_source, tmp_path, autocrlf):
+    if not launcher._compiler().is_file():
+        pytest.skip('Windows .NET Framework C# compiler is required for the isolated copied-helper compile')
     root, node, output = public_source
     # This is the real development alias, not an invented wrapper fixture.
     wrapper = (Path(__file__).resolve().parents[1] / 'tools/quantize_converted.py').read_bytes()
     publisher = (Path(__file__).resolve().parents[1] / 'tools/build_public_release.py').read_bytes()
     put(root, 'tools/quantize_converted.py', wrapper)
     put(root, 'tools/build_public_release.py', publisher)
+    source = Path(__file__).resolve().parents[1]
+    builder = (source / 'tools/build_portable.py').read_bytes()
+    finalizer = (source / 'tools/finalize_manifest.py').read_bytes()
+    put(root, 'tools/build_portable.py', builder)
+    put(root, 'tools/finalize_manifest.py', finalizer)
+    put(root, 'drama3_t8/__init__.py', (source / 'drama3_t8/__init__.py').read_bytes())
     destination = tmp_path / 'checkout'
-    (destination / '.git').mkdir(parents=True)
+    destination.mkdir()
+    empty = put(tmp_path, 'empty-git-config-and-attributes', b'')
+    template = tmp_path / 'empty-git-template'
+    template.mkdir()
+    environment = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+    environment.update(GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL=str(empty),
+        GIT_ATTR_NOSYSTEM='1', GIT_TEMPLATE_DIR=str(template))
+    def git(*arguments, cwd=destination):
+        return subprocess.run(['git', '-c', 'core.attributesFile=' + str(empty),
+            '-c', 'core.hooksPath=' + str(template), '-c', 'core.safecrlf=false',
+            '-c', 'commit.gpgsign=false', *arguments], cwd=cwd, env=environment,
+            check=True, capture_output=True).stdout
+    git('init', str(destination), cwd=tmp_path)
+    git('config', 'user.name', 'Byte Fixture')
+    git('config', 'user.email', 'fixture@example.invalid')
+    git('config', 'core.autocrlf', autocrlf)
+    put(root, 'tests/line-endings-fixture.py', b'VALUE = 1\r\n')
+    put(node, '.gitattributes', b'stale node attributes\n')
     put(node, 'models/leak.safetensors')
     put(node, 'runtime/python/python.exe')
     put(node, 'RoadMap.MD')
@@ -409,6 +489,8 @@ def test_source_sync_refreshes_editor_and_seed_without_publishing_runtime(public
     put(root, 'tests/runtime/python.exe')
     put(root, 'tests/frontend_canvas_oracle.mjs', b'actual test source')
     public.sync_source(destination)
+    assert (destination / '.gitattributes').read_bytes() == b'* -text\n'
+    assert (node / '.gitattributes').read_bytes() == b'* -text\n'
     assert (destination / 'web/seed-compat.js').read_bytes() == b'current web source'
     assert (destination / 'drama3_t8/editor.py').read_bytes() == b'current editor source'
     assert (destination / 'licenses/NOTICE-DRAMA3-EDITOR').read_bytes() == b'editor notice'
@@ -417,16 +499,71 @@ def test_source_sync_refreshes_editor_and_seed_without_publishing_runtime(public
     assert (destination / 'portable/tools/quantize_converted.py').read_bytes() == wrapper
     assert (destination / 'portable/tools/build_public_release.py').read_bytes() == publisher
     assert not (destination / 'tools/quantize_converted.py').exists()
+    assert (destination / 'portable/tools/finalize_manifest.py').read_bytes() == finalizer
+    for name in ['build_launcher.py','StartDrama3.cs']:
+        assert (destination/'portable/tools'/name).read_bytes()==(root/'tools'/name).read_bytes()
+    # A fresh isolated interpreter cannot borrow the original source's tools.
+    probe = '''import json,sys
+from pathlib import Path
+root=Path(sys.argv[1]).resolve()
+sys.path.insert(0,str(root))
+from tools import build_portable as builder
+assert Path(builder.__file__).resolve()==root/'tools/build_portable.py'
+try:builder.validate_final_archive({},[])
+except ValueError as error:assert 'requires acceptance-report.json' in str(error)
+else:raise AssertionError('Empty archive qualification was accepted')
+from tools import finalize_manifest as finalizer
+assert Path(finalizer.__file__).resolve()==root/'tools/finalize_manifest.py'
+from tools import build_launcher as executable_builder
+assert Path(executable_builder.__file__).resolve()==root/'tools/build_launcher.py'
+product=executable_builder.build_launcher(Path(sys.argv[2]))
+assert product.read_bytes()[:2]==b'MZ'
+assert 'torch' not in sys.modules
+print(json.dumps({'exe_bytes':product.stat().st_size,'launcher_helper':str(Path(executable_builder.__file__).resolve()),'builder':str(Path(builder.__file__).resolve()),'finalizer':str(Path(finalizer.__file__).resolve()),'isolated':sys.flags.isolated}))
+'''
+    result = subprocess.run([sys.executable, '-I', '-B', '-c', probe, str(destination / 'portable'),str(tmp_path/'isolated Chinese 空格'/'Start-Drama3.exe')],
+        cwd=tmp_path, check=True, capture_output=True, text=True)
+    receipt = json.loads(result.stdout)
+    assert receipt['isolated'] == 1
+    assert receipt['exe_bytes']>0
+    assert receipt['launcher_helper']==str((destination/'portable/tools/build_launcher.py').resolve())
+    assert receipt['builder'] == str((destination / 'portable/tools/build_portable.py').resolve())
+    assert receipt['finalizer'] == str((destination / 'portable/tools/finalize_manifest.py').resolve())
+    expected = {path.relative_to(destination).as_posix(): path.read_bytes()
+        for path in destination.rglob('*') if path.is_file() and '.git' not in path.relative_to(destination).parts}
+    git('add', '--all', '--', '.')
+    git('commit', '-m', 'source sync bytes')
+    with tarfile.open(fileobj=io.BytesIO(git('archive', '--format=tar', 'HEAD'))) as committed:
+        actual = {member.name: committed.extractfile(member).read()
+            for member in committed.getmembers() if member.isfile()}
+    assert actual == expected
+    sample = 'portable/tests/line-endings-fixture.py'
+    assert git('hash-object', '--no-filters', sample) == git('hash-object', '--path', sample, sample)
+    assert git('check-attr', 'text', '--', sample).decode().strip().endswith(': unset')
+    for checkout_mode in ('true', 'false'):
+        clone = tmp_path / ('checkout-' + checkout_mode)
+        git('clone', '--no-checkout', '--no-hardlinks', str(destination), str(clone), cwd=tmp_path)
+        git('config', 'core.autocrlf', checkout_mode, cwd=clone)
+        git('checkout', '--force', 'HEAD', cwd=clone)
+        assert {name: (clone / name).read_bytes() for name in expected} == expected
     # The source-only alias remains absent from every distributed tool list.
     public.code_asset()
     public.node_asset()
     with zipfile.ZipFile(output / f'Drama3-T8-Portable-{public.__version__}-code.zip') as archive:
         assert 'tools/quantize_converted.py' not in archive.namelist()
         assert 'tools/build_public_release.py' not in archive.namelist()
+        assert 'tools/finalize_manifest.py' not in archive.namelist()
+        assert not any(name.endswith(('build_launcher.py','StartDrama3.cs','.exe')) for name in archive.namelist())
         assert 'tools/convert_model.py' in archive.namelist()
+        assert '.gitattributes' not in archive.namelist()
+        assert all(archive.read(name) == expected['portable/' + name] for name in archive.namelist())
     with zipfile.ZipFile(output / f'ComfyUI-Drama3-T8-{public.__version__}.zip') as archive:
         assert not any(name.endswith('tools/quantize_converted.py') for name in archive.namelist())
         assert not any(name.endswith('tools/build_public_release.py') for name in archive.namelist())
+        assert not any(name.endswith('tools/finalize_manifest.py') for name in archive.namelist())
+        assert not any(name.endswith(('build_launcher.py','StartDrama3.cs','.exe')) for name in archive.namelist())
+        assert 'Comfyui-Drama-3/.gitattributes' in archive.namelist()
+        assert all(archive.read(name) == expected[name.split('/', 1)[1]] for name in archive.namelist())
     assert not any(path.suffix.lower() in {'.safetensors','.exe','.dll'} or path.name.casefold() == 'roadmap.md'
                    for path in destination.rglob('*') if path.is_file())
 
@@ -504,16 +641,19 @@ def test_source_walk_excludes_links_and_case_variants_of_local_research(tmp_path
 
 
 def test_interrupted_full_zip_keeps_existing_archive(tmp_path, monkeypatch):
+    # This fixture exercises archive/layout mechanics, not release qualification.
+    monkeypatch.setattr(build_portable, 'validate_final_archive', lambda *args: None)
     target = tmp_path / 'package'
     monkeypatch.setattr(build_portable, 'TARGET', target)
     put(target, 'app.py')
     put(target, 'package-manifest.json', b'{}')
+    manifest=compiled_launcher_manifest(target, {'version':build_portable.__version__,'files':['app.py']})
     archive = put(target.parent, f'Drama3-T8-Portable-{build_portable.__version__}-win64.zip', b'previous ZIP bytes')
     def fail(*args, **kwargs):
         raise OSError('zip interrupted')
     monkeypatch.setattr(build_portable.zipfile.ZipFile, 'write', fail)
     with pytest.raises(OSError, match='interrupted'):
-        build_portable.write_archive({'version':build_portable.__version__,'files':['app.py']})
+        build_portable.write_archive(manifest)
     assert archive.read_bytes() == b'previous ZIP bytes'
     assert not list(target.parent.glob('*.part'))
 

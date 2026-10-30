@@ -12,6 +12,7 @@ from importlib.util import find_spec
 from pathlib import Path
 
 import numpy as np
+from ..asr_language import normalize_asr_language
 
 SUPPORTED_LANGUAGES = ("Chinese", "English", "Cantonese", "Japanese", "Korean", "German",
                        "French", "Russian", "Portuguese", "Spanish", "Italian")
@@ -107,14 +108,13 @@ def _load_library():
 
 
 def build_prompt(context="", language=None, prefix=""):
+    language = normalize_asr_language(language, SUPPORTED_LANGUAGES, backend="Confucius")
     if not isinstance(context, str) or not isinstance(prefix, str):
         raise ValueError("Confucius context and prefix must be text")
     if "\0" in context or "\0" in prefix:
         raise ValueError("Confucius prompt cannot contain NUL characters")
     if len(context) > 8192:
         raise ValueError("CONTEXT_LIMIT: 提示词和热词总计不能超过 8192 字符")
-    if language is not None and language not in SUPPORTED_LANGUAGES:
-        raise ValueError(f"Confucius 不支持指定语言：{language}")
     return ("<|im_start|>system\n" + context + "<|im_end|>\n"
             "<|im_start|>user\n<|audio_start|><|audio_pad|><|audio_end|>"
             "<|im_end|>\n<|im_start|>assistant\n" +
@@ -164,6 +164,7 @@ class NativeQ8Engine:
             return True
 
     def transcribe(self, audio, *, context="", language=None, max_tokens=1024):
+        language = normalize_asr_language(language, SUPPORTED_LANGUAGES, backend="Confucius")
         pcm = np.ascontiguousarray(audio, dtype=np.float32)
         if pcm.ndim != 1 or not pcm.size or not np.isfinite(pcm).all():
             raise ValueError("Expected nonempty finite mono PCM")

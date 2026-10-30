@@ -1,8 +1,8 @@
 {
   "version": "1",
-  "url": "https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.2.0/Drama3-R2T2-native-win64-cu128.zip",
-  "bytes": 610439942,
-  "sha256": "bfbc96c815e5315dff85ce6d465c2a5f9d7a7bd400787eea984e9b559114b7c6",
+  "url": "https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.3.0/Drama3-R2T2-native-win64-cu128.zip",
+  "bytes": 610460680,
+  "sha256": "c075593eefe24c96977246e0815c52163d7b9d5df297766df242b5a2bcf3bccd",
   "files": {
     "backends/ggml-cpu.dll": {
       "bytes": 943616,
@@ -52,9 +52,17 @@
       "bytes": 7789,
       "sha256": "6ed2e9946bd0b0185a6c690565cf2f8de23044a513be6e1ec7c97e6995ce241b"
     },
+    "licenses/FFMPEG-BUILDCONF.txt": {
+      "bytes": 2861,
+      "sha256": "40cdfb975a72c5081d8de5fe2f2af8980ed1bb3b582fe311db909a5b43d2b4d7"
+    },
     "licenses/LICENSE-APACHE": {
       "bytes": 11554,
       "sha256": "fb576006b32d09620b812e9949b0fb08ac94759605f8eec7b33015f0fd83121f"
+    },
+    "licenses/LICENSE-CAMPPLUS": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
     },
     "licenses/LICENSE-CONFUCIUS-CODE": {
       "bytes": 11156,
@@ -64,6 +72,10 @@
       "bytes": 35825,
       "sha256": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db"
     },
+    "licenses/LICENSE-FFMPEG": {
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
     "licenses/LICENSE-FIRERED-VAD": {
       "bytes": 11357,
       "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
@@ -71,6 +83,10 @@
     "licenses/LICENSE-FISH-AUDIO": {
       "bytes": 19799,
       "sha256": "4949184a00884b24d7ba473d81b16fcca7e6edae371a72f61cd1005dd0a24adc"
+    },
+    "licenses/LICENSE-IMAGEIO-FFMPEG": {
+      "bytes": 1317,
+      "sha256": "eca73421d0c905a92e952a553d4d58919c5a507c2c2c76e3c0cf9ba408c299e4"
     },
     "licenses/LICENSE-LLAMA-CPP": {
       "bytes": 1099,
@@ -80,9 +96,21 @@
       "bytes": 509053,
       "sha256": "8bc4f2fa9143380a52a0644229bc9a4bcc158e0f9cab8c8340f1eab3f353dbe9"
     },
+    "licenses/NOTICE-CAMPPLUS.md": {
+      "bytes": 1449,
+      "sha256": "4e3e5b92c69aba1955ac62175f67777e6059d533a1e9c758285b2f0cdb14608b"
+    },
+    "licenses/NOTICE-CONFUCIUS-MODEL.txt": {
+      "bytes": 971,
+      "sha256": "5eced69df918bcde94ad2f78b3f287242cd3535662375b3c811100ff46a140b4"
+    },
     "licenses/NOTICE-DRAMA3-EDITOR": {
       "bytes": 523,
       "sha256": "54ec8fb5d406e89d455de536b00caef37fcd897b1129c79ceb78d1a97c50e67f"
+    },
+    "licenses/NOTICE-FFMPEG.md": {
+      "bytes": 1718,
+      "sha256": "b67aa902aef27fa704d70c4b99ca86d22452db7337d84ba607bddd0016b3d18b"
     },
     "licenses/NOTICE-R2T2.txt": {
       "bytes": 795,

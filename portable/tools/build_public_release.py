@@ -22,7 +22,7 @@ from drama3_t8 import __version__
 OUT = ROOT / 'release_packages/public'
 NODE = ROOT / 'comfyui-drama3-T8'
 SKIP = {'.git', '.cache', '__pycache__', '.pytest_cache', 'node_modules'}
-NODE_ROOT_FILES = {'.gitignore', '.comfyignore', '__init__.py', 'install.py', 'LICENSE',
+NODE_ROOT_FILES = {'.gitignore', '.comfyignore', '.gitattributes', '__init__.py', 'install.py', 'LICENSE',
     'pyproject.toml', 'r2t2-runtime.json', 'README.md', 'README.zh-CN.md',
     'requirements.txt', 'upstream-lock.json'}
 SOURCE_SUFFIXES = {'.py', '.json', '.txt', '.jinja', '.jinja2', '.dict', '.js', '.css',
@@ -216,7 +216,7 @@ def sync_node_source():
     for name in ['licenses']:
         for p in files(ROOT / name):
             copy(p, NODE / name / p.relative_to(ROOT / name))
-    for name in ['LICENSE', 'README.md', 'README.zh-CN.md', 'upstream-lock.json']:
+    for name in ['.gitattributes', 'LICENSE', 'README.md', 'README.zh-CN.md', 'upstream-lock.json']:
         copy(ROOT / name, NODE / name)
     for p in files(ROOT / 'vendor/r2t2_native'):
         if p.suffix.lower() in SOURCE_SUFFIXES or p.name in {'LICENSE', 'COPYING'}:
@@ -247,7 +247,7 @@ def sync_source(destination):
             copy(p, destination / 'portable/tests' / p.relative_to(ROOT / 'tests'))
     # Development-only helpers are available in the source checkout. They do
     # not enter full environments or the legacy-compatible code-update ZIP.
-    for name in ['build_portable.py', 'build_public_release.py', 'quantize_converted.py']:
+    for name in ['build_portable.py', 'build_public_release.py', 'finalize_manifest.py', 'build_launcher.py', 'StartDrama3.cs', 'quantize_converted.py']:
         copy(ROOT / 'tools' / name, destination / 'portable/tools' / name)
     # Native library source retains complete notices and build instructions.
     for p in files(ROOT / 'vendor/r2t2_native'):
@@ -264,10 +264,13 @@ def node_asset():
 
 
 def main():
+    global OUT
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--native-only', action='store_true')
     parser.add_argument('--source', type=Path)
+    parser.add_argument('--out', type=Path, default=OUT, help='Code-only release artifact folder')
     args = parser.parse_args()
+    OUT = args.out.resolve()
     OUT.mkdir(parents=True, exist_ok=True)
     native_asset()
     if args.native_only:

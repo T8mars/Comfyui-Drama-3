@@ -15,7 +15,7 @@ import unicodedata
 
 import torch
 
-from .state import Session, Take, validate_frames
+from .state import Session, Reference, Take, validate_frames
 from .scene_cast import prepare_scene_cast
 from .native.chunking import PROTECTED_SPAN, SENTENCE_ENDS, CLAUSE_MARKS
 from .native.prompt import WHITE_SPACE
@@ -37,6 +37,13 @@ def options(enabled, budget):
         raise ValueError('split_long_text must be a boolean')
     if type(budget) is not int or not 32 <= budget <= 3000:
         raise ValueError('Scene chunk_bytes must be an integer from 32 to 3000')
+
+
+def _creative_context_options(history_limit, fixed_reference_anchor):
+    if type(history_limit) is not int or history_limit not in (2, 3):
+        raise ValueError('Scene initial history_limit must be 2 or 3')
+    if type(fixed_reference_anchor) is not bool:
+        raise ValueError('Scene fixed_reference_anchor must be a boolean')
 
 
 def body_of(line):
@@ -306,9 +313,13 @@ def split_body(body, budget):
     return _rebalance_short_tail(body, split_body_v2(body, budget), budget)
 
 
-def plan_scene(lines, references=(), takes=(), *, mode='together', chunk_bytes=300, chunking_version=VERSION):
+def plan_scene(lines, references=(), takes=(), *, mode='together', chunk_bytes=300, chunking_version=VERSION,
+               request_direction=''):
     from .dialogue import MODES
     from .native.prompt import check_text
+    from .prompts import direction_tags, directed_text
+    request_direction = direction_tags(request_direction)
+    direction_bytes = len(request_direction.encode('utf-8')) + 1 if request_direction else 0
     options(True, chunk_bytes)
     if type(chunking_version) is not int or chunking_version not in (1,2,VERSION):
         raise ValueError('Unsupported scene_chunking.version')
@@ -329,7 +340,10 @@ def plan_scene(lines, references=(), takes=(), *, mode='together', chunk_bytes=3
         offsets=byte_offsets(body)
         overhead = len(tagged('', actor).encode('utf-8'))
         split={1:split_body_v1,2:split_body_v2,VERSION:split_body}[chunking_version]
-        for chunk_index, (start, end) in enumerate(split(body, chunk_bytes - overhead)):
+        available = chunk_bytes - overhead - direction_bytes
+        if available < 1:
+            raise ValueError('Direction controls cannot fit chunk_bytes including speaker overhead; increase chunk_bytes')
+        for chunk_index, (start, end) in enumerate(split(body, available)):
             units.append(dict(unit_index=len(units), line_index=line_index, chunk_index=chunk_index,
                 speaker_id=actor, text_start=start, text_end=end,
                 byte_start=offsets[start], byte_end=offsets[end],
@@ -353,12 +367,12 @@ def plan_scene(lines, references=(), takes=(), *, mode='together', chunk_bytes=3
         # pack several original lines, but never crosses a role group.
         local_actor = unit['speaker_id'] if mode == 'together' else 0
         candidate = [*batch, unit]
-        text = JOIN.join(tagged(u['text'], u['speaker_id'] if mode == 'together' else 0) for u in candidate)
+        text = JOIN.join(directed_text(tagged(u['text'], u['speaker_id'] if mode == 'together' else 0), request_direction) for u in candidate)
         if batch and (mode in ('per_line', 'per_line_context') or
                 mode == 'per_speaker' and batch[0]['speaker_id'] != unit['speaker_id'] or
                 len(text.encode('utf-8')) > chunk_bytes):
             flush()
-        if len(tagged(unit['text'], local_actor).encode('utf-8')) > chunk_bytes:
+        if len(directed_text(tagged(unit['text'], local_actor), request_direction).encode('utf-8')) > chunk_bytes:
             raise ValueError('Scene request exceeds chunk_bytes')
         batch.append(unit)
     flush()
@@ -384,6 +398,7 @@ def validate_scene(take):
     if not isinstance(policy, dict) or type(policy.get('version')) is not int or policy['version'] not in (1,2,VERSION):
         raise ValueError('Unsupported scene_chunking.version')
     options(policy.get('enabled'), policy.get('chunk_bytes'))
+    _creative_context_options(policy.get('history_limit', 2), policy.get('fixed_reference_anchor', False))
     if policy['enabled'] is not True:
         raise ValueError('A versioned scene source map must be enabled')
     from .dialogue import MODES
@@ -402,6 +417,8 @@ def validate_scene(take):
             not isinstance(units, list) or not 0 < len(units) <= MAX_UNITS or
             not isinstance(raws, list) or not 0 < len(raws) <= len(units)):
         raise ValueError('Invalid scene source-map shape')
+    if policy.get('fixed_reference_anchor') and (take.metadata['generation_mode'] != 'per_line' or len(set(actors)) != 1):
+        raise ValueError('Fixed reference anchoring requires one actor in per_line mode')
     # Recast using the persisted map, not a new first-seen allocation.
     from .scene_cast import _render_line
     mapping = take.metadata.get('scene_speaker_map', {})
@@ -413,8 +430,12 @@ def validate_scene(take):
     rebuilt = [tagged(body_of(_render_line(line, mapping))[1], body_of(_render_line(line, mapping))[0]) for line in original]
     if cast != rebuilt or actors != [body_of(line)[0] for line in cast]:
         raise ValueError('Scene cast/script identity differs from its source map')
+    request_direction = policy.get('request_direction', '')
+    from .prompts import directed_text, direction_tags
+    if not isinstance(request_direction, str) or direction_tags(request_direction) != request_direction:
+        raise ValueError('Invalid canonical scene request direction')
     replanned=plan_scene(cast,mode=take.metadata['generation_mode'],chunk_bytes=policy['chunk_bytes'],
-        chunking_version=policy['version'])
+        chunking_version=policy['version'],request_direction=request_direction)
     expected_requests=[[unit['unit_index'] for unit in request] for request in replanned['requests']]
     if len(expected_requests)!=len(raws) or len(replanned['units'])!=len(units):
         raise ValueError('Scene source requests differ from their persisted chunk policy')
@@ -464,7 +485,7 @@ def validate_scene(take):
         if len(segments) != len(indexes) or any(c.shape[-1] == 0 for c in segments):
             raise ValueError('Scene source segment coverage differs')
         try:
-            request = JOIN.join(tagged(units[i]['text'], units[i]['speaker_id'] if actor is None else 0) for i in indexes)
+            request = JOIN.join(directed_text(tagged(units[i]['text'], units[i]['speaker_id'] if actor is None else 0), request_direction) for i in indexes)
         except (KeyError, TypeError) as exc:
             raise ValueError('Invalid scene source unit text') from exc
         if restored.prompt_text != request or len(request.encode('utf-8')) > policy['chunk_bytes']:
@@ -627,13 +648,34 @@ def history_view(takes):
     return tuple(expanded if len(expanded) < 3 else (expanded[0], expanded[-1]))
 
 
-def chunked_scene(engine, lines, scene, characters, references, sampling, progress, session, note, on_codes, mode, chunk_bytes):
+def chunked_scene(engine, lines, scene, characters, references, sampling, progress, session, note, on_codes, mode, chunk_bytes,
+                  *, history_limit=2, fixed_reference_anchor=False, on_observed_codes=None, system_context=''):
+    """Generate the existing source-aware composite with optional creative views.
+
+    The default is the unchanged Scene policy. Creative callers may retain up
+    to three prepared acoustic turns in the first request only. Continuations
+    use first/latest (at most two), or one fixed reference with empty history.
+    Fixed anchoring accepts a single actor in per_line mode; mixed audio never
+    becomes a relabelled single-actor reference.
+    """
     from .dialogue import own_history, recast, audio_frames
-    from .prompts import spoken_text
+    from .prompts import spoken_text, direction_tags, directed_text
+    _creative_context_options(history_limit, fixed_reference_anchor)
+    if on_observed_codes is not None and not callable(on_observed_codes):
+        raise ValueError('Scene on_observed_codes must be a callable or None')
     session = session or Session(tuple(references or ()))
     if references is not None:
         session = replace(session, references=tuple(references))
-    plan = plan_scene(lines, session.references, session.takes, mode=mode, chunk_bytes=chunk_bytes)
+    # Isolated voices already have real local reference/history tags. Only
+    # actual user context contributes model language; no invented role mapping.
+    request_direction = direction_tags(session.direction, note)
+    plan = plan_scene(lines, session.references, session.takes, mode=mode, chunk_bytes=chunk_bytes,
+                      request_direction=request_direction)
+    if fixed_reference_anchor and (mode != 'per_line' or len(set(plan['line_speakers'])) != 1):
+        raise ValueError('Fixed reference anchoring requires one actor in per_line mode')
+    anchor_actor = plan['line_speakers'][0]
+    fixed_references = tuple(ref for ref in session.references if body_of(ref.transcript)[0] == anchor_actor) if fixed_reference_anchor else ()
+    anchor_source = None
     histories = own_history(session)
     global_history = list(history_view(session.takes))
     units = [dict(unit) for unit in plan['units']]
@@ -657,18 +699,28 @@ def chunked_scene(engine, lines, scene, characters, references, sampling, progre
                     if previous_source is not None and previous_actor != actor else None)
                 line_other_actor=previous_actor if line_other_context is not None else None
             history = global_history if together else histories.get(actor, [])
-            history = history if len(history) < 3 else [history[0], history[-1]]
+            initial_limit = history_limit if ordinal == 0 else 2
+            history = history if len(history) <= initial_limit else [history[0], history[-1]]
             if mode == 'per_line_context' and line_other_context is not None:
                 history = [*history, line_other_context]
             refs = session.references if together else tuple(replace(ref, transcript=recast(ref.transcript))
                 for ref in session.references if body_of(ref.transcript)[0] == actor)
+            if fixed_reference_anchor and ordinal:
+                if fixed_references:
+                    refs = tuple(replace(ref, transcript=recast(ref.transcript)) for ref in fixed_references)
+                else:
+                    refs = (Reference(recast(anchor_source.prompt_text), anchor_source.codes, '首段音色锚'),)
+                history = []
             if together:
-                direction='\n'.join(part for part in (session.direction,scene,characters) if part)
+                direction=session.direction
+                context_description=system_context
             else:
-                from .scene_conditioning import isolated_direction
+                from .scene_conditioning import isolated_direction,isolated_system_context
                 name=next((name for name,identifier in plan['speaker_map'].items() if identifier==actor),f'speaker {actor}')
                 direction=isolated_direction(session.direction,scene,characters,actor=actor,name=name,
                     previous_actor=line_other_actor,note=note)
+                context_description=isolated_system_context(scene,characters,actor=actor,name=name,
+                    previous_actor=line_other_actor,system_context=system_context)
             context = Session(refs, tuple(history), direction)
             local = replace(sampling, seed=(sampling.seed + ordinal) % 2**64)
             def advancing(step, total, index=ordinal):
@@ -676,20 +728,32 @@ def chunked_scene(engine, lines, scene, characters, references, sampling, progre
                     progress(index * sampling.max_frames + step, len(plan['requests']) * sampling.max_frames)
             advancing(0, sampling.max_frames)
             texts = [tagged(unit['text'], unit['speaker_id'] if together else 0) for unit in request]
+            observed = {'on_codes': on_observed_codes} if on_observed_codes is not None else {}
+            if context_description:
+                observed['system_context']=context_description
             if len(texts) > 1 or together:
                 generated = engine.scene(texts, scene=scene if together else '', characters=characters if together else '', references=refs,
                     sampling=local, progress=advancing, session=context, note=note if together else '',
-                    generation_mode='together', split_long_text=False)
+                    generation_mode='together', split_long_text=False, **observed)
             else:
-                generated = engine.speak(texts[0], context, local, progress=advancing)
+                generated = engine.speak(texts[0], context, local, progress=advancing, **observed)
             source = generated.takes[-1]
             import comfy.model_management as mm
             mm.throw_exception_if_processing_interrupted()
             segments = source.segments()
             if source.metadata.get('length_limit_reached') or len(segments) != len(request) or any(c.shape[-1] == 0 for c in segments):
                 raise RuntimeError(f'Chunked scene request {ordinal + 1} did not complete every planned unit')
-            if source.prompt_text != JOIN.join(texts):
+            expected_request = JOIN.join(directed_text(text, request_direction) for text in texts)
+            if source.prompt_text != expected_request or len(expected_request.encode('utf-8')) > chunk_bytes:
                 raise RuntimeError('Scene generation changed its budgeted request text')
+            if fixed_reference_anchor:
+                if ordinal == 0:
+                    anchor_source = source
+                else:
+                    source = replace(source, metadata={**source.metadata, 'long_context': {
+                        'version': 1, 'policy': 'explicit_references' if fixed_references else 'first_new_take_reference',
+                        'source_take_id': None if fixed_references else anchor_source.take_id,
+                        'explicit_reference_count': len(fixed_references), 'completed_history_turns': 0}})
             indexes = [unit['unit_index'] for unit in request]
             sources.append(dict(speaker=None if together else actor, unit_indexes=indexes,request_index=ordinal,request_seed=local.seed,
                 prompt_text=source.prompt_text, transcript=source.transcript, frames=source.frames.tolist(),
@@ -726,6 +790,18 @@ def chunked_scene(engine, lines, scene, characters, references, sampling, progre
         seed=sampling.seed, sampling=sampling.__dict__, finish_reason='eos', length_limit_reached=False,
         preview_mode='deferred_script_order', chunk_count=len(units), request_count=len(sources),
         duration_seconds=(sum(line_frames) * FRAME_LENGTH + (len(lines) - 1) * round(.3 * SAMPLE_RATE)) / SAMPLE_RATE)
+    if history_limit != 2:
+        metadata['scene_chunking']['history_limit'] = history_limit
+    if request_direction:
+        metadata['scene_chunking']['request_direction'] = request_direction
+    if system_context:
+        metadata['system_context'] = system_context
+    if fixed_reference_anchor:
+        metadata['scene_chunking']['fixed_reference_anchor'] = True
+        metadata['long_context'] = {'version': 1,
+            'policy': 'explicit_references' if fixed_references else 'first_new_take_reference',
+            'source_take_id': None if fixed_references else anchor_source.take_id,
+            'explicit_reference_count': len(fixed_references), 'completed_history_turns': 0}
     details = [source['metadata'] for source in sources]
     for field in ('elapsed_seconds', 'cpu_experts_run', 'cpu_decode_calls'):
         metadata[field] = sum(item.get(field, 0) for item in details)

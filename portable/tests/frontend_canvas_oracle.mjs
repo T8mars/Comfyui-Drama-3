@@ -57,6 +57,11 @@ const functionCode=name=>bodyAt(new RegExp('function\\s+'+name+'(?:\\$\\d+)?\\('
 for(const name of ['getOrderedInputSpecs','migrateWidgetsValues','computeLegacyWidgetShadow','serialiseWidgetValues','addValueControlWidget','addValueControlWidgets']){
   vm.runInContext(functionCode(name),context);
 }
+// Current official WidgetInputs keeps widgets and sockets together. Use its
+// real resolver/type helper when restoring standard serialized widget links.
+context.console={warn(){}};
+vm.runInContext(bodyAt('function convertToInput('),context);
+vm.runInContext(bodyAt('function getWidgetType('),context);
 if(functionCode('serialiseWidgetValues').includes('cloneWidgetValueTwice('))vm.runInContext(bodyAt('function cloneWidgetValueTwice('),context);
 if(functionCode('addValueControlWidgets').includes('controlAfterGenerateNameOverride(')){
   context.isValueControlMode=value=>['fixed','increment','decrement','randomize','increment-wrap'].includes(value);
@@ -107,6 +112,17 @@ for(const item of request.nodes){
     }
     if(spec.type==='INT')context.useIntWidget()(node,spec);
     else node.addWidget(spec.type.toLowerCase(),spec.name,spec.default??spec.options?.[0]??(spec.type==='BOOLEAN'?false:spec.type==='FLOAT'?0:''));
+  }
+  for(const saved of item.inputs??[]){
+    if(!saved.widget)continue;
+    const name=saved.widget.name,spec=specs[name],widget=node.widgets.find(candidate=>candidate.name===name);
+    if(name!==saved.name||!spec||!widget||sockets.some(socket=>socket.name===name))throw Error('Invalid converted widget socket '+item.type+'.'+saved.name);
+    const raw=info.input.required?.[name]??info.input.optional?.[name];
+    const actualType=context.getWidgetType(raw).type;
+    if(saved.type!==actualType||!['STRING','INT','FLOAT','BOOLEAN','COMBO'].includes(actualType))throw Error('Converted widget schema/type mismatch '+item.type+'.'+name);
+    node.inputs.push(saved);
+    if(context.convertToInput(node,widget)!==saved)throw Error('Official WidgetInputs could not resolve '+item.type+'.'+name);
+    sockets.push({name,type:actualType,isOptional:spec.isOptional,widget:true});
   }
   const restored=context.migrateWidgetsValues(specs,node.widgets,item.widgets_values);
   const shadow=context.computeLegacyWidgetShadow(node.widgets,restored);

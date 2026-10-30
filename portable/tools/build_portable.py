@@ -133,8 +133,88 @@ def archive_members(manifest):
     return sorted(result)
 
 
+def validate_final_archive(manifest,paths):
+    """Bind a final full ZIP to completed acceptance and current source bytes.
+
+    Development layouts stay buildable before qualification. This check only
+    runs when producing the user-facing full archive, including --zip-only.
+    """
+    from tools.finalize_manifest import validate,sha
+    names={path.relative_to(TARGET).as_posix() for path in paths}
+    if 'acceptance-report.json' not in names:
+        raise ValueError('Final portable ZIP requires acceptance-report.json')
+    report=json.loads((TARGET/'acceptance-report.json').read_text(encoding='utf-8'))
+    validate(report,root=ROOT,version=__version__)
+    required={'app.py','README.md','README.zh-CN.md','LICENSE','Start-Drama3.cmd','Update-Drama3.cmd',
+        'requirements.txt','upstream-lock.json','acceleration-manifest.json','acceleration-requirements.txt'}
+    required.update('tools/'+name for name in ('check_runtime.py','download_models.py','convert_model.py',
+        'safetensors_stream.py','extract_text_head.py','update_portable.py'))
+    required.update(path.relative_to(ROOT).as_posix() for path in (ROOT/'drama3_t8').rglob('*.py')
+        if '__pycache__' not in path.parts)
+    required.update(path.relative_to(ROOT).as_posix() for path in (ROOT/'web').rglob('*')
+        if path.is_file() and path.suffix.lower() in {'.js','.css','.html'})
+    if not required<=names:
+        raise ValueError('Refresh the portable layout: current accepted source members are missing')
+    if not required<=set(report['source_sha256']):
+        raise ValueError('Acceptance does not cover portable launch/update sources')
+    for name in sorted(required):
+        if sha(TARGET/name)!=report['source_sha256'][name]:
+            raise ValueError('Refresh the portable layout: packaged source differs from acceptance: '+name)
+
+
+def launcher_artifact(manifest, *, required=False):
+    """Check a full-build product; no acceptance report or ZIP hash cycle."""
+    item=manifest.get('launcher')
+    if item is None:
+        if required:raise ValueError('Refresh the full layout: Start-Drama3.exe build record is required')
+        return
+    if (type(item) is not dict or item.get('path')!='Start-Drama3.exe'
+            or 'Start-Drama3.exe' not in manifest.get('files',[])):
+        raise ValueError('Invalid full launcher build record')
+    target=TARGET/'Start-Drama3.exe'
+    if (not target.is_file() or reparse(target) or type(item.get('bytes')) is not int
+            or target.stat().st_size!=item['bytes']
+            or hashlib.sha256(target.read_bytes()).hexdigest()!=item.get('sha256')):
+        raise ValueError('Full launcher bytes differ from the recorded build product')
+    from tools.build_launcher import _check_x64_console
+    try:
+        _check_x64_console(target)
+    except (OSError, RuntimeError) as error:
+        raise ValueError('Full launcher is not a Windows x64 console executable') from error
+    inputs=item.get('inputs')
+    if type(inputs) is not dict:raise ValueError('Launcher build inputs are missing')
+    for name in ('tools/build_launcher.py','tools/StartDrama3.cs'):
+        source=ROOT/name
+        if (not source.is_file() or reparse(source)
+                or hashlib.sha256(source.read_bytes()).hexdigest()!=inputs.get(name)):
+            raise ValueError('Refresh the full launcher after source changes: '+name)
+
+
+def build_full_launcher():
+    """Keep an already recorded unchanged EXE; compile only a new build."""
+    previous=TARGET/'package-manifest.json'
+    if previous.is_file():
+        try:
+            manifest=json.loads(previous.read_text(encoding='utf-8'))
+            launcher_artifact(manifest,required=True)
+        except (ValueError,OSError,TypeError):
+            pass
+        else:
+            COPIED.add('Start-Drama3.exe')
+            return manifest['launcher']
+    from tools.build_launcher import build_launcher
+    path=build_launcher(TARGET/'Start-Drama3.exe',source=ROOT/'tools/StartDrama3.cs')
+    COPIED.add(path.relative_to(TARGET).as_posix())
+    return {'path':'Start-Drama3.exe','bytes':path.stat().st_size,
+        'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+        'inputs':{name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest()
+                  for name in ('tools/build_launcher.py','tools/StartDrama3.cs')}}
+
+
 def write_archive(manifest):
     paths=archive_members(manifest)
+    launcher_artifact(manifest,required=True)
+    validate_final_archive(manifest,paths)
     archive=TARGET.parent/f'Drama3-T8-Portable-{__version__}-win64.zip'
     temporary=None
     try:
@@ -156,26 +236,43 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--target',type=Path,default=TARGET,help='Full environment folder (may be on another drive)')
     parser.add_argument('--extra-model',action='append',type=Path,default=[],help='Additional safetensors copied into models/')
+    parser.add_argument('--runtime-source',type=Path,default=ROOT/'runtime',help='Verified runtime folder to package')
+    parser.add_argument('--models-source',type=Path,default=ROOT/'models',help='Base converted models folder')
+    parser.add_argument('--speaker-model',type=Path,help='Optional CAM++ ONNX for local recording speaker suggestions')
     parser.add_argument('--zip',action='store_true')
     parser.add_argument('--hash-models',action='store_true')
     parser.add_argument('--zip-only',action='store_true')
     args=parser.parse_args()
     TARGET=validate_target(args.target)
+    runtime_source=args.runtime_source.resolve()
+    models_source=args.models_source.resolve()
     models=['drama3-t8-fp8.safetensors','drama3-codec.safetensors','drama3-text-head.safetensors','qwen3-asr-06b.safetensors']
-    if (ROOT/'models/drama3-line-head.safetensors').is_file():models.append('drama3-line-head.safetensors')
+    if (models_source/'drama3-line-head.safetensors').is_file():models.append('drama3-line-head.safetensors')
     additional=extra_models(args.extra_model,models)
     if args.zip_only:
         manifest=json.loads((TARGET/'package-manifest.json').read_text(encoding='utf-8'))
+        launcher_artifact(manifest,required=True)
         write_archive(manifest)
         return
-    if not (ROOT/'runtime/python/python.exe').is_file():
+    for source in (runtime_source,models_source):
+        if TARGET==source or TARGET in source.parents or source in TARGET.parents:
+            raise ValueError('The package destination must be separate from the selected runtime and models folders')
+    if not (runtime_source/'python/python.exe').is_file():
         raise ValueError('The full environment requires runtime/python/python.exe')
+    installed={dist.metadata['Name']:dist.version for dist in importlib.metadata.distributions(
+        path=[str(runtime_source/'python/Lib/site-packages')])}
+    if installed.get('transformers')!='4.57.1':
+        raise ValueError('The portable runtime must provide tested Transformers 4.57.1')
+    if args.speaker_model and (not args.speaker_model.is_file() or args.speaker_model.suffix.lower()!='.onnx'):
+        raise ValueError('Speaker model must be an existing CAM++ ONNX file')
     COPIED.clear()
     TARGET.mkdir(parents=True,exist_ok=True)
+    launcher=build_full_launcher()
     for name in ['app.py','README.md','README.zh-CN.md','LICENSE','Start-Drama3.cmd','Update-Drama3.cmd','requirements.txt','upstream-lock.json','acceleration-manifest.json','acceleration-requirements.txt','acceptance-report.json']:
         copy_file(ROOT/name,TARGET/name)
-    for name in ['drama3_t8','web','licenses','runtime']:
+    for name in ['drama3_t8','web','licenses']:
         copy_tree(ROOT/name,TARGET/name)
+    copy_tree(runtime_source,TARGET/'runtime')
     # These are ComfyUI's top-level runtime data folders. Their names can also
     # occur in required source packages (comfy_api/input, comfy/ldm/models).
     copy_tree(ROOT/'vendor/ComfyUI',TARGET/'vendor/ComfyUI',root_skip=('custom_nodes','models','outputs','output','userdata','user','input','temp'))
@@ -196,13 +293,15 @@ def main():
     for name in ['check_runtime.py','download_models.py','convert_model.py','safetensors_stream.py','extract_text_head.py','update_portable.py']:
         copy_file(ROOT/'tools'/name,TARGET/'tools'/name)
     for name in models:
-        source=ROOT/'models'/name
+        source=models_source/name
         copy_file(source,TARGET/'models'/name)
     for source in additional:
         copy_file(source,TARGET/'models'/source.name)
-    copy_tree(ROOT/'models/qwen-aligner',TARGET/'models/qwen-aligner')
+    copy_tree(models_source/'qwen-aligner',TARGET/'models/qwen-aligner')
     for name in ['Confucius4-R2T2-GGUF','FireRedVAD-ONNX']:
-        copy_tree(ROOT/'models'/name,TARGET/'models'/name)
+        copy_tree(models_source/name,TARGET/'models'/name)
+    if args.speaker_model:
+        copy_file(args.speaker_model,TARGET/'models/campplus-zh-en.onnx')
     copied=sorted(COPIED)
     assert not any('roadmap.md' in p.casefold() or '.tmpaeqmc2' in p.casefold() or '.upstream/' in p.casefold() for p in copied)
     records=[]
@@ -216,9 +315,7 @@ def main():
                 for block in iter(lambda:handle.read(32*1024*1024),b''):digest.update(block)
             record['sha256']=digest.hexdigest()
         records.append(record)
-    installed={dist.metadata['Name']:dist.version for dist in importlib.metadata.distributions(
-        path=[str(ROOT/'runtime/python/Lib/site-packages')])}
-    manifest={'version':__version__,'models':records,'model_source':json.loads((ROOT/'upstream-lock.json').read_text()),
+    manifest={'version':__version__,'launcher':launcher,'models':records,'model_source':json.loads((ROOT/'upstream-lock.json').read_text()),
               'runtime_packages':installed,'files':copied,'excluded':['roadmap.md','official source weights','failed conversion temp','userdata','outputs','development validation']}
     (TARGET/'package-manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
     print(f'PORTABLE LAYOUT: {TARGET}, {len(copied)} files',flush=True)

@@ -10,6 +10,7 @@ from dataclasses import replace
 from pathlib import Path
 from contextlib import asynccontextmanager
 import socket
+import shutil
 from urllib.request import urlopen
 from urllib.error import URLError
 
@@ -30,7 +31,7 @@ from drama3_t8 import __version__
 from safetensors import SafetensorError
 
 MAX_UPLOAD_BYTES = 512 * 1024 * 1024
-AUDIO_SUFFIXES = {".wav", ".flac", ".ogg", ".mp3", ".m4a"}
+AUDIO_SUFFIXES = {".wav", ".flac", ".ogg", ".mp3", ".m4a", ".webm"}
 
 def create_app(root=ROOT):
     root = Path(root).resolve()
@@ -58,6 +59,8 @@ def create_app(root=ROOT):
                 "codec_ready": app.state.studio.engine.codec_path.is_file(), "model_loaded": app.state.studio.engine.drama is not None,
                 "references": app.state.studio.references(), "sessions": app.state.studio.sessions(), "version": __version__, "application": "drama3-t8",
                 "settings": settings,
+                "last_unload_memory": getattr(engine, 'last_unload_diagnostics', None),
+                "last_checkpoint_load": getattr(engine, 'last_load_diagnostics', None),
                 "asr_languages": {"backend": settings['asr_backend'],
                                   "languages": app.state.studio.asr_languages(settings['asr_backend'])},
                 "models": [p.name for p in (root / "models").glob("*.safetensors")],
@@ -126,18 +129,23 @@ def create_app(root=ROOT):
             raise HTTPException(400,str(exc)) from exc
 
 
-    async def store_upload(file, extensions):
+    async def store_upload(file, extensions, *, directory=None, limit_bytes=None):
         extension = Path(file.filename or "").suffix.lower()
         if extension not in extensions:
             raise HTTPException(400, "不支持的文件类型")
-        path = app.state.studio.data / "inputs" / (uuid.uuid4().hex + extension)
+        directory = Path(directory) if directory is not None else app.state.studio.data / "inputs"
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / (uuid.uuid4().hex + extension)
+        limit_bytes = MAX_UPLOAD_BYTES if limit_bytes is None else limit_bytes
         try:
             size = 0
             with path.open("wb") as target:
                 while chunk := await file.read(1024 * 1024):
                     size += len(chunk)
-                    if size > MAX_UPLOAD_BYTES:
-                        raise HTTPException(413, "文件不能超过 512 MiB")
+                    if size > limit_bytes:
+                        raise HTTPException(413, f"文件不能超过 {limit_bytes // (1024 * 1024)} MiB")
+                    if shutil.disk_usage(directory).free < len(chunk) + 64 * 1024 * 1024:
+                        raise HTTPException(507, "资料目录空间不足，请更换工作区或释放磁盘空间")
                     target.write(chunk)
         except BaseException:
             path.unlink(missing_ok=True)
@@ -244,6 +252,8 @@ def create_app(root=ROOT):
         return FileResponse(path, media_type="audio/wav")
 
 
+    from drama3_t8.creative_api import register_creative_routes
+    register_creative_routes(app, root, store_upload)
     app.mount("/", StaticFiles(directory=root / "web", html=True), name="workspace")
     return app
 

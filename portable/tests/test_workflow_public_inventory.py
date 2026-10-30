@@ -38,6 +38,7 @@ def real_inventory_examples(tmp_path_factory):
                 (model_dirs[key]/name).touch()
             (model_dirs['asr']/'qwen3_forced_aligner_0.6b_bf16.safetensors').touch()
         with pytest.MonkeyPatch.context() as patch:
+            patch.syspath_prepend(str(Path(folder_paths.__file__).resolve().parent))
             patch.setattr(folder_paths,'models_dir',str(base/'models'))
             patch.setattr(folder_paths,'filename_list_cache',{})
             patch.setattr(folder_paths.cache_helper,'cache',{})
@@ -75,9 +76,9 @@ def test_real_empty_private_public_and_mixed_file_lists_keep_public_or_unselecte
                     assert 'authors-private' not in str(values[name])
 
 
-def test_all_16_canvas_graphs_are_identical_across_real_local_inventories(real_inventory_examples):
+def test_all_19_canvas_graphs_are_identical_across_real_local_inventories(real_inventory_examples):
     first=real_inventory_examples['empty']['graphs']
-    assert len(first)==16
+    assert len(first)==19
     assert all(result['graphs']==first for result in real_inventory_examples.values())
 
 
@@ -85,8 +86,11 @@ def test_all_16_canvas_graphs_are_identical_across_real_local_inventories(real_i
     ('qwen-aligner',False),('qwen3_forced_aligner_0.6b_bf16.safetensors',True)])
 def test_official_prompt_validation_uses_installed_single_file_combo_even_with_model_path(tmp_path,monkeypatch,selection,expected_valid):
     import asyncio
-    import execution
     import folder_paths
+    # Packaging helpers may prepend Studio's app.py during collection.
+    # Resolve execution/nodes against this test's real installed Comfy host.
+    monkeypatch.syspath_prepend(str(Path(folder_paths.__file__).resolve().parent))
+    import execution
     import nodes as host_nodes
     from drama3_t8.nodes import T8DramaAlign
 

@@ -10,7 +10,7 @@ from tokenizers import Tokenizer
 from drama3_t8.bootstrap import standalone_engine
 standalone_engine()
 from drama3_t8.engine import DramaEngine, Sampling
-from drama3_t8.prompts import SEPARATOR, scene_prompt,spoken_text
+from drama3_t8.prompts import SEPARATOR, scene_prompt,spoken_text,directed_text
 from drama3_t8.state import Reference, Session, Take, load_session, save_session
 
 
@@ -51,14 +51,14 @@ def test_global_revision_keeps_casting_out_of_spoken_words_and_preserves_audio(t
         refs,(previous,),note,'Keep every line quiet.')
     text=rendered(tokenizer,prompt)
     system=text.split('<|im_end|>',1)[0]
-    assert f'Director revision: {note}' in system
-    assert 'Keep every line quiet.' in system
-    assert text.count(note)==1
+    assert note not in system
+    assert 'Keep every line quiet.' not in system
+    assert text.count(note)==len(lines)
     user=text.rsplit('<|im_start|>user\n',1)[1].split('<|im_end|>',1)[0]
     expected_lines=lines
     if with_reference and lines[0].startswith('Anna:'):
         expected_lines=['<|speaker:0|> [quietly] Ready?','<|speaker:1|> Always.']
-    assert user==('\n'+SEPARATOR+'\n').join(expected_lines)
+    assert user==('\n'+SEPARATOR+'\n').join(directed_text(line,"Keep every line quiet.",note,scene=True) for line in expected_lines)
     audio=prompt[(prompt[:,0]>=248099)&(prompt[:,0]<=252194),1:].T
     expected=torch.cat((codes,previous.codes),dim=1) if with_reference else previous.codes
     assert torch.equal(audio,expected)
@@ -112,7 +112,7 @@ def test_legacy_revision_without_script_lines_removes_only_its_recorded_global_n
     source=Session(takes=(prior,))
     result=engine.revise(source,'clearer')
     assert result.takes[-1].metadata['script_lines']==['Anna: [quietly] Ready?','Ben: Always.']
-    assert result.takes[-1].prompt_text.startswith('Anna: [quietly] Ready?')
+    assert result.takes[-1].prompt_text.startswith('Anna: [clearer] [quietly] Ready?')
     assert source.takes[0] is prior
     assert seen[0][1].count('quietly')==1 and old_note not in seen[0][1]
 
@@ -125,9 +125,10 @@ def test_repeated_revisions_keep_original_lines_and_current_note_without_accumul
     for note in ['slower','clearer','softer']:
         session=engine.revise(session,note)
         system=rendered(tokenizer,seen[-1][0]).split('<|im_end|>',1)[0]
-        assert system.count('Director revision:')==1 and f'Director revision: {note}' in system
+        assert note not in system
+        assert seen[-1][1].count('['+note+']')==len(lines)
         assert session.takes[-1].metadata['script_lines']==lines
-        assert session.takes[-1].prompt_text==('\n'+SEPARATOR+'\n').join(lines)
+        assert session.takes[-1].prompt_text==('\n'+SEPARATOR+'\n').join(directed_text(line,note=note,scene=True) for line in lines)
     assert session.takes[0] is original and len(session.takes)==4
 
 
@@ -155,7 +156,7 @@ def test_reference_scene_archives_exact_tagged_request_and_original_named_script
     result=engine.revise(source,'slower')
     prompt,request,*_=seen[-1]
     actual_user=rendered(tokenizer,prompt).rsplit('<|im_start|>user\n',1)[1].split('<|im_end|>',1)[0]
-    assert request==actual_user==f'<|speaker:0|> [quietly] Ready?\n{SEPARATOR}\n<|speaker:1|> Always.'
+    assert request==actual_user==f'<|speaker:0|> [slower] [quietly] Ready?\n{SEPARATOR}\n<|speaker:1|> [slower] Always.'
     assert result.takes[-1].metadata['scene_speaker_map']=={'Anna':0,'Ben':1}
     assert result.takes[-1].metadata['script_lines']==lines
     assert result.takes[0] is source.takes[0] and result.references is source.references
@@ -175,7 +176,7 @@ def test_reference_scene_revisions_reuse_saved_role_ids_across_all_history(token
     for note in ('slower','clearer','softer'):
         session=engine.revise(session,note)
         assert session.takes[-1].metadata['scene_speaker_map']=={'Anna':0,'Ben':1}
-        assert session.takes[-1].prompt_text.startswith('<|speaker:0|> [quietly] Ready?')
+        assert session.takes[-1].prompt_text.startswith(f'<|speaker:0|> [{note}] [quietly] Ready?')
         assert session.takes[-1].metadata['script_lines']==lines
     assert session.takes[0] is source.takes[0] and len(session.takes)==4
 

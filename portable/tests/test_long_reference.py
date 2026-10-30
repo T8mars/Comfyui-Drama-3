@@ -109,7 +109,7 @@ def test_real_second_prompt_has_exact_first53_reference_and_current_text(selecte
     text = '你好，这是长文分段测试。\n第二段会沿用前一段的语音历史。'
     result = engine.long_form(text, sampling=selected_module.Sampling(seed=42, max_frames=180), chunk_bytes=48)
     chunks = split_text(text, max_bytes=48)
-    assert len(calls) == 2 and [c['text'] for c in calls] == chunks
+    assert len(calls) == 2 and [c['text'] for c in calls] == [with_speaker_tag(chunk) for chunk in chunks]
     assert torch.equal(calls[0]['prompt'], prompts.tts_prompt(tokenizer, config, chunks[0]))
     anchor = result.takes[0]
     assert anchor is calls[0]['take'] and len(anchor.frames) == 53
@@ -134,7 +134,7 @@ def test_real_three_chunk_reference_stays_first_with_cues_and_seed_wrap(selected
     result = engine.long_form(text, sampling=selected_module.Sampling(seed=2**64 - 1, max_frames=180), chunk_bytes=32)
     assert [c['sampling'].seed for c in calls] == [(2**64 - 1 + i) % 2**64 for i in range(len(chunks))]
     anchor = result.takes[0]
-    assert anchor.prompt_text == chunks[0] and '[laughs]' in anchor.prompt_text
+    assert anchor.prompt_text == with_speaker_tag(chunks[0]) and '[laughs]' in anchor.prompt_text
     for index in range(1, len(chunks)):
         expected = prompts.tts_prompt(tokenizer, config, chunks[index], references=(Reference(anchor.prompt_text, anchor.codes),), takes=())
         assert torch.equal(calls[index]['prompt'], expected)
@@ -154,15 +154,18 @@ def test_real_explicit_refs_order_direction_priority_not_generated_history(selec
     parent_bytes = [t.frames.numpy().tobytes() for t in old]
     engine, calls = harness(selected_module, actual_prompt_assets)
     text = 'First short sentence. Second short sentence. Third short sentence.'
-    chunks = split_text(text, max_bytes=32)
-    result = engine.long_form(text, parent, selected_module.Sampling(seed=42, max_frames=180), chunk_bytes=32)
+    budget=128
+    reserve=len(prompts.direction_tags(direction).encode('utf-8'))+1+len('<|speaker:15|> '.encode('utf-8'))
+    chunks = split_text(text, max_bytes=budget-reserve)
+    result = engine.long_form(text, parent, selected_module.Sampling(seed=42, max_frames=180), chunk_bytes=budget)
+    assert all(len(c['text'].encode('utf-8'))<=budget for c in calls)
     assert torch.equal(calls[0]['prompt'], prompts.tts_prompt(tokenizer, config, chunks[0], refs, (old[0], old[-1]), direction))
     ref_rows = torch.cat([torch.cat((ref.codes[:1] + config.semantic_start_token_id, ref.codes)).T for ref in refs])
     for i in range(1, len(chunks)):
         expected = prompts.tts_prompt(tokenizer, config, chunks[i], refs, (), direction)
         assert torch.equal(calls[i]['prompt'], expected)
         assert torch.equal(semantic_rows(calls[i]['prompt'], config), ref_rows)
-        assert_single_current_user(calls[i]['prompt'], chunks[i], tokenizer, config)
+        assert_single_current_user(calls[i]['prompt'], prompts.directed_text(chunks[i],direction), tokenizer, config)
         policy = result.takes[len(old) + i].metadata['long_context']
         assert policy['policy'] == 'explicit_references' and policy['source_take_id'] is None
     assert result.references is parent.references and result.direction == parent.direction
@@ -180,7 +183,8 @@ def test_real_branch_archive_roundtrip_keeps_old_tensor_metadata_and_refs(select
         branch = parent.branch(count)
         engine, calls = harness(selected_module, actual_prompt_assets)
         result = engine.long_form('First short sentence. Second short sentence.', branch,
-                                 selected_module.Sampling(seed=42, max_frames=180), chunk_bytes=32)
+                                 selected_module.Sampling(seed=42, max_frames=180), chunk_bytes=80)
+        assert all(len(c['text'].encode('utf-8'))<=80 for c in calls)
         assert len(result.takes) == count + len(calls)
         assert_single_current_user(calls[1]['prompt'], calls[1]['text'], *actual_prompt_assets)
         assert result.references is branch.references and result.direction == branch.direction
@@ -206,7 +210,7 @@ def test_real_single_chunk_keeps_original_conversation_prompt(selected_module, a
     parent = Session(takes=(old,), direction='Keep this direction.')
     engine, calls = harness(selected_module, actual_prompt_assets)
     result = engine.long_form('Only one short line.', parent,
-                             selected_module.Sampling(seed=42, max_frames=180), chunk_bytes=48)
+                             selected_module.Sampling(seed=42, max_frames=180), chunk_bytes=80)
     assert len(calls) == 1
     assert torch.equal(calls[0]['prompt'], prompts.tts_prompt(tokenizer, config, 'Only one short line.', (), (old,), parent.direction))
     assert result.takes[0] is old and old.metadata == {'untouched': True}

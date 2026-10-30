@@ -1,0 +1,300 @@
+{
+  "last_node_id": 6,
+  "last_link_id": 4,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "T8DramaLoader",
+      "pos": [
+        60,
+        60
+      ],
+      "size": [
+        370,
+        430
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_ENGINE",
+          "type": "DRAMA3_T8_ENGINE",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaLoader"
+      },
+      "widgets_values": [
+        "drama3-t8-fp8.safetensors",
+        "drama3-codec.safetensors",
+        12,
+        "torch",
+        "",
+        "",
+        "",
+        "",
+        "compact",
+        "auto",
+        true,
+        "ram"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "T8DramaCreativeProjectLoad",
+      "pos": [
+        60,
+        520
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_CREATIVE_PROJECT",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "links": [
+            2
+          ]
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaCreativeProjectLoad"
+      },
+      "widgets_values": [
+        "",
+        "",
+        ""
+      ],
+      "title": "填写已有工程ID · Open existing project"
+    },
+    {
+      "id": 3,
+      "type": "T8DramaCreativeBatch",
+      "pos": [
+        480,
+        60
+      ],
+      "size": [
+        370,
+        380
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "engine",
+          "type": "DRAMA3_T8_ENGINE",
+          "link": 1
+        },
+        {
+          "name": "project",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_CREATIVE_PROJECT",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "links": [
+            3,
+            4
+          ]
+        },
+        {
+          "name": "last_selected_session",
+          "type": "DRAMA3_T8_SESSION",
+          "links": []
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaCreativeBatch"
+      },
+      "widgets_values": [
+        3,
+        "42",
+        "per_line_context",
+        "{\"temperature\":0.7,\"top_p\":0.7,\"top_k\":30,\"max_frames\":600}",
+        0,
+        "[]",
+        false,
+        ""
+      ]
+    },
+    {
+      "id": 4,
+      "type": "T8DramaCreativeDelivery",
+      "pos": [
+        900,
+        60
+      ],
+      "size": [
+        370,
+        380
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "project",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "archive_path",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "name": "manifest_json",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaCreativeDelivery"
+      },
+      "widgets_values": [
+        "48000",
+        "report",
+        "none",
+        -20,
+        0.15
+      ],
+      "title": "交付 ZIP：WAV / SRT / 清单 · Delivery package"
+    },
+    {
+      "id": 5,
+      "type": "T8DramaCreativeProjectExport",
+      "pos": [
+        900,
+        520
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "project",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaCreativeProjectExport"
+      },
+      "widgets_values": [
+        "",
+        true,
+        true
+      ],
+      "title": "完整工程 + 音色素材 · Portable project"
+    },
+    {
+      "id": 6,
+      "type": "Note",
+      "pos": [
+        60,
+        980
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "从Studio工程信息或Create/Import返回JSON复制32位project_id；workspace_path与原工程目录一致。\nLibrary路径为空使用ComfyUI用户目录；导入工程自动使用其私有库。\n保持原模型/参数/seed_text即可跳过匹配完成项；takes_per_line从3改6只补新增候选。\n可在line_ids_json填[\"L02\"]只续某句；复杂场景/按角色模式仍以场景/角色为原子检查点。\n出现失败后保留旧候选，修正资源或输入再运行。不会用文件存在冒充生成完成。\nPaste the saved project_id and use its workspace_path. Match original model/options to reuse intact takes.\nRaise the target take count to add candidates; line_ids_json limits work to selected lines."
+      ],
+      "title": "使用说明 / Instructions"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      3,
+      0,
+      "DRAMA3_T8_ENGINE"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      1,
+      "DRAMA3_T8_CREATIVE_PROJECT"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      0,
+      "DRAMA3_T8_CREATIVE_PROJECT"
+    ],
+    [
+      4,
+      3,
+      0,
+      5,
+      0,
+      "DRAMA3_T8_CREATIVE_PROJECT"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.75,
+      "offset": [
+        40,
+        40
+      ]
+    }
+  },
+  "version": 0.4
+}

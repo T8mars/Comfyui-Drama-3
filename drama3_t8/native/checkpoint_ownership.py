@@ -20,6 +20,19 @@ class OwnershipUnavailable(RuntimeError):
 class OwnershipViolation(RuntimeError):
     """An active incremental load lost its proof; no next layer is allowed."""
 
+
+class IncrementalPinRAMAdmissionError(reader.ReaderResourceError, OwnershipViolation):
+    """This load's verified layer or actual accelerated bank refused RAM.
+
+    Allocation errors, source corruption, proof changes and cancellation are
+    deliberately different exceptions and cannot request automatic recovery.
+    The historical class name is retained for the internal exact-type contract.
+    """
+    def __init__(self,message,admission=None):
+        super().__init__(message)
+        self.admission=dict(admission or {})
+        self.partial_cleanup_complete=False
+
 _KNOWN_CLONE_FILES = {
     # Reviewed Kitchen 0.2.37 and 0.2.40 clone/physical-field contracts.
     'base': {'badc436f9f0b9c3736551fdd471257fae85fcf88533461494d36b293a5bcf2ee',
@@ -653,7 +666,10 @@ def begin_layer(proof,model,index):
     except OwnershipUnavailable as exc:
         reason=str(exc)
     else:
-        if not receipt['eligible']:_invalid(record,f'Incremental layer {index} lacks real RAM: {receipt}')
+        if not receipt['eligible']:
+            reason=f'Incremental layer {index} lacks real RAM: {receipt}'
+            record['invalid']=reason
+            raise IncrementalPinRAMAdmissionError(reason,receipt)
         record['active']=index
         return receipt
     _invalid(record,reason)

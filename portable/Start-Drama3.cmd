@@ -8,7 +8,7 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-"%~dp0runtime\python\python.exe" -X utf8 "%~dp0app.py"
+"%~dp0runtime\python\python.exe" -X utf8 "%~dp0app.py" %*
 if errorlevel 1 pause
 exit /b
 )

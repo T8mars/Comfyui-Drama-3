@@ -1,0 +1,711 @@
+{
+  "last_node_id": 13,
+  "last_link_id": 14,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "T8DramaLoader",
+      "pos": [
+        60,
+        60
+      ],
+      "size": [
+        370,
+        430
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_ENGINE",
+          "type": "DRAMA3_T8_ENGINE",
+          "links": [
+            1,
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaLoader"
+      },
+      "widgets_values": [
+        "drama3-t8-fp8.safetensors",
+        "drama3-codec.safetensors",
+        12,
+        "torch",
+        "",
+        "",
+        "",
+        "",
+        "compact",
+        "auto",
+        true,
+        "ram"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "LoadAudio",
+      "pos": [
+        60,
+        520
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 3,
+      "type": "T8DramaReference",
+      "pos": [
+        480,
+        60
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "engine",
+          "type": "DRAMA3_T8_ENGINE",
+          "link": 1
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 2
+        },
+        {
+          "name": "previous",
+          "type": "DRAMA3_T8_REFERENCES",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_REFERENCES",
+          "type": "DRAMA3_T8_REFERENCES",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaReference"
+      },
+      "widgets_values": [
+        "请替换为参考录音中实际说出的原文。",
+        "演示主角",
+        false,
+        false
+      ]
+    },
+    {
+      "id": 4,
+      "type": "T8DramaSession",
+      "pos": [
+        480,
+        520
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "references",
+          "type": "DRAMA3_T8_REFERENCES",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_SESSION",
+          "type": "DRAMA3_T8_SESSION",
+          "links": [
+            4
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaSession"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 5,
+      "type": "T8DramaVoiceLibrarySave",
+      "pos": [
+        900,
+        60
+      ],
+      "size": [
+        370,
+        380
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "session",
+          "type": "DRAMA3_T8_SESSION",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "voice_id",
+          "type": "STRING",
+          "links": [
+            5,
+            8
+          ]
+        },
+        {
+          "name": "version_id",
+          "type": "STRING",
+          "links": [
+            6,
+            9
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaVoiceLibrarySave"
+      },
+      "widgets_values": [
+        "new_voice",
+        "演示主角",
+        "",
+        "zh",
+        "自然",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 6,
+      "type": "T8DramaVoiceLibraryLoad",
+      "pos": [
+        900,
+        520
+      ],
+      "size": [
+        370,
+        380
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "voice",
+          "type": "STRING",
+          "link": 5,
+          "widget": {
+            "name": "voice"
+          }
+        },
+        {
+          "name": "version_id",
+          "type": "STRING",
+          "link": 6,
+          "widget": {
+            "name": "version_id"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_REFERENCES",
+          "type": "DRAMA3_T8_REFERENCES",
+          "links": []
+        },
+        {
+          "name": "DRAMA3_T8_SESSION",
+          "type": "DRAMA3_T8_SESSION",
+          "links": [
+            7
+          ]
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaVoiceLibraryLoad"
+      },
+      "widgets_values": [
+        "",
+        "",
+        0,
+        "",
+        ""
+      ],
+      "title": "回读刚保存的不可变版本 · Load exact version"
+    },
+    {
+      "id": 7,
+      "type": "T8DramaSaveSession",
+      "pos": [
+        1320,
+        520
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "session",
+          "type": "DRAMA3_T8_SESSION",
+          "link": 7
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "T8DramaSaveSession"
+      },
+      "widgets_values": [
+        "Drama3_T8/creative_reference"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "T8DramaVoiceCastBuild",
+      "pos": [
+        1320,
+        60
+      ],
+      "size": [
+        370,
+        380
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "voice",
+          "type": "STRING",
+          "link": 8,
+          "widget": {
+            "name": "voice"
+          }
+        },
+        {
+          "name": "version_id",
+          "type": "STRING",
+          "link": 9,
+          "widget": {
+            "name": "version_id"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "cast_json",
+          "type": "STRING",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaVoiceCastBuild"
+      },
+      "widgets_values": [
+        "",
+        "",
+        "主角",
+        0,
+        "",
+        "{}",
+        "{}"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "T8DramaCreativeProjectCreate",
+      "pos": [
+        1740,
+        60
+      ],
+      "size": [
+        370,
+        380
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "cast_json",
+          "type": "STRING",
+          "link": 10,
+          "widget": {
+            "name": "cast_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_CREATIVE_PROJECT",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "links": [
+            12
+          ]
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaCreativeProjectCreate"
+      },
+      "widgets_values": [
+        "下班研究所",
+        "[{\"line_id\": \"L01\", \"role\": \"主角\", \"original_text\": \"老板说，年轻人要有梦想。我说，我的梦想是准点下班。\"}, {\"line_id\": \"L02\", \"role\": \"主角\", \"original_text\": \"今天不是摸鱼，是给大脑做液冷散热。\"}]",
+        "{}",
+        "{}",
+        "{\"number_mode\": \"none\", \"expand_dates\": false}",
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 10,
+      "type": "T8DramaCreativeBatch",
+      "pos": [
+        2160,
+        60
+      ],
+      "size": [
+        370,
+        380
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "engine",
+          "type": "DRAMA3_T8_ENGINE",
+          "link": 11
+        },
+        {
+          "name": "project",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DRAMA3_T8_CREATIVE_PROJECT",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "links": [
+            13,
+            14
+          ]
+        },
+        {
+          "name": "last_selected_session",
+          "type": "DRAMA3_T8_SESSION",
+          "links": []
+        },
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaCreativeBatch"
+      },
+      "widgets_values": [
+        3,
+        "42",
+        "per_line_context",
+        "{\"temperature\":0.7,\"top_p\":0.7,\"top_k\":30,\"max_frames\":600}",
+        0,
+        "[]",
+        false,
+        ""
+      ]
+    },
+    {
+      "id": 11,
+      "type": "T8DramaCreativeDelivery",
+      "pos": [
+        2580,
+        60
+      ],
+      "size": [
+        370,
+        380
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "project",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "archive_path",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "name": "manifest_json",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaCreativeDelivery"
+      },
+      "widgets_values": [
+        "48000",
+        "report",
+        "none",
+        -20,
+        0.15
+      ],
+      "title": "交付 ZIP：WAV / SRT / 清单 · Delivery package"
+    },
+    {
+      "id": 12,
+      "type": "T8DramaCreativeProjectExport",
+      "pos": [
+        2580,
+        520
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "project",
+          "type": "DRAMA3_T8_CREATIVE_PROJECT",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "T8DramaCreativeProjectExport"
+      },
+      "widgets_values": [
+        "",
+        true,
+        true
+      ],
+      "title": "完整工程 + 音色素材 · Portable project"
+    },
+    {
+      "id": 13,
+      "type": "Note",
+      "pos": [
+        480,
+        980
+      ],
+      "size": [
+        370,
+        260
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "先选参考录音并填写准确原文，再运行。新建音色会保存独立UUID和版本，连线使用该准确版本。\n默认用户目录保存工程/音色，资料不随插件更新覆盖；自定义时请统一修改所有library_path。\nBatch每句3候选，默认先选首个有效Take；试听/评分/选片可在Studio继续。\n右侧交付ZIP含成片/分句/字幕；完整工程ZIP另含Session和实际音色素材。\n续做请打开workflow_creative_bundle_resume / workflow_creative_project_resume，保留工程ID、模型、参数和seed_text，不要反复新建。\nChoose reference audio and enter its exact transcript. Keep model/seed/options unchanged to resume.\nVoice and project data live outside the plugin; delivery and complete project are separate ZIPs."
+      ],
+      "title": "使用说明 / Instructions"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      3,
+      0,
+      "DRAMA3_T8_ENGINE"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      1,
+      "AUDIO"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      0,
+      "DRAMA3_T8_REFERENCES"
+    ],
+    [
+      4,
+      4,
+      0,
+      5,
+      0,
+      "DRAMA3_T8_SESSION"
+    ],
+    [
+      5,
+      5,
+      0,
+      6,
+      0,
+      "STRING"
+    ],
+    [
+      6,
+      5,
+      1,
+      6,
+      1,
+      "STRING"
+    ],
+    [
+      7,
+      6,
+      1,
+      7,
+      0,
+      "DRAMA3_T8_SESSION"
+    ],
+    [
+      8,
+      5,
+      0,
+      8,
+      0,
+      "STRING"
+    ],
+    [
+      9,
+      5,
+      1,
+      8,
+      1,
+      "STRING"
+    ],
+    [
+      10,
+      8,
+      0,
+      9,
+      0,
+      "STRING"
+    ],
+    [
+      11,
+      1,
+      0,
+      10,
+      0,
+      "DRAMA3_T8_ENGINE"
+    ],
+    [
+      12,
+      9,
+      0,
+      10,
+      1,
+      "DRAMA3_T8_CREATIVE_PROJECT"
+    ],
+    [
+      13,
+      10,
+      0,
+      11,
+      0,
+      "DRAMA3_T8_CREATIVE_PROJECT"
+    ],
+    [
+      14,
+      10,
+      0,
+      12,
+      0,
+      "DRAMA3_T8_CREATIVE_PROJECT"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.75,
+      "offset": [
+        40,
+        40
+      ]
+    }
+  },
+  "version": 0.4
+}

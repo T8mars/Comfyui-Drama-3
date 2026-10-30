@@ -35,16 +35,26 @@ def take(value=1, count=3, **kwargs):
     return Take("Hello.", "Hello.", torch.cat((codes[:1] + 248099, codes)).T, **kwargs)
 
 
-def test_streaming_session_keeps_global_direction_in_system_turn(tokenizer, config):
+def test_streaming_session_keeps_global_direction_in_current_user_turn(tokenizer, config):
     engine = DramaEngine("model", "codec")
     engine.load_model = lambda: SimpleNamespace(tokenizer=tokenizer, config=config)
     seen = []
-    engine._take = lambda prompt, *a, **k: seen.append(prompt) or take()
+    def generated(prompt, request, transcript, *args, **kwargs):
+        seen.append(prompt)
+        return replace(take(), prompt_text=request, transcript=transcript)
+    engine._take = generated
     source = Session(direction="请始终轻声，语气像讲睡前故事。")
     result = engine.stream_text("第一句。", "下一句。", source)
     decoded = tokenizer.decode(seen[0][:, 0].tolist(), skip_special_tokens=False)
-    assert source.direction in decoded.split("<|im_end|>", 1)[0]
+    system = decoded.split("<|im_end|>", 1)[0]
+    assert source.direction not in system
+    user = decoded.rsplit("<|im_start|>user\n", 1)[1].split("<|im_end|>", 1)[0]
+    styled = "<|speaker:0|> [" + source.direction + "] 第一句。"
+    assert user == styled + "<|endofturn|>下一句。"
+    assert result.takes[-1].prompt_text == styled
+    assert result.takes[-1].transcript == "第一句。"
     assert result.direction == source.direction and result.takes[-1].metadata["lookahead"] == "下一句。"
+    assert source.takes == ()
 
 
 def test_reference_leading_whitespace_matches_canonical_training_layout(tokenizer, config):

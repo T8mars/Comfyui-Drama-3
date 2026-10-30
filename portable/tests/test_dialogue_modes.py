@@ -12,7 +12,7 @@ from drama3_t8.dialogue import isolated_scene,decode_isolated,audio_frames,own_h
 
 
 class RecordingEngine:
-    def __init__(self):self.calls=[]
+    def __init__(self):self.calls=[];self.request_options=[]
     def make(self,lines,session,sampling):
         self.calls.append((lines,session,sampling))
         rows=[]
@@ -24,8 +24,12 @@ class RecordingEngine:
             rows.append(audio_frames(codes))
         take=Take('\n'.join(lines),'\n'.join(lines),torch.cat(rows),metadata={'elapsed_seconds':.1,'length_limit_reached':False,'seed':sampling.seed})
         return session.append(take)
-    def speak(self,text,session,sampling,**kwargs):return self.make([text],session,sampling)
-    def scene(self,lines,session=None,sampling=None,**kwargs):return self.make(lines,session,sampling)
+    def speak(self,text,session,sampling,**kwargs):
+        self.request_options.append(dict(kwargs))
+        return self.make([text],session,sampling)
+    def scene(self,lines,session=None,sampling=None,**kwargs):
+        self.request_options.append(dict(kwargs))
+        return self.make(lines,session,sampling)
     def decode(self,codes):
         wave=codes[:1].float().repeat_interleave(2048,dim=-1)
         return {'waveform':wave[None],'sample_rate':44100}
@@ -44,15 +48,19 @@ def test_isolated_conditioning_uses_local_voice_ids_and_scopes_original_cast(mod
     isolated_scene(engine,['A: First.','B: Second.','A: Third.'],'an office',characters,
         None,Sampling(seed=99),None,session(),'keep the original voices',None,mode)
     names=['A','B'] if mode=='per_speaker' else ['A','B','A']
-    for (lines,context,_),name in zip(engine.calls,names):
+    assert len(engine.request_options) == len(engine.calls)
+    for (lines,context,_),options,name in zip(engine.calls,engine.request_options,names):
         # The native request and its reference have both been mapped to 0.
         assert all(line.startswith('<|speaker:0|>') for line in lines)
         assert all(ref.transcript.startswith('<|speaker:0|>') for ref in context.references)
-        assert context.direction.rstrip().endswith('Voice only <|speaker:0|>.')
-        assert f'<|speaker:0|> = {name}; original scene speaker {0 if name=="A" else 1}.' in context.direction
-        assert 'Original scene character descriptions:\n'+characters in context.direction
+        assert context.direction == '[comedy] [keep the original voices]'
+        description = options['system_context']
+        assert 'Scene: an office' in description and 'Characters:\n'+characters in description
+        assert f'Current character: {name}; original scene speaker {0 if name=="A" else 1}; current local speaker 0.' in description
+        assert characters not in context.direction and 'Voice only' not in context.direction
         if mode=='per_line_context' and name=='B':
-            assert '<|speaker:1|> = context only; original scene speaker 0.' in context.direction
+            assert 'Previous context character: original scene speaker 0; local context speaker 1.' in description
+            assert context.takes[-1].prompt_text.startswith('<|speaker:1|>')
 
 
 @pytest.mark.parametrize('mode',['per_line','per_line_context','per_speaker'])

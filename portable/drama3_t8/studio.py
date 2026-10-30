@@ -1,5 +1,6 @@
 """Local workspace, serialized GPU queue and durable generation results."""
 import json
+import math
 import re
 from dataclasses import replace
 from contextlib import contextmanager
@@ -392,6 +393,19 @@ class Studio:
         if payload.get("session_id"):
             return self.get_session(payload["session_id"])
         references = []
+        if payload.get("voice_versions"):
+            from .creative_studio import creative_manager
+            from .reference_cache import codec_identity
+            manager = creative_manager(self)
+            selected = manager.voices.load_selection(payload["voice_versions"])
+            expected = None
+            for reference in selected.references:
+                encoded = reference.processing.get("codec_identity") or {}
+                if encoded.get("sha256"):
+                    expected = expected or codec_identity(self.engine.codec_path, manager.voices.root / "encoding-cache")
+                    if encoded["sha256"] != expected["sha256"]:
+                        raise ValueError("此音色版本的Codec与当前权重不同，请重新编码参考")
+                references.append(reference)
         with self.connect() as db:
             for ref_id in payload.get("reference_ids", []):
                 row = db.execute("SELECT path FROM voice_references WHERE id=?", (ref_id,)).fetchone()
@@ -413,7 +427,16 @@ class Studio:
 
     def run_queue(self):
         while True:
-            item = self.pending.get()
+            try:
+                item = self.pending.get(timeout=1)
+            except queue.Empty:
+                creative = getattr(self, "_creative_manager", None)
+                if creative is not None:
+                    try:
+                        creative.maybe_unload()
+                    except BaseException as exc:
+                        self._fail_queue(exc)
+                continue
             try:
                 if item is None:
                     return
@@ -443,16 +466,26 @@ class Studio:
         result_json = None
         execution_started = False
         last_update = 0
+        last_progress = 0.0
 
-        def progress(step=0, total=1):
-            nonlocal last_update
+        def progress(step=None, total=None):
+            nonlocal last_update, last_progress
             if cancel.is_set():
                 raise Cancelled("任务已取消")
+            if step is None and total is None:
+                return
+            if (isinstance(step, bool) or isinstance(total, bool)
+                    or not isinstance(step, (int, float)) or not isinstance(total, (int, float))
+                    or not math.isfinite(step) or not math.isfinite(total)
+                    or total <= 0 or not 0 <= step <= total):
+                raise ValueError("任务进度必须是有效的已完成值与总量")
             if time.monotonic() - last_update > 0.25:
-                last_update = time.monotonic()
+                value = min(0.99, step / total)
                 with self.connect() as db:
                     db.execute("UPDATE jobs SET progress=?,updated=? WHERE id=?",
-                               (min(0.99, step / max(1, total)), time.time(), job_id))
+                               (value, time.time(), job_id))
+                last_progress = value
+                last_update = time.monotonic()
 
         try:
             progress()
@@ -491,8 +524,11 @@ class Studio:
             row = self._job_records[job_id]
             row.update(status=status, execution_status=status if execution_started else "not_started",
                        result=result_json if status == "done" else None,
-                       error=error, updated=time.time(), progress=1 if status == "done" else 0)
+                       error=error, updated=time.time(), progress=1 if status == "done" else last_progress)
             self._active_job = None
+            creative = getattr(self, "_creative_manager", None)
+            if creative is not None:
+                creative.last_activity = time.monotonic()
             mm.interrupt_current_processing(False)
             self.cancel_events.pop(job_id, None)
             unavailable = self._queue_error is not None
@@ -503,7 +539,7 @@ class Studio:
             with self.connect() as db:
                 db.execute("UPDATE jobs SET status=?,result=?,error=?,updated=?,progress=? WHERE id=?",
                            (status, result_json if status == "done" else None, error, row["updated"],
-                            1 if status == "done" else 0, job_id))
+                            1 if status == "done" else last_progress, job_id))
         except BaseException as exc:
             self._fail_queue(exc, failed_job=job_id)
         else:
@@ -513,6 +549,10 @@ class Studio:
 
     def execute(self, job_id, payload, progress):
         mode = payload.get("mode", "tts")
+        if mode in {"creative_reference", "creative_batch", "creative_quality", "creative_recording",
+                    "creative_delivery", "creative_benchmark", "creative_variation", "creative_apply_profile", "creative_reencode"}:
+            from .creative_studio import creative_manager
+            return creative_manager(self).execute(job_id, payload, progress)
         if mode == 'editor_prepare':
             if type(payload.get('align_words',False)) is not bool:
                 raise ValueError('align_words must be a boolean')
@@ -525,8 +565,8 @@ class Studio:
             return {"message": "运行设置已保存", "settings": self.settings}
         if mode == "unload":
             self.begin_commit(job_id, progress)
-            self.engine.unload()
-            return {"message": "模型已释放"}
+            memory = self.engine.unload()
+            return {"message": "模型已释放", **({"memory": memory} if memory is not None else {})}
         if mode in {"reference", "transcribe"}:
             path = self.data / "inputs" / payload["input_id"]
             if path.resolve().parent != (self.data / "inputs").resolve():

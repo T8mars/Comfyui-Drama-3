@@ -23,35 +23,58 @@ CONTEXT_FRAMES = 128
 MAX_SAMPLES = 7200 * SAMPLE_RATE
 
 
-def pcm16(wave):
-    """Canonical libsndfile PCM16 playback, returned as float32 and integers."""
+def quantize_native(wave, subtype):
+    """Actual libsndfile integer playback, with normalized signed sample codes.
+
+    PCM24 uses libsndfile's left-aligned int32 reader, then shifts its high
+    24 bits down into signed [-8388608,8388607] integer sample values.
+    """
     import soundfile as sf
+    subtype = normalize_subtype(subtype)
+    if subtype not in ('PCM_16', 'PCM_24'):
+        raise ValueError('Integer playback quantization requires PCM_16 or PCM_24')
     if (not isinstance(wave, torch.Tensor) or wave.ndim != 2 or wave.shape[0] != 1
             or not 0 < wave.shape[-1] <= MAX_SAMPLES or not torch.isfinite(wave).all()):
         raise ValueError('Rendered infill needs finite, nonempty mono PCM')
     buffer = io.BytesIO()
-    sf.write(buffer, wave.detach().float().cpu().T.numpy(), SAMPLE_RATE, format='WAV', subtype='PCM_16')
+    sf.write(buffer, wave.detach().float().cpu().T.numpy(), SAMPLE_RATE, format='WAV', subtype=subtype)
     buffer.seek(0)
-    values, rate = sf.read(buffer, dtype='int16', always_2d=True)
+    values, rate = sf.read(buffer, dtype='int16' if subtype == 'PCM_16' else 'int32', always_2d=True)
     if rate != SAMPLE_RATE:
         raise ValueError('Unexpected playback sample rate')
     integers = torch.from_numpy(values.T.copy())
-    return integers.float().div(32768), integers
+    if subtype == 'PCM_24':
+        if torch.bitwise_and(integers, 255).any():
+            raise ValueError('PCM24 reader did not return left-aligned 24-bit samples')
+        integers = torch.bitwise_right_shift(integers, 8)
+    return integers.float().div(32768 if subtype == 'PCM_16' else 8388608), integers
+
+
+def pcm16(wave):
+    """Canonical libsndfile PCM16 playback, returned as float32 and integers."""
+    return quantize_native(wave, 'PCM_16')
+
+
+def pcm24(wave):
+    """Canonical libsndfile PCM24 playback and normalized signed 24-bit values."""
+    return quantize_native(wave, 'PCM_24')
 
 
 def normalize_subtype(value):
     if value == 'PCM16':
         return 'PCM_16'
-    if not isinstance(value, str) or value not in ('FLOAT', 'PCM_16'):
-        raise ValueError('Playback subtype must be FLOAT or PCM_16')
+    if value == 'PCM24':
+        return 'PCM_24'
+    if not isinstance(value, str) or value not in ('FLOAT', 'PCM_16', 'PCM_24'):
+        raise ValueError('Playback subtype must be FLOAT, PCM_16 or PCM_24')
     return value
 
 
 def canonical_pcm(wave, subtype):
-    """Preserve a real FLOAT view, or perform the actual PCM16 writer mapping."""
+    """Preserve FLOAT, or use the actual selected integer WAV writer mapping."""
     subtype = normalize_subtype(subtype)
-    if subtype == 'PCM_16':
-        return pcm16(wave)[0]
+    if subtype in ('PCM_16', 'PCM_24'):
+        return quantize_native(wave, subtype)[0]
     if (not isinstance(wave, torch.Tensor) or wave.ndim != 2 or wave.shape[0] != 1
             or not 0 < wave.shape[-1] <= MAX_SAMPLES or not torch.isfinite(wave).all()):
         raise ValueError('Rendered infill needs finite, nonempty mono PCM')
@@ -61,18 +84,28 @@ def canonical_pcm(wave, subtype):
 def pcm_hash(values, subtype='PCM_16'):
     subtype = normalize_subtype(subtype)
     header = f'{SAMPLE_RATE}:1:{values.shape[-1]}:{subtype}:'.encode('ascii')
-    return hashlib.sha256(header + values.contiguous().numpy().tobytes()).hexdigest()
+    raw = values.contiguous().numpy()
+    if subtype == 'PCM_24':
+        if values.dtype != torch.int32 or values.min() < -8388608 or values.max() > 8388607:
+            raise ValueError('PCM24 hash requires normalized signed 24-bit integers')
+        # Exactly the low three little-endian bytes of each signed sample,
+        # matching packed PCM24 payload values rather than FLOAT/left padding.
+        raw = raw.astype('<i4', copy=False).view('uint8').reshape(-1, 4)[:, :3].copy()
+    return hashlib.sha256(header + raw.tobytes()).hexdigest()
 
 
 def playback_identity(wave, subtype, source=None):
-    """Identity of the actual writer contract; never imply FLOAT is PCM16."""
+    """Identity of the actual writer contract; integer formats remain distinct."""
     subtype = normalize_subtype(subtype)
     canonical = canonical_pcm(wave, subtype)
-    stored = (canonical*32768).to(torch.int16) if subtype == 'PCM_16' else canonical
+    stored = canonical
+    if subtype in ('PCM_16', 'PCM_24'):
+        scale, dtype = (32768, torch.int16) if subtype == 'PCM_16' else (8388608, torch.int32)
+        stored = (canonical*scale).to(dtype)
     digest = pcm_hash(stored, subtype)
     result = dict(pcm_sha256=digest, samples=canonical.shape[-1], sample_rate=SAMPLE_RATE, subtype=subtype)
-    if subtype == 'PCM_16':
-        result['pcm16_sha256'] = digest
+    if subtype in ('PCM_16', 'PCM_24'):
+        result['pcm16_sha256' if subtype == 'PCM_16' else 'pcm24_sha256'] = digest
     if source is not None:
         result['source'] = source
     return result
@@ -85,16 +118,23 @@ def _bits_equal(left, right):
 def _validate_playback_hash(wave, identity):
     subtype = normalize_subtype(identity.get('subtype'))
     stored = wave
-    if subtype == 'PCM_16':
-        scaled = wave*32768
-        if not torch.equal(scaled, scaled.round()) or scaled.min() < -32768 or scaled.max() > 32767:
-            raise ValueError('Rendered infill PCM16 quantization differs')
-        stored = scaled.to(torch.int16)
+    if subtype in ('PCM_16', 'PCM_24'):
+        scale, low, high, dtype = ((32768, -32768, 32767, torch.int16) if subtype == 'PCM_16'
+                                  else (8388608, -8388608, 8388607, torch.int32))
+        scaled = wave*scale
+        if not torch.equal(scaled, scaled.round()) or scaled.min() < low or scaled.max() > high:
+            raise ValueError('Rendered infill ' + ('PCM16' if subtype == 'PCM_16' else 'PCM24') + ' quantization differs')
+        stored = scaled.to(dtype)
     digest = pcm_hash(stored, subtype)
-    if identity.get('pcm_sha256') != digest or (subtype == 'PCM_16' and identity.get('pcm16_sha256') != digest):
+    alias = 'pcm16_sha256' if subtype == 'PCM_16' else 'pcm24_sha256' if subtype == 'PCM_24' else None
+    if identity.get('pcm_sha256') != digest or (alias is not None and identity.get(alias) != digest):
         raise ValueError('Rendered infill playback PCM hash differs')
     if subtype == 'FLOAT' and 'pcm16_sha256' in identity:
         raise ValueError('FLOAT playback cannot claim a PCM16 identity')
+    if subtype != 'PCM_24' and 'pcm24_sha256' in identity:
+        raise ValueError('Only PCM_24 playback may claim a PCM24 identity')
+    if subtype == 'PCM_24' and 'pcm16_sha256' in identity:
+        raise ValueError('PCM24 playback cannot claim a PCM16 identity')
 
 
 def _tensor_hash(tensor):
@@ -355,8 +395,9 @@ def infill_take(engine, source_take, target_transcript, start_seconds, end_secon
     policy['tensor_sha256'] = dict(prefix=_tensor_hash(prefix), suffix=_tensor_hash(suffix),
         history=_tensor_hash(history_frames), middle=_tensor_hash(middle.frames))
     policy['parent_source_sha256'] = _source_hash(source_take)
-    if view['subtype'] == 'PCM_16':
-        policy['pcm16_sha256'] = output_view['pcm16_sha256']
+    if view['subtype'] in ('PCM_16', 'PCM_24'):
+        alias = 'pcm16_sha256' if view['subtype'] == 'PCM_16' else 'pcm24_sha256'
+        policy[alias] = output_view[alias]
     result = Take(text, spoken_text(target_transcript, scene=scene_text), history_frames,
         middle.semantic_start, middle.semantic_end, middle.separator_id,
         metadata={**copy.deepcopy(middle.metadata), 'task':'render_infill', 'history_eligible':True,
@@ -389,7 +430,7 @@ def validate_take(take):
             raise ValueError('Invalid rendered infill integer metadata')
     view = policy.get('source_view')
     if (not isinstance(view, dict) or type(view.get('samples')) is not int or not 0 < view['samples'] <= MAX_SAMPLES
-            or view.get('sample_rate') != SAMPLE_RATE or view.get('subtype') not in ('PCM_16', 'FLOAT')
+            or view.get('sample_rate') != SAMPLE_RATE or view.get('subtype') not in ('PCM_16', 'PCM_24', 'FLOAT')
             or not isinstance(view.get('source'), str) or not re.fullmatch('[0-9a-f]{64}', view['source'])):
         raise ValueError('Invalid original playback view')
     if not 0 <= policy['target_speaker'] < 16 or not 0 <= policy['start_sample'] <= policy['end_sample'] <= view['samples']:
@@ -397,7 +438,7 @@ def validate_take(take):
     from .editor import fingerprint_core
     if view['source'] != fingerprint_core(parent):
         raise ValueError('Original playback view differs from its parent source fingerprint')
-    if (policy.get('sample_rate') != SAMPLE_RATE or policy.get('subtype') not in ('PCM_16', 'FLOAT')
+    if (policy.get('sample_rate') != SAMPLE_RATE or policy.get('subtype') not in ('PCM_16', 'PCM_24', 'FLOAT')
             or policy['subtype'] != view['subtype']):
         raise ValueError('Invalid rendered infill playback contract')
     if policy.get('history') != 'complete_visible_pcm_encode' or not isinstance(policy.get('history_text'), str):

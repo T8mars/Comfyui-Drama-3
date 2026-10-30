@@ -37,7 +37,10 @@ def scene_engine(tokenizer, config):
     seen = []
     # One line deliberately needs one generated segment; only the prompt uses
     # real tokenizer/tensor code. This fixture does not impersonate model output.
-    engine._take = lambda prompt, *args, **kwargs: seen.append(prompt) or take(5)
+    def generated(prompt, request, transcript, *args, **kwargs):
+        seen.append(prompt)
+        return replace(take(5), prompt_text=request, transcript=transcript)
+    engine._take = generated
     return engine, seen
 
 
@@ -52,9 +55,15 @@ def test_scene_existing_session_inherits_reference_direction_and_history(tokeniz
     result = engine.scene(["A: Continue."], session=original)
     rendered = decode(tokenizer, seen[0])
     system = rendered.split("<|im_end|>", 1)[0]
-    assert original.direction in system
+    assert original.direction not in system
     assert "[Reference 1]" in system and "Reference voice." in system
+    user = rendered.rsplit("<|im_start|>user\n", 1)[1].split("<|im_end|>", 1)[0]
+    assert user == "<|speaker:0|> [Keep every line very quiet.] Continue."
+    assert result.takes[-1].prompt_text == user and result.takes[-1].transcript == "Continue."
     assert "Before." in rendered
+    actual_audio = seen[0][(seen[0][:,0] >= 248099) & (seen[0][:,0] <= 252194), 1:].T
+    assert torch.equal(actual_audio, torch.cat((reference.codes,original.takes[0].codes),dim=1))
+    assert result.takes[0] is original.takes[0]
     assert result.references == original.references and result.direction == original.direction
     assert result.takes[:-1] == original.takes
 
@@ -66,8 +75,15 @@ def test_scene_revision_retains_session_direction(tokenizer, config):
     original = Session(takes=(previous,), direction="Whisper throughout this recording.")
     result = engine.revise(original, "slower")
     system = decode(tokenizer, seen[0]).split("<|im_end|>", 1)[0]
-    assert original.direction in system and "Quiet library." in system
+    assert original.direction not in system and "Quiet library." in system
+    assert "A: an adult woman." in system
+    user = decode(tokenizer, seen[0]).rsplit("<|im_start|>user\n", 1)[1].split("<|im_end|>", 1)[0]
+    assert user == "A: [Whisper throughout this recording.] [slower] Before."
+    assert result.takes[-1].prompt_text == user and result.takes[-1].transcript == "Before."
     assert result.takes[-1].metadata["director_note"] == "slower"
+    assert result.takes[-1].metadata["script_lines"] == ["A: Before."]
+    assert result.takes[0] is previous and previous.prompt_text == "Before."
+    assert result.direction == original.direction
 
 
 def test_scene_explicit_reference_override_is_the_reference_saved_with_take(tokenizer, config):

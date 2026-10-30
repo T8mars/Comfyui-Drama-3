@@ -348,7 +348,110 @@ def make_workflows():
     graph.connect(editor, text_save, "text", 2)
     graph.note("先运行 workflow_save_session.json；刷新页面并选择会话，再运行本画布加载波形。点击编辑器展开，剪切/插入停顿/调整角色音量与静音，应用后重新运行以保存。\nSave a session first, select it after refresh, and Run to load the waveform. Open the editor, adjust cuts/pauses/voice gain or mute, then apply and Run to save.\n默认保留原始音频；align_words=false 使用句级字幕。逐词字幕须填好单文件或目录 aligner_path，再启用 align_words。\nAudio is unchanged by default. Set your aligner path and enable align_words for word timing.\nSaveSession 保留非破坏剪辑；字幕保存为 .txt（内容为 SRT，可改为 .srt）。所有模型与用户音频均不随工作流分发。\nSaveSession preserves nondestructive edits; the saved .txt contains SRT and can be renamed .srt.", 0, 2)
     workflows[graph.name] = graph.export()
+    workflows.update(make_creative_workflows())
     return workflows
+
+
+def _creative_connect_widget(graph, source, target, name, output=0):
+    spec = dict(input_specs(node_infos()[target["type"]]))[name]
+    assert is_widget(spec) and spec[0] == source["outputs"][output]["type"] == "STRING"
+    target["inputs"].append({"name": name, "type": "STRING", "link": None, "widget": {"name": name}})
+    graph.connect(source, target, name, output)
+
+
+def _creative_finishing(graph, batch, column, row=0):
+    delivery = graph.add("T8DramaCreativeDelivery", column, row,
+        {"sample_rate": "48000", "duration_mode": "report", "loudness_mode": "none", "gap_seconds": .15},
+        "交付 ZIP：WAV / SRT / 清单 · Delivery package")
+    graph.connect(batch, delivery, "project")
+    exported = graph.add("T8DramaCreativeProjectExport", column, row + 1,
+        {"include_all": True, "include_sources": True}, "完整工程 + 音色素材 · Portable project")
+    graph.connect(batch, exported, "project")
+    return delivery, exported
+
+
+def make_creative_workflows():
+    graphs = {}
+    graph = Canvas("creative_voice_project")
+    engine = graph.add("T8DramaLoader", 0)
+    audio = graph.add("LoadAudio", 0, 1)
+    reference = graph.add("T8DramaReference", 1, 0,
+        {"transcript": "请替换为参考录音中实际说出的原文。", "name": "演示主角", "trim_silence": False, "normalize": False})
+    graph.connect(engine, reference, "engine")
+    graph.connect(audio, reference, "audio")
+    session = graph.add("T8DramaSession", 1, 1)
+    graph.connect(reference, session, "references")
+    saved = graph.add("T8DramaVoiceLibrarySave", 2, 0,
+        {"mode": "new_voice", "name": "演示主角", "language": "zh", "delivery": "自然"})
+    graph.connect(session, saved, "session")
+    loaded = graph.add("T8DramaVoiceLibraryLoad", 2, 1, {"speaker": 0}, "回读刚保存的不可变版本 · Load exact version")
+    _creative_connect_widget(graph, saved, loaded, "voice", 0)
+    _creative_connect_widget(graph, saved, loaded, "version_id", 1)
+    archive = graph.add("T8DramaSaveSession", 3, 1, {"name": "Drama3_T8/creative_reference"})
+    graph.connect(loaded, archive, "session", 1)
+    cast = graph.add("T8DramaVoiceCastBuild", 3, 0, {"role": "主角", "speaker": 0})
+    _creative_connect_widget(graph, saved, cast, "voice", 0)
+    _creative_connect_widget(graph, saved, cast, "version_id", 1)
+    created = graph.add("T8DramaCreativeProjectCreate", 4, 0,
+        {"name": "下班研究所", "lines_json": json.dumps([
+            {"line_id": "L01", "role": "主角", "original_text": "老板说，年轻人要有梦想。我说，我的梦想是准点下班。"},
+            {"line_id": "L02", "role": "主角", "original_text": "今天不是摸鱼，是给大脑做液冷散热。"}], ensure_ascii=False),
+         "dictionary_json": json.dumps({"number_mode": "none", "expand_dates": False})})
+    _creative_connect_widget(graph, cast, created, "cast_json")
+    batch = graph.add("T8DramaCreativeBatch", 5, 0,
+        {"takes_per_line": 3, "seed_text": "42", "generation_mode": "per_line_context",
+         "sampling_json": '{"temperature":0.7,"top_p":0.7,"top_k":30,"max_frames":600}'})
+    graph.connect(engine, batch, "engine")
+    graph.connect(created, batch, "project")
+    _creative_finishing(graph, batch, 6)
+    graph.note("先选参考录音并填写准确原文，再运行。新建音色会保存独立UUID和版本，连线使用该准确版本。\n"
+               "默认用户目录保存工程/音色，资料不随插件更新覆盖；自定义时请统一修改所有library_path。\n"
+               "Batch每句3候选，默认先选首个有效Take；试听/评分/选片可在Studio继续。\n"
+               "右侧交付ZIP含成片/分句/字幕；完整工程ZIP另含Session和实际音色素材。\n"
+               "续做请打开workflow_creative_bundle_resume / workflow_creative_project_resume，保留工程ID、模型、参数和seed_text，不要反复新建。\n"
+               "Choose reference audio and enter its exact transcript. Keep model/seed/options unchanged to resume.\n"
+               "Voice and project data live outside the plugin; delivery and complete project are separate ZIPs.", 1, 2)
+    graphs[graph.name] = graph.export()
+
+    graph = Canvas("creative_bundle_resume")
+    engine = graph.add("T8DramaLoader", 0)
+    imported = graph.add("T8DramaCreativeProjectImport", 0, 1,
+        {"bundle_path": ""}, "选择完整工程ZIP · Import portable project")
+    batch = graph.add("T8DramaCreativeBatch", 1, 0,
+        {"takes_per_line": 3, "seed_text": "42", "generation_mode": "per_line_context",
+         "sampling_json": '{"temperature":0.7,"top_p":0.7,"top_k":30,"max_frames":600}'})
+    graph.connect(engine, batch, "engine")
+    graph.connect(imported, batch, "project")
+    _creative_finishing(graph, batch, 2)
+    graph.note("bundle_path填写完整工程ZIP的本机路径（Studio或本组其他画布导出），不是普通交付ZIP。\n"
+               "导入新工程并保留原音色UUID/版本；素材放项目私有库，不覆盖全局同名音色。\n"
+               "续做时保持模型与生成参数、模式、seed_text一致；只有指纹匹配且媒体SHA完整的候选会跳过。\n"
+               "若原工程不是per_line_context，请把Batch模式/参数改成原工程值；takes_per_line是目标总数。\n"
+               "导入只做一次。再次打开已有工程请用workflow_creative_project_resume，避免重新导入出新副本。\n"
+               "Import a complete project ZIP, then match original model/options/seeds for resume.\n"
+               "The imported voice assets stay in this project's private catalog. Use workflow_creative_project_resume to reopen it later.", 0, 2)
+    graphs[graph.name] = graph.export()
+
+    graph = Canvas("creative_project_resume")
+    engine = graph.add("T8DramaLoader", 0)
+    loaded = graph.add("T8DramaCreativeProjectLoad", 0, 1,
+        {"project_id": ""}, "填写已有工程ID · Open existing project")
+    batch = graph.add("T8DramaCreativeBatch", 1, 0,
+        {"takes_per_line": 3, "seed_text": "42", "generation_mode": "per_line_context",
+         "sampling_json": '{"temperature":0.7,"top_p":0.7,"top_k":30,"max_frames":600}'})
+    graph.connect(engine, batch, "engine")
+    graph.connect(loaded, batch, "project")
+    _creative_finishing(graph, batch, 2)
+    graph.note("从Studio工程信息或Create/Import返回JSON复制32位project_id；workspace_path与原工程目录一致。\n"
+               "Library路径为空使用ComfyUI用户目录；导入工程自动使用其私有库。\n"
+               "保持原模型/参数/seed_text即可跳过匹配完成项；takes_per_line从3改6只补新增候选。\n"
+               "可在line_ids_json填[\"L02\"]只续某句；复杂场景/按角色模式仍以场景/角色为原子检查点。\n"
+               "出现失败后保留旧候选，修正资源或输入再运行。不会用文件存在冒充生成完成。\n"
+               "Paste the saved project_id and use its workspace_path. Match original model/options to reuse intact takes.\n"
+               "Raise the target take count to add candidates; line_ids_json limits work to selected lines.", 0, 2)
+    graphs[graph.name] = graph.export()
+
+    return graphs
 
 
 def write_workflows(folder=FOLDER):

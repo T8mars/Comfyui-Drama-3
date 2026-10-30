@@ -16,6 +16,7 @@ from comfy.text_encoders import llama
 from .model import Qwen3ASRModel, audio_tokens
 from ..audio import audio_waveform
 from ..transcript import join_segment_text
+from ..asr_language import normalize_asr_language
 
 LANGUAGES = ["Chinese", "English", "Cantonese", "Arabic", "German", "French", "Spanish", "Portuguese", "Indonesian", "Italian",
              "Korean", "Russian", "Thai", "Vietnamese", "Japanese", "Turkish", "Hindi", "Malay", "Dutch", "Swedish", "Danish",
@@ -118,6 +119,7 @@ def log_mel(audio):
 
 def prompt_ids(asr, context, language, tokens):
     """The chat template's ids, each text run between special tokens tokenized alone as the tokenizer does."""
+    language = normalize_asr_language(language, LANGUAGES, backend="Qwen3-ASR")
     ids = [IM_START, *asr.encode("system\n" + context), IM_END, *asr.encode("\n"), IM_START, *asr.encode("user\n"),
            AUDIO_START, *[AUDIO_PAD] * tokens, AUDIO_END, IM_END, *asr.encode("\n"), IM_START]
     if language:
@@ -187,6 +189,7 @@ def validate_max_new_tokens(value):
 def transcribe(asr, waveform, sample_rate, language=None, context="", max_new_tokens=4096):
     """(text, language) of [channels, samples] audio; `language` None detects it."""
     validate_max_new_tokens(max_new_tokens)
+    language = normalize_asr_language(language, LANGUAGES, backend="Qwen3-ASR")
     device = asr.patcher.load_device
     model = asr.model
     if getattr(model,"aligner",False):

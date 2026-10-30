@@ -220,7 +220,7 @@ def test_two_revisions_after_real_archive_roundtrip_keep_policy_role_ids_and_his
         path=tmp_path/'revision.safetensors';save_session(result,path);restored=load_session(path)
         result=engine.revise(restored,note,Sampling(seed=7,max_frames=80))
         last=result.takes[-1]
-        assert last.metadata['generation_mode']==mode and last.metadata['scene_chunking']==first.metadata['scene_chunking']
+        assert last.metadata['generation_mode']==mode and last.metadata['scene_chunking']=={**first.metadata['scene_chunking'],'request_direction':'['+note+']'}
         assert last.metadata['script_lines']==SCRIPT and last.metadata['scene_speaker_map']=={'A':0,'B':1}
         assert last.metadata['director_note']==note
     assert len(result.takes)==3 and torch.equal(result.takes[0].frames,first.frames)

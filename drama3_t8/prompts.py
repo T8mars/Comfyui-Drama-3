@@ -69,11 +69,79 @@ def rows_from_segments(tokenizer, config, segments):
     return result
 
 
-def system_segments(references, instruction=TTS_INSTRUCTION, direction=""):
+def direction_tags(*values):
+    """Canonical flat current-user controls; never invent a system direction.
+
+    Preserve existing flat controls such as ``[gently]`` and wrap only plain
+    descriptions. Newlines are ordinary whitespace in a control, not new turns.
+    Structural role/task tokens and nested/unbalanced square brackets are not
+    valid delivery descriptions.
+    """
+    result = []
+    for value in values:
+        if not isinstance(value, str):
+            raise ValueError("Drama 3 direction must be text")
+        value = re.sub(r"\s+", " ", value).strip()
+        if not value:
+            continue
+        check_text(value, "direction")
+        if "<|speaker" in value:
+            raise ValueError("Drama 3 direction cannot contain speaker tokens")
+        cursor = 0
+        while cursor < len(value):
+            opening = value.find("[", cursor)
+            plain = value[cursor:opening if opening >= 0 else len(value)].strip()
+            if "]" in plain:
+                raise ValueError("Drama 3 direction has unbalanced brackets")
+            if plain:
+                result.append("[" + plain + "]")
+            if opening < 0:
+                break
+            closing = value.find("]", opening + 1)
+            if closing < 0 or "[" in value[opening + 1:closing]:
+                raise ValueError("Drama 3 direction requires flat, balanced brackets")
+            body = value[opening + 1:closing].strip()
+            if not body:
+                raise ValueError("Drama 3 direction controls cannot be empty")
+            result.append("[" + body + "]")
+            cursor = closing + 1
+    return " ".join(result)
+
+
+def directed_text(text, direction="", note="", *, scene=False):
+    """Insert actual direction after a leading role, preserving spoken text.
+
+    Empty controls are a byte-for-byte identity operation. Named role parsing
+    is explicit for Scene only; a spoken clock time is not a character name.
+    """
+    prefix = direction_tags(direction, note)
+    if not prefix:
+        return text
+    check_text(text, "directed text")
+    leading = len(text) - len(text.lstrip(WHITE_SPACE))
+    tag = SPEAKER_TAG.match(text, leading)
+    if tag is not None:
+        return text[:tag.end()] + " " + prefix + " " + text[tag.end():].lstrip(WHITE_SPACE)
+    if scene:
+        from .scene_cast import _named
+        named = _named(text)
+        if named is not None:
+            match, name = named
+            return (match.group("indent") + name + ": " + prefix + " " +
+                    match.group("directions") + text[match.end():])
+    return prefix + " " + text
+
+
+def directed_scene_lines(lines, references=(), takes=(), direction="", note=""):
+    cast, history, mapping = prepare_scene_cast(lines, references, takes)
+    return tuple(directed_text(line, direction, note, scene=True) for line in cast), history, mapping
+
+
+def system_segments(references, instruction=TTS_INSTRUCTION, context=""):
     segments = ["<|im_start|>system\n", REFERENCE_INSTRUCTION if references else instruction]
-    if direction:
-        check_text(direction, "direction")
-        segments.extend(("\n\n", direction))
+    if context:
+        check_text(context, "task context")
+        segments.extend(("\n\n", context))
     for i, reference in enumerate(references, 1):
         validate_reference(reference)
         check_text(reference.transcript, f"reference {i}")
@@ -110,42 +178,33 @@ def history_segments(takes):
     return result
 
 
-def tts_prompt(tokenizer, config, text, references=(), takes=(), direction=""):
+def tts_prompt(tokenizer, config, text, references=(), takes=(), direction="", *, system_context=""):
     check_text(text, "text")
-    segments = system_segments(references, direction=direction) + history_segments(takes)
+    text = directed_text(text, direction)
+    segments = system_segments(references, context=system_context) + history_segments(takes)
     segments.extend(("<|im_start|>user\n", with_speaker_tag(text), MESSAGE_END, GENERATION_START))
     return rows_from_segments(tokenizer, config, segments)
 
 
-def scene_prompt(tokenizer, config, lines, scene="", characters="", references=(), takes=(), note="", direction=""):
+def scene_prompt(tokenizer, config, lines, scene="", characters="", references=(), takes=(), note="", direction="", *, system_context=""):
     lines=tuple(lines)
     references=tuple(references)
     if not lines:
         raise ValueError("The scene contains no lines")
     for line in lines:
         check_text(line, "scene line")
-    for description, location in ((scene, "scene description"), (characters, "characters")):
+    for description, location in ((scene, "scene description"), (characters, "characters"), (system_context,"task context")):
         if description.strip():
             check_text(description, location)
-    if direction:
-        check_text(direction, "direction")
-    if note:
-        check_text(note, "director note")
-        # A Scene revision directs the whole script. Keep the current user turn
-        # in its original casting format and put its global revision in system.
-        direction = "\n\n".join(part for part in (direction, f"Director revision: {note}") if part)
-    lines,takes,_=prepare_scene_cast(lines,references,takes)
-    description = "\n".join(p for p in (f"Scene: {scene}" if scene else "",
+    lines,takes,_=directed_scene_lines(lines,references,takes,direction,note)
+    description = "\n".join(p for p in (system_context, f"Scene: {scene}" if scene else "",
                            f"Characters:\n{characters}" if characters else "") if p)
     if characters and not references:
         # The report's scene task uses character descriptions before its explicit line-output instruction.
         instruction = description + "\nVoice every line of the script in order, with <|audio_separator|> between consecutive lines."
-        if direction:
-            instruction += "\n\n" + direction
         segments = ["<|im_start|>system\n", instruction, MESSAGE_END]
     else:
-        segments = system_segments(references, LINE_INSTRUCTION,
-                                   "\n\n".join(part for part in (description, direction) if part))
+        segments = system_segments(references, LINE_INSTRUCTION, description)
     segments.extend(history_segments(takes))
     script=("\n" + SEPARATOR + "\n").join(lines)
     segments.extend(("<|im_start|>user\n", script, MESSAGE_END, GENERATION_START))
@@ -169,11 +228,12 @@ def infill_prompt(tokenizer, config, target_text, prefix_codes, suffix_codes, du
     return rows_from_segments(tokenizer, config, segments)
 
 
-def streaming_prompt(tokenizer, config, text, lookahead="", references=(), takes=(), direction=""):
+def streaming_prompt(tokenizer, config, text, lookahead="", references=(), takes=(), direction="", *, system_context=""):
     check_text(text, "stream text")
     if lookahead.strip():
         check_text(lookahead, "lookahead")
-    segments = system_segments(references, STREAM_INSTRUCTION, direction) + history_segments(takes)
+    text = directed_text(text, direction)
+    segments = system_segments(references, STREAM_INSTRUCTION, system_context) + history_segments(takes)
     segments.extend(("<|im_start|>user\n", with_speaker_tag(text), END_OF_TURN, lookahead,
                      MESSAGE_END, GENERATION_START))
     return rows_from_segments(tokenizer, config, segments)

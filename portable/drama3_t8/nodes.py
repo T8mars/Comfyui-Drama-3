@@ -344,8 +344,10 @@ class T8DramaTranscribe(io.ComfyNode):
 
     @classmethod
     def execute(cls, asr_model, audio, language="auto", context="", model_path="", max_new_tokens=4096):
-        from .qwen3_asr.asr import load_qwen3_asr, transcribe, validate_max_new_tokens
+        from .qwen3_asr.asr import load_qwen3_asr, transcribe, validate_max_new_tokens, LANGUAGES
+        from .asr_language import normalize_asr_language
         validate_max_new_tokens(max_new_tokens)
+        language = normalize_asr_language(language, LANGUAGES, backend="Qwen3-ASR")
         waveforms = asr_waveforms(audio["waveform"], audio["sample_rate"])
         path = (resolve_model_path(model_path, folder_paths.models_dir) if model_path.strip()
                 else folder_paths.get_full_path_or_raise("asr", asr_model))
@@ -545,6 +547,9 @@ class T8DramaEditor(io.ComfyNode):
 NODES = [T8DramaLoader, T8DramaReference, T8DramaSession, T8DramaGenerate, T8DramaScene,
          T8DramaInfill, T8DramaDecode, T8DramaSaveSession, T8DramaLoadSession, T8DramaBranch, T8DramaTranscribe,
          T8DramaCodecEncode,T8DramaCodecDecode,T8DramaSRT,T8DramaAlign,T8DramaLive,T8DramaR2T2Transcribe,T8DramaEditor]
+
+from .creative_nodes import get_creative_nodes
+NODES += get_creative_nodes(EngineType, ReferencesType, SessionType)
 
 
 class Drama3Extension(ComfyExtension):

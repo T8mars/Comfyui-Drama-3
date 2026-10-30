@@ -76,6 +76,7 @@ async function updateTools(){try{const s=await api('/api/status');if(!optionsLoa
  for(const [key,state] of Object.entries(s.model_paths||{})){const el=$(`path-${key}`);el.textContent=`${state.ready?'已找到':'未找到'} · ${state.path}`;el.classList.toggle('missing',!state.ready);}
  if(settingsJob){const observed=settingsJob,job=await observedJob(observed,await api('/api/jobs'));if(settingsJob===observed&&job&&!['queued','running'].includes(job.status)){notice(job.status==='done'?'模型路径与转写设置已保存，下次启动会继续使用。':job.error||'设置未应用');settingsJob=null;}}
  $('acceleration-detail').textContent=describeAcceleration(s.acceleration);
+ const released=describeUnloadMemory(s.last_unload_memory);$('release-memory-detail').textContent=released;$('release-memory-detail').hidden=!released;
  for(const input of document.querySelectorAll('.reference-choice')){if(input.parentNode.querySelector('select'))continue;const select=document.createElement('select');select.className='speaker-select';select.setAttribute('aria-label','角色编号');select.add(new Option('原稿角色',''));for(let i=0;i<16;i++)select.add(new Option(`角色 ${i}`,i));select.value=referenceSpeakers[input.value]??'';select.onchange=()=>{if(select.value==='')delete referenceSpeakers[input.value];else referenceSpeakers[input.value]=Number(select.value);try{localStorage.setItem('drama-reference-speakers',JSON.stringify(referenceSpeakers));}catch{notice('角色映射已临时应用；浏览器无法保存，刷新后请重新选择。');}};input.parentNode.append(select);}
  const id=$('session').value;if(id&&id!==loadedSession){const session=await api(`/api/sessions/${id}`);if($('session').value===id){const selected=takeSession===id?$('take-index').value:'-1';$('take-index').replaceChildren(new Option('最新版本',-1));session.takes.forEach((t,i)=>$('take-index').add(new Option(`第 ${i+1} 遍 · ${t.text.slice(0,25)}`,i)));$('take-index').value=[...$('take-index').options].some(option=>option.value===selected)?selected:'-1';loadedSession=id;takeSession=id;}}
  const pending=observedAlignment;
@@ -90,4 +91,18 @@ function describeAcceleration(a){
  const reasons=[a.moe_fallback,a.graph_stats?.disabled_reason,...(a.graph_stats?.fallback_reasons||[])].filter(Boolean);
  const placement=a.expert_placement==='vram'?'专家驻留：单卡显存':'专家驻留：系统内存 / 显存缓存';
  return `${placement}；${moe}；${graph}；线性注意力可选 ${a.fla_installed?'Torch / FLA':'Torch'}。${reasons.length?'回退说明：'+[...new Set(reasons)].join('；'):''}`;
+}
+
+function describeUnloadMemory(report){
+ if(!report||typeof report!=='object')return '';
+ if(report.status==='refused_active')return '上次释放未完成：仍有任务占用，模型保持加载。';
+ if(report.status!=='ok')return '上次释放未完整结束，请查看任务记录中的原因。';
+ const before=report.before||{},after=report.after||{};
+ const gib=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?(value/1024**3).toFixed(1):null;
+ const pair=(first,last)=>{const a=gib(first),b=gib(last);return a!==null&&b!==null?`${a} → ${b} GiB`:b!==null?`${b} GiB`:'暂无统计';};
+ const pinned=phase=>phase.host_allocator?.status==='measured'?phase.host_allocator['allocated_bytes.current']:undefined;
+ const parts=[`固定内存 ${pair(pinned(before),pinned(after))}`,`进程内存 ${pair(before.process?.rss,after.process?.rss)}`];
+ const known=Object.values(after.owned_objects||{}).filter(value=>value?.weakref_supported===true&&typeof value.alive==='boolean');
+ if(known.length){const alive=known.filter(value=>value.alive).length;parts.push(alive?`仍有 ${alive} 个可核对的模型对象引用`:`可核对模型对象 ${known.length}/${known.length} 已清理`);}
+ return '最近释放：'+parts.join('；')+'。进程内存还包含运行库和其他缓存。';
 }

@@ -113,7 +113,7 @@ def oracle(tmp_path_factory, workflows):
 def test_all_original_examples_remain_and_editor_is_importable_canvas(workflows):
     original = {"basic", "long", "stream", "revision", "reference", "scene", "infill", "srt",
                 "codec", "asr", "align", "r2t2", "live", "save_session", "load_session"}
-    assert set(workflows) == original | {"editor"}
+    assert set(workflows) == original | {"editor", "creative_voice_project", "creative_bundle_resume", "creative_project_resume"}
     for workflow in workflows.values():
         assert workflow["version"] == .4 and isinstance(workflow["nodes"], list)
         assert isinstance(workflow["links"], list) and "prompt" not in workflow

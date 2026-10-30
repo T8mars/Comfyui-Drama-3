@@ -19,6 +19,7 @@ from .native.loader import load_drama3, load_codec
 from .native.chunking import split_text
 from .prompts import (
     SEPARATOR, infill_prompt, scene_prompt, streaming_prompt, tts_prompt, spoken_text,
+    directed_text, directed_scene_lines, direction_tags, with_speaker_tag,
 )
 from .state import Reference, Session, Take, validate_codes
 from .scene_cast import prepare_scene_cast
@@ -149,8 +150,14 @@ class DramaEngine:
         from .native.graphs import ensure_healthy
         ensure_healthy()
         if self.drama is None:
-            self.drama = load_drama3(str(self.model_path), experts_in_ram=self.expert_placement=='ram',
-                                    expert_cache_gb=self.expert_cache_gb,moe_backend=self.moe_backend)
+            try:
+                self.drama = load_drama3(str(self.model_path), experts_in_ram=self.expert_placement=='ram',
+                                        expert_cache_gb=self.expert_cache_gb,moe_backend=self.moe_backend)
+            except BaseException as error:
+                self.last_load_diagnostics=getattr(error,'load_diagnostics',None)
+                raise
+            loaded_reader=getattr(self.drama,'checkpoint_reader',None)
+            self.last_load_diagnostics=loaded_reader.get('load_summary') if type(loaded_reader) is dict else None
             self.drama.cuda_graph=self.cuda_graph
             self.set_backend(self.gdn_backend)
         self._load_drama()
@@ -259,6 +266,13 @@ class DramaEngine:
         return result["text"], result["language"]
 
     def transcribe_detailed(self, waveform, sample_rate, language=None, context="", hotwords="", check_cancel=None):
+        from .asr_language import normalize_asr_language
+        if self.asr_backend == "r2t2":
+            from .r2t2.native import SUPPORTED_LANGUAGES as supported_languages
+        else:
+            from .qwen3_asr.asr import LANGUAGES as supported_languages
+        language = normalize_asr_language(language, supported_languages,
+            backend="Confucius" if self.asr_backend == "r2t2" else "Qwen3-ASR")
         waveform = audio_waveform(waveform, sample_rate)[None]
         from .model_paths import require_models
         if self.asr_backend == "r2t2":
@@ -377,6 +391,8 @@ class DramaEngine:
                     "first_frame_seconds": first_frame, "duration_seconds": duration,
                     "length_limit_reached": finish_reason == "length", "finish_reason": finish_reason}
         metadata["gdn_backend"] = self.gdn_backend
+        if getattr(self,'last_load_diagnostics',None) is not None:
+            metadata['checkpoint_load']=self.last_load_diagnostics
         metadata["requested_gdn_backend"] = self.requested_backend
         metadata["actual_gdn_backends"] = sorted({layer.linear_attn.backend for layer in drama.model.model.layers
                                                   if layer.layer_type == "linear_attention"})
@@ -406,13 +422,16 @@ class DramaEngine:
                     drama.config.semantic_end_token_id,
                     drama.tokenizer.token_to_id(SEPARATOR), metadata)
 
-    def speak(self, text, session=None, sampling=None, on_codes=None, progress=None):
+    def speak(self, text, session=None, sampling=None, on_codes=None, progress=None, *, note="", system_context=""):
         session = session or Session()
         sampling = sampling or Sampling()
+        request = with_speaker_tag(directed_text(text, session.direction, note))
         drama = self.load_model()
-        prompt = tts_prompt(drama.tokenizer, drama.config, text, session.references,
-                            session.takes, session.direction)
-        take = self._take(prompt, text, spoken_text(text), sampling, on_codes, progress, output_policy="speech")
+        prompt = tts_prompt(drama.tokenizer, drama.config, request, session.references, session.takes, system_context=system_context)
+        take = self._take(prompt, request, spoken_text(text), sampling, on_codes, progress, output_policy="speech")
+        take.metadata['raw_request_text'] = text
+        if system_context:
+            take.metadata['system_context'] = system_context
         return session.append(take)
 
     def revise(self, session, note, sampling=None, on_codes=None, progress=None):
@@ -431,7 +450,8 @@ class DramaEngine:
                     session.references,sampling,progress,session=session,note=note,on_codes=on_codes,
                     generation_mode=base.metadata.get('generation_mode','together'),
                     split_long_text=base.metadata.get('scene_chunking',{}).get('enabled',False),
-                    chunk_bytes=base.metadata.get('scene_chunking',{}).get('chunk_bytes',300))
+                    chunk_bytes=base.metadata.get('scene_chunking',{}).get('chunk_bytes',300),
+                    system_context=previous.metadata.get('system_context',''))
         if 'scene_chunking' in previous.metadata:
             from .scene_chunks import validate_scene
             validate_scene(previous)
@@ -452,15 +472,28 @@ class DramaEngine:
                               session.references,sampling,progress,session=session,note=note,on_codes=on_codes,
                               generation_mode=previous.metadata.get('generation_mode','together'),
                               split_long_text=previous.metadata.get('scene_chunking',{}).get('enabled',False),
-                              chunk_bytes=previous.metadata.get('scene_chunking',{}).get('chunk_bytes',300))
+                              chunk_bytes=previous.metadata.get('scene_chunking',{}).get('chunk_bytes',300),
+                              system_context=previous.metadata.get('system_context',''))
         original = spoken_text(previous.transcript)
-        request = f"[{note}] {original}"
-        result = self.speak(request, session, sampling, on_codes, progress)
+        request = previous.metadata.get('raw_request_text', original)
+        if not isinstance(request, str):
+            raise ValueError('Take raw_request_text must be text')
+        if spoken_text(request) != original:
+            raise ValueError('Take raw_request_text differs from its spoken transcript')
+        from .native.prompt import SPEAKER_TAG, WHITE_SPACE
+        tag = SPEAKER_TAG.match(previous.prompt_text.lstrip(WHITE_SPACE))
+        if tag is not None:
+            raw_tag = SPEAKER_TAG.match(request.lstrip(WHITE_SPACE))
+            if raw_tag is not None and raw_tag.group(0) != tag.group(0):
+                raise ValueError('Take raw_request_text differs from its actual speaker')
+            request = tag.group(0) + ' ' + request if raw_tag is None else request
+        result = self.speak(request, session, sampling, on_codes, progress, note=note,
+                            system_context=previous.metadata.get('system_context',''))
         revised = result.takes[-1]
         take = replace(revised, transcript=original)
         return replace(result, takes=(*result.takes[:-1], take))
 
-    def scene(self, lines, scene="", characters="", references=None, sampling=None, progress=None, session=None, note="",on_codes=None,generation_mode='together',split_long_text=False,chunk_bytes=300):
+    def scene(self, lines, scene="", characters="", references=None, sampling=None, progress=None, session=None, note="",on_codes=None,generation_mode='together',split_long_text=False,chunk_bytes=300,*,system_context=""):
         lines=list(lines)
         from .scene_chunks import options,chunked_scene
         options(split_long_text,chunk_bytes)
@@ -469,10 +502,10 @@ class DramaEngine:
         if not lines:raise ValueError('The scene contains no lines')
         if split_long_text:
             sampling=sampling or Sampling();sampling.validate()
-            return chunked_scene(self,lines,scene,characters,references,sampling,progress,session,note,on_codes,generation_mode,chunk_bytes)
+            return chunked_scene(self,lines,scene,characters,references,sampling,progress,session,note,on_codes,generation_mode,chunk_bytes,system_context=system_context)
         if generation_mode!='together':
             sampling=sampling or Sampling();sampling.validate()
-            return isolated_scene(self,lines,scene,characters,references,sampling,progress,session,note,on_codes,generation_mode)
+            return isolated_scene(self,lines,scene,characters,references,sampling,progress,session,note,on_codes,generation_mode,system_context=system_context)
         drama = self.load_model()
         controls = {drama.tokenizer.token_to_id(SEPARATOR)}
         if not controls.issubset(drama.config.output_token_ids):
@@ -484,11 +517,11 @@ class DramaEngine:
             references = session.references
         else:
             session = replace(session, references=references)
-        cast_lines,_,speaker_map=prepare_scene_cast(lines,references,session.takes)
+        cast_lines,_,speaker_map=directed_scene_lines(lines,references,session.takes,session.direction,note)
         script=("\n" + SEPARATOR + "\n").join(cast_lines)
         request=script
         prompt = scene_prompt(drama.tokenizer, drama.config, lines, scene, characters, references,
-                              session.takes, note, session.direction)
+                              session.takes, note, session.direction, system_context=system_context)
         take = self._take(prompt, request, spoken_text("\n".join(lines),scene=True), sampling or Sampling(), on_codes=on_codes,progress=progress,
                           full_head=True,expected_segments=len(lines))
         take.metadata["expected_segments"] = len(lines)
@@ -496,6 +529,8 @@ class DramaEngine:
         take.metadata["task"] = "scene"
         take.metadata['generation_mode']='together'
         take.metadata.update(scene=scene,characters=characters,script_lines=lines,director_note=note)
+        if system_context:
+            take.metadata['system_context'] = system_context
         if references:
             take.metadata["scene_speaker_map"]=speaker_map
             take.metadata["scene_casting"]="reference_speaker_tags_v1"
@@ -561,7 +596,13 @@ class DramaEngine:
         sampling.validate()
         if not 32 <= int(chunk_bytes) <= 3000:
             raise ValueError("Chunk byte budget must be between 32 and 3000")
-        chunks = split_text(text, max_bytes=int(chunk_bytes))
+        style = direction_tags(session.direction)
+        reserve = len(style.encode('utf-8')) + 1 + len('<|speaker:15|> '.encode('utf-8')) if style else 0
+        if reserve >= int(chunk_bytes):
+            raise ValueError('Direction controls cannot fit chunk_bytes including speaker overhead; increase chunk_bytes')
+        chunks = split_text(text, max_bytes=int(chunk_bytes) - reserve)
+        if style and any(len(with_speaker_tag(directed_text(chunk, style)).encode('utf-8')) > int(chunk_bytes) for chunk in chunks):
+            raise ValueError('Directed long-form request exceeds chunk_bytes; increase chunk_bytes for protected spans')
         if not chunks:
             raise ValueError("Long-form text is empty")
         voice_references = session.references
@@ -594,18 +635,34 @@ class DramaEngine:
                 session = session.append(take)
         return session
 
-    def stream_text(self, text, lookahead="", session=None, sampling=None, on_codes=None, progress=None):
+    def stream_text(self, text, lookahead="", session=None, sampling=None, on_codes=None, progress=None,*,system_context=""):
         session = session or Session()
+        request = with_speaker_tag(directed_text(text, session.direction))
         drama = self.load_model()
         end = drama.tokenizer.token_to_id("<|endofturn|>")
-        prompt = streaming_prompt(drama.tokenizer, drama.config, text, lookahead,
-                                  session.references, session.takes, session.direction)
-        take = self._take(prompt, text, spoken_text(text), sampling or Sampling(), on_codes, progress,
+        prompt = streaming_prompt(drama.tokenizer, drama.config, request, lookahead,
+                                  session.references, session.takes, system_context=system_context)
+        take = self._take(prompt, request, spoken_text(text), sampling or Sampling(), on_codes, progress,
                           stop_token_ids=(end,))
         take = replace(take, metadata={**take.metadata, "task": "text_stream", "lookahead": lookahead})
+        take.metadata['raw_request_text'] = text
+        if system_context:
+            take.metadata['system_context'] = system_context
         return session.append(take)
 
     def unload(self):
+        unload_report=unload_references=None
+        try:
+            from .memory_diagnostics import begin_unload,finish_unload
+            unload_report,unload_references=begin_unload(self)
+        except Exception:
+            pass  # Optional observations cannot prevent resource cleanup.
+
+        def observed(status='ok',error=None):
+            if unload_report is None:return None
+            try:return finish_unload(self,unload_report,unload_references,status=status,error=error)
+            except Exception:return None
+
         experts=getattr(self.drama,'experts',None)
         close=getattr(experts,'close',None)
         failure=None
@@ -616,6 +673,7 @@ class DramaEngine:
                 # An active store intentionally rejects destruction. Keep its
                 # owning engine and every resource intact in that case.
                 if getattr(experts,'cache',None) is not None or getattr(experts,'active',False):
+                    observed('refused_active',exc)
                     raise
                 failure=exc
         experts=close=None
@@ -654,5 +712,7 @@ class DramaEngine:
 
         cleanup(release_pins)
         cleanup(mm.soft_empty_cache)
+        report=observed('error' if failure is not None else 'ok',failure)
         if failure is not None:
             raise failure
+        return report

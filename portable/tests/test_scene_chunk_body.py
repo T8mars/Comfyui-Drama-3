@@ -99,8 +99,10 @@ def test_immutable_v1_archive_load_decode_roundtrip_and_new_v2_rejects_old_tag_o
     bad=copy.deepcopy(take.metadata);bad['scene_chunking']['version']=2
     with pytest.raises(ValueError,match='planner|policy|requests'):
         validate_scene(replace(take,metadata=bad))
-    revised=engine.revise(session,'Same words, clear delivery')
-    assert revised.takes[-1].metadata['scene_chunking']==dict(version=3,enabled=True,chunk_bytes=48)
+    with pytest.raises(ValueError,match='protected scene span|Direction controls'):
+        engine.revise(session,'Same words, clear delivery')
+    revised=engine.revise(session,'clear')
+    assert revised.takes[-1].metadata['scene_chunking']==dict(version=3,enabled=True,chunk_bytes=48,request_direction='[clear]')
     assert all(content(unit['text']) for unit in revised.takes[-1].metadata['scene_units'])
     assert take.metadata['scene_chunking']['version']==1
 

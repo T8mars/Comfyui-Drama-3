@@ -358,7 +358,7 @@ def test_editor_float_negative_zero_bits_survive_native_default_and_archive(tmp_
     assert torch.equal(output[:,:9000].contiguous().view(torch.int32),before[:,:9000].contiguous().view(torch.int32))
 
 
-@pytest.mark.parametrize('subtype',['DOUBLE','PCM_24',None,True,17])
+@pytest.mark.parametrize('subtype',['DOUBLE','PCM_32',None,True,17])
 def test_unknown_playback_contract_rejected_before_codec_encoding(subtype):
     engine=Engine()
     with pytest.raises(ValueError,match='subtype'):

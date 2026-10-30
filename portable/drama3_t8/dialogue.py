@@ -76,13 +76,13 @@ def own_history(session,_seen=None):
     return result
 
 
-def isolated_scene(engine,lines,scene,characters,references,sampling,progress,session,note,on_codes,mode):
+def isolated_scene(engine,lines,scene,characters,references,sampling,progress,session,note,on_codes,mode,*,system_context=''):
     hold=engine.generation_session() if hasattr(engine,'generation_session') else contextlib.nullcontext()
     with hold:
-        return _isolated_scene(engine,lines,scene,characters,references,sampling,progress,session,note,on_codes,mode)
+        return _isolated_scene(engine,lines,scene,characters,references,sampling,progress,session,note,on_codes,mode,system_context=system_context)
 
 
-def _isolated_scene(engine,lines,scene,characters,references,sampling,progress,session,note,on_codes,mode):
+def _isolated_scene(engine,lines,scene,characters,references,sampling,progress,session,note,on_codes,mode,*,system_context=''):
     session=session or Session(tuple(references or ()))
     if references is not None:session=replace(session,references=tuple(references))
     references=session.references
@@ -103,6 +103,11 @@ def _isolated_scene(engine,lines,scene,characters,references,sampling,progress,s
         direction=isolated_direction(session.direction,scene,characters,actor=actor,name=name,
             previous_actor=last_actor if mode=='per_line_context' and last_source is not None and last_actor!=actor else None,
             note=note)
+        from .scene_conditioning import isolated_system_context
+        context_description=isolated_system_context(scene,characters,actor=actor,name=name,
+            previous_actor=last_actor if mode=='per_line_context' and last_source is not None and last_actor!=actor else None,
+            system_context=system_context)
+        context_options={'system_context':context_description} if context_description else {}
         context=Session(refs,tuple(history),direction)
         local=replace(sampling,seed=(sampling.seed+group_index)%2**64)
         def advancing(step,total,index=group_index):
@@ -110,9 +115,9 @@ def _isolated_scene(engine,lines,scene,characters,references,sampling,progress,s
         if progress:advancing(0,sampling.max_frames)
         if mode=='per_speaker' and len(indices)>1:
             generated=engine.scene([recast(cast[i]) for i in indices],scene='',characters='',
-                references=refs,sampling=local,progress=advancing,session=context,note='',generation_mode='together')
+                references=refs,sampling=local,progress=advancing,session=context,note='',generation_mode='together',**context_options)
         else:
-            generated=engine.speak(recast(cast[indices[0]]),context,local,progress=advancing)
+            generated=engine.speak(recast(cast[indices[0]]),context,local,progress=advancing,**context_options)
         take=generated.takes[-1]
         segments=take.segments()
         if take.metadata.get('length_limit_reached') or len(segments)!=len(indices) or any(not c.shape[-1] for c in segments):
@@ -136,6 +141,8 @@ def _isolated_scene(engine,lines,scene,characters,references,sampling,progress,s
         sampling=sampling.__dict__,length_limit_reached=False,finish_reason='eos',
         elapsed_seconds=sum(s['metadata'].get('elapsed_seconds',0) for s in sources),
         duration_seconds=(sum(c.shape[-1] for c in pieces)*FRAME_LENGTH+(len(pieces)-1)*round(.3*SAMPLE_RATE))/SAMPLE_RATE)
+    if system_context:
+        metadata['system_context']=system_context
     details=[s['metadata'] for s in sources]
     metadata['moe_backend']='/'.join(sorted({item.get('moe_backend','torch') for item in details}))
     metadata['moe_requested_backend']='/'.join(sorted({item.get('moe_requested_backend','torch') for item in details}))

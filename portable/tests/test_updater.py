@@ -361,7 +361,8 @@ def test_updater_imports_without_torch_or_comfy():
     assert result.returncode == 0 and "stdlib-only" in result.stdout
 
 
-def test_windows_launcher_finishes_preparsed_block_even_when_updater_replaces_cmd(portable, tmp_path):
+@pytest.mark.parametrize('arguments', [[], ['--no-browser', '--port', '7893']])
+def test_windows_launcher_finishes_preparsed_block_even_when_updater_replaces_cmd(portable, tmp_path, arguments):
     if os.name != "nt":
         pytest.skip("Windows CMD block semantics")
     project = Path(__file__).resolve().parents[1]
@@ -377,10 +378,11 @@ def test_windows_launcher_finishes_preparsed_block_even_when_updater_replaces_cm
         (portable / "tools/update_portable.py").write_text(
             "from pathlib import Path\nroot=Path(__file__).resolve().parents[1]\n"
             "(root/'Start-Drama3.cmd').write_text('@echo off\\necho Wrong new body\\nexit /b 4\\n')\n", encoding="utf-8")
-        (portable / "app.py").write_text("from pathlib import Path\nPath(__file__).with_name('app-started.txt').write_text('started')\n", encoding="utf-8")
-        launched = subprocess.run(["cmd", "/d", "/c", str(portable / "Start-Drama3.cmd")], capture_output=True, timeout=30)
+        (portable / "app.py").write_text("import json,sys\nfrom pathlib import Path\nPath(__file__).with_name('app-started.txt').write_text('started')\nPath(__file__).with_name('app-arguments.json').write_text(json.dumps(sys.argv[1:]),encoding='utf-8')\n", encoding="utf-8")
+        launched = subprocess.run(["cmd", "/d", "/c", str(portable / "Start-Drama3.cmd"), *arguments], capture_output=True, timeout=30)
         assert launched.returncode == 0, (launched.stdout, launched.stderr)
         assert (portable / "app-started.txt").read_text() == "started"
+        assert json.loads((portable / "app-arguments.json").read_text(encoding='utf-8')) == arguments
         assert b"Wrong new body" not in launched.stdout
     finally:
         assert getattr(junction.lstat(), "st_file_attributes", 0) & 0x400

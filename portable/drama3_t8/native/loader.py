@@ -225,12 +225,14 @@ def _failed_load_cleanup(operation, description, *args):
     """Attempt owned rollback without replacing the original load exception."""
     try:
         operation(*args)
+        return True
     except BaseException as cleanup_error:
         try:
             logging.warning('Drama 3 failed-load %s: %s: %s', description,
                             type(cleanup_error).__name__, str(cleanup_error))
         except BaseException:
             pass  # Diagnostics must not hide the original cancellation/error.
+        return False
     finally:
         operation = None
         args = ()
@@ -247,7 +249,79 @@ def _release_failed_load_pins():
     release_unused_pinned_memory()
 
 
+def _diagnostic_text(value,limit=512):
+    return (value if len(value)<=limit else value[:limit-3]+'...') if type(value) is str else None
+
+
+def _diagnostic_numbers(value,keys):
+    if type(value) is not dict:return {}
+    return {key:value[key] for key in keys if type(value.get(key)) in (int,float) and 0<=value[key]<2**64}
+
+
+def checkpoint_load_summary(reader,experts=None,incremental=None,requested=None,*,outcome='loaded',proof_present=None):
+    """Fixed-field JSON facts only; never copy state/tensors or check arrays."""
+    reader=reader if type(reader) is dict else {}
+    owner=reader.get('expert_ownership');owner=owner if type(owner) is dict else {}
+    admission=getattr(experts,'admission',None);admission=admission if type(admission) is dict else {}
+    host=reader.get('host_context');host=host if type(host) is dict else {}
+    checks=reader.get('memory_checks');checks=checks if type(checks) is list else []
+    numeric=('available_bytes','required_bytes','reserve_bytes','maximum_remaining_bank_bytes','layer_destination_bytes')
+    result={'version':1,'outcome':_diagnostic_text(outcome,32),'requested_backend':_diagnostic_text(requested,32),
+        'actual_reader':_diagnostic_text(reader.get('actual_reader'),64),
+        'reader_fallback_reason':_diagnostic_text(reader.get('fallback_reason')),
+        **_diagnostic_numbers(reader,('source_cpu_bytes','temporary_margin_bytes','header_bytes')),
+        'source_header_sha256':_diagnostic_text(reader.get('header_sha256'),64),
+        'host_context':{key:host[key] for key in ('aimdo_enabled','disable_mmap') if type(host.get(key)) is bool},
+        'memory_check_count':len(checks),'ownership_proof_present':proof_present if type(proof_present) is bool else None,
+        'ownership_incremental':incremental if type(incremental) is bool else None,
+        'ownership':{'policy':_diagnostic_text(owner.get('policy'),128),
+            'fallback_reason':_diagnostic_text(owner.get('fallback_reason')),
+            **{key:owner[key] for key in ('read_certificate_issued','proof_issued') if type(owner.get(key)) is bool},
+            **_diagnostic_numbers(owner,('completed_layers','release_count'))},
+        'admission':{'policy':_diagnostic_text(admission.get('policy'),128),
+            'ownership_refusal':_diagnostic_text(admission.get('ownership_refusal')),
+            **{key:admission[key] for key in ('selected_accelerated_store',) if type(admission.get(key)) is bool},
+            **_diagnostic_numbers(admission,numeric)},
+        'selected_store':_diagnostic_text(type(experts).__module__+'.'+type(experts).__qualname__,192) if experts is not None else None}
+    if checks:
+        result['memory_check_edges']={'first':_diagnostic_numbers(checks[0],numeric),'last':_diagnostic_numbers(checks[-1],numeric)}
+    bank=getattr(experts,'pin_ram_admission',None)
+    if type(bank) is dict:
+        result['bank_refusal']={'bank':_diagnostic_text(bank.get('bank'),128),
+            **_diagnostic_numbers(bank,('physical_bytes','available_bytes','required_bytes','reserve_bytes','total_bytes'))}
+    return result
+
+
 def load_drama3(path, second_device=None, split=0, experts_in_ram=False, expert_cache_gb=0.0,moe_backend="torch"):
+    """Auto may retry exactly once after a verified pin-RAM refusal/rollback."""
+    from .checkpoint_ownership import IncrementalPinRAMAdmissionError
+    refusal=None
+    try:
+        return _load_drama3_once(path,second_device,split,experts_in_ram,expert_cache_gb,moe_backend)
+    except IncrementalPinRAMAdmissionError as error:
+        if type(error) is not IncrementalPinRAMAdmissionError or moe_backend!='auto' or not experts_in_ram or not error.partial_cleanup_complete:
+            raise
+        reason=(_diagnostic_text(error.args[0],1024) if len(error.args)==1 else None) or type(error).__name__
+        refusal={'requested_backend':'auto','actual_backend':'torch','attempts':2,
+                 'scope':error.admission.get('scope','verified_incremental_pin_ram_admission'),'partial_cleanup_complete':True,
+                 'reason':reason,'admission':dict(error.admission),
+                 'first_attempt':getattr(error,'load_diagnostics',None)}
+    # The first except scope and all partial-load cleanup have finished. No
+    # model/exception frame is used as the input to this independent read.
+    comfy.model_management.throw_exception_if_processing_interrupted()
+    logging.warning('Drama 3 auto backend: reloading once with Torch after complete pin rollback: %s',refusal['reason'])
+    result=_load_drama3_once(path,second_device,split,experts_in_ram,expert_cache_gb,'torch',_disable_expert_pinning=True)
+    result.experts.requested_backend='auto'
+    result.experts.fallback_reason='Automatic pin-RAM recovery: '+refusal['reason']
+    result.checkpoint_reader['automatic_backend_fallback']=refusal
+    summary=result.checkpoint_reader.get('load_summary')
+    if type(summary) is dict:
+        result.checkpoint_reader['load_summary']={**summary,'requested_backend':'auto',
+            'recovery':{key:refusal[key] for key in ('actual_backend','attempts','scope','partial_cleanup_complete','reason','first_attempt')}}
+    return result
+
+
+def _load_drama3_once(path, second_device=None, split=0, experts_in_ram=False, expert_cache_gb=0.0,moe_backend="torch",*,_disable_expert_pinning=False):
     if moe_backend not in {'auto', 'torch', 'cuda'}:
         raise ValueError('MoE backend must be auto, torch or cuda')
     if not experts_in_ram and second_device is not None:
@@ -263,6 +337,8 @@ def load_drama3(path, second_device=None, split=0, experts_in_ram=False, expert_
     ownership_module = ownership = assignment = None
     reader = {}
     load_failed = False
+    cleanup_complete = True
+    incremental = None
     try:
         if experts_in_ram:
             from .checkpoint_reader import load_torch_file
@@ -302,6 +378,12 @@ def load_drama3(path, second_device=None, split=0, experts_in_ram=False, expert_
         if experts_in_ram:
             from .acceleration import expert_store
             experts = expert_store(model,int(expert_cache_gb * 1024 ** 3),moe_backend,ownership=ownership)
+            if _disable_expert_pinning:
+                experts.pin_memory=False
+                prior=dict(getattr(experts,'admission',{}).get('legacy_pin_admission',{}))
+                experts.admission['legacy_pin_admission']={**prior,'pin_memory':False,
+                    'original_pin_memory':bool(prior.get('pin_memory',False)),
+                    'fallback_reason':'Automatic RAM recovery disables additional pinned copies'}
             incremental = ownership_module.is_incremental(ownership, model, experts)
             admission = getattr(experts, 'admission', None)
             if admission is not None:
@@ -318,6 +400,13 @@ def load_drama3(path, second_device=None, split=0, experts_in_ram=False, expert_
                 comfy.model_management.throw_exception_if_processing_interrupted()
                 if getattr(experts, 'pin_requested', False) and getattr(experts, 'pin_fallback_reason', None):
                     from .checkpoint_reader import ReaderResourceError
+                    from .offload_accelerated import pin_ram_refusal
+                    admission_refusal=pin_ram_refusal(experts)
+                    if admission_refusal is not None:
+                        raise ownership_module.IncrementalPinRAMAdmissionError(
+                            f'Drama 3 expert pinning stopped at layer {index}: {experts.pin_fallback_reason}. '
+                            'Loading aborted before publishing a partially pinned model.',
+                            {**admission_refusal,'scope':'accelerated_bank_pin_ram_admission','incremental':incremental})
                     raise ReaderResourceError(
                         f'Drama 3 expert pinning stopped at layer {index}: {experts.pin_fallback_reason}. '
                         'Loading aborted before publishing a partially pinned model.')
@@ -330,26 +419,34 @@ def load_drama3(path, second_device=None, split=0, experts_in_ram=False, expert_
             from .resident import ResidentExperts
             experts = ResidentExperts(model, moe_backend)
         if second_device is None:
+            reader['load_summary']=checkpoint_load_summary(reader,experts,incremental,moe_backend,proof_present=ownership is not None)
             return Drama3(model, patcher, experts=experts, checkpoint_reader=reader)
         first = split or auto_split(model, load_device, second_device)
         second = SecondGPU(model, first)
         second_patcher = comfy.model_patcher.CoreModelPatcher(second, load_device=second_device, offload_device=offload_device)
         logging.info("Drama 3: layers 0-%d on %s, layers %d-%d, head and tower on %s", first - 1, load_device, first,
                      config.text.num_hidden_layers - 1, second_device)
+        reader['load_summary']=checkpoint_load_summary(reader,experts,incremental,moe_backend,proof_present=ownership is not None)
         return Drama3(model, patcher, second, second_patcher, experts, checkpoint_reader=reader)
     except BaseException as error:
         load_failed = True
+        try:
+            error.load_diagnostics=checkpoint_load_summary(reader,experts,incremental,moe_backend,
+                outcome='failed',proof_present=ownership is not None)
+            error.load_diagnostics['error_type']=_diagnostic_text(type(error).__name__,128)
+        except Exception:
+            pass  # Observations cannot mask the original load failure.
         if state is not None:
-            _failed_load_cleanup(state.clear, 'checkpoint state cleanup')
+            cleanup_complete = _failed_load_cleanup(state.clear, 'checkpoint state cleanup') and cleanup_complete
         close = getattr(experts, 'close', None)
         if close is not None:
-            _failed_load_cleanup(close, 'expert cleanup')
+            cleanup_complete = _failed_load_cleanup(close, 'expert cleanup') and cleanup_complete
         # These models were never published or registered as loaded. Empty their
         # owned weights even when a caller retains the exception traceback.
         for partial in (model, second):
             if partial is not None:
-                _failed_load_cleanup(_clear_unpublished_model, 'model storage cleanup', partial)
-        _failed_load_cleanup(_clear_failed_load_frames, 'retained frame cleanup', error, inspect.currentframe())
+                cleanup_complete = _failed_load_cleanup(_clear_unpublished_model, 'model storage cleanup', partial) and cleanup_complete
+        cleanup_complete = _failed_load_cleanup(_clear_failed_load_frames, 'retained frame cleanup', error, inspect.currentframe()) and cleanup_complete
         state = model = patcher = experts = second = second_patcher = layer = None
         raise
     finally:
@@ -360,12 +457,16 @@ def load_drama3(path, second_device=None, split=0, experts_in_ram=False, expert_
                     if primary_error is None:
                         ownership_module.close(proof)
                     else:
-                        _failed_load_cleanup(ownership_module.close, 'ownership cleanup', proof)
+                        cleanup_complete = _failed_load_cleanup(ownership_module.close, 'ownership cleanup', proof) and cleanup_complete
         finally:
             assignment = ownership = proof = None
             if load_failed:
-                _failed_load_cleanup(gc.collect, 'garbage collection')
-                _failed_load_cleanup(_release_failed_load_pins, 'unused pinned allocator cleanup')
+                cleanup_complete = _failed_load_cleanup(gc.collect, 'garbage collection') and cleanup_complete
+                cleanup_complete = _failed_load_cleanup(_release_failed_load_pins, 'unused pinned allocator cleanup') and cleanup_complete
+                if ownership_module is not None and isinstance(primary_error,ownership_module.IncrementalPinRAMAdmissionError):
+                    primary_error.partial_cleanup_complete=cleanup_complete
+                if type(getattr(primary_error,'load_diagnostics',None)) is dict:
+                    primary_error.load_diagnostics['partial_cleanup_complete']=cleanup_complete
             primary_error = None
 
 

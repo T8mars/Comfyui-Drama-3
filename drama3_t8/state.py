@@ -139,8 +139,13 @@ def all_takes(roots):
         active.add(take.take_id)
         for source in take.sources:visit(source,depth+1)
         active.remove(take.take_id);found[take.take_id]=take;checked_objects.add(id(take))
-    for root in roots:visit(root,0)
-    return tuple(found.values())
+    try:
+        for root in roots:visit(root,0)
+        return tuple(found.values())
+    finally:
+        # Clear the recursive closure cell on success AND failure. Otherwise
+        # visit -> closure -> visit also retains found's mapped Take tensors.
+        del visit
 
 
 def archive_features(takes):
@@ -262,6 +267,29 @@ def validate_session(session):
             validate_take(take)
 
 
+def _restore_archive_take(identifier, records, tensors, restored, active, depth=0):
+    # Explicit arguments keep recursion out of a self-referencing closure.
+    # A closure cycle would retain mapped CPU tensors until cyclic GC, including
+    # reference-only archives, and prevent immediate file release on Windows.
+    if depth>64 or identifier in active:
+        raise ValueError('Archive source graph is cyclic or too deep')
+    if identifier in restored:return restored[identifier]
+    if identifier not in records:raise ValueError('Archive references an unknown source Take')
+    item=records[identifier];blobs=item.get('blobs',{});source_ids=item.get('sources',[])
+    if not isinstance(blobs,dict) or not isinstance(source_ids,list) or not all(isinstance(value,str) for value in source_ids):
+        raise ValueError('Invalid archive typed source/blob references')
+    if any(not isinstance(key,str) or key not in tensors for key in blobs.values()):
+        raise ValueError('Archive references a missing tensor blob')
+    active.add(identifier)
+    sources=tuple(_restore_archive_take(source_id,records,tensors,restored,active,depth+1) for source_id in source_ids)
+    active.remove(identifier)
+    take=Take(item['prompt_text'],item['transcript'],tensors[item['key']],item['semantic_start'],
+        item['semantic_end'],item['separator_id'],item['metadata'],identifier,
+        blobs={name:tensors[key] for name,key in blobs.items()},sources=sources)
+    restored[identifier]=take
+    return take
+
+
 def load_session(path):
     from safetensors import safe_open
     with safe_open(str(path), framework="pt", device="cpu") as f:
@@ -299,25 +327,7 @@ def load_session(path):
             raise ValueError('Conflicting archive source identifiers')
         records[identifier]=record
     restored={};active=set()
-    def restore(identifier,depth=0):
-        if depth>64 or identifier in active:
-            raise ValueError('Archive source graph is cyclic or too deep')
-        if identifier in restored:return restored[identifier]
-        if identifier not in records:raise ValueError('Archive references an unknown source Take')
-        item=records[identifier];blobs=item.get('blobs',{});source_ids=item.get('sources',[])
-        if not isinstance(blobs,dict) or not isinstance(source_ids,list) or not all(isinstance(value,str) for value in source_ids):
-            raise ValueError('Invalid archive typed source/blob references')
-        if any(not isinstance(key,str) or key not in tensors for key in blobs.values()):
-            raise ValueError('Archive references a missing tensor blob')
-        active.add(identifier)
-        sources=tuple(restore(source_id,depth+1) for source_id in source_ids)
-        active.remove(identifier)
-        take=Take(item['prompt_text'],item['transcript'],tensors[item['key']],item['semantic_start'],
-            item['semantic_end'],item['separator_id'],item['metadata'],identifier,
-            blobs={name:tensors[key] for name,key in blobs.items()},sources=sources)
-        restored[identifier]=take
-        return take
-    takes=tuple(restore(record['take_id']) for record in root_records)
+    takes=tuple(_restore_archive_take(record['take_id'],records,tensors,restored,active) for record in root_records)
     if set(restored)!=set(records):raise ValueError('Archive contains unreferenced source Takes')
     session = Session(refs, takes, data["direction"], data["session_id"])
     validate_session(session)

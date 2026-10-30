@@ -100,7 +100,7 @@ def test_actual_engine_prompt_history_and_direction_match_direct_scene(mode, spl
                     audio_frames(torch.ones((10, 3), dtype=torch.long)))
     parent = Session(references(), (previous,), 'Exact original Mandarin direction.')
     node_engine, direct_engine = Harness(), Harness()
-    options = dict(generation_mode=mode, split_long_text=split, chunk_bytes=48)
+    options = dict(generation_mode=mode, split_long_text=split, chunk_bytes=256)
     actual = nodes.T8DramaScene.execute(node_engine, 'A: first\nB: second',
         'same scene', 'same characters', session=parent, seed=516,
         max_frames=300, sampling_preset='stable', **options)[0]

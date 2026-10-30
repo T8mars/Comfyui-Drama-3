@@ -18,6 +18,7 @@ import itertools
 import logging
 import time
 import psutil
+import weakref
 
 import torch
 import torch.nn as nn
@@ -33,6 +34,35 @@ _PIN_STORE=ContextVar('drama_expert_pin_store',default=None)
 _PIN_BANK=ContextVar('drama_expert_pin_bank',default=None)
 PIN_MIN_RESERVE = 4 * 1024 ** 3
 PIN_MAX_RESERVE = 8 * 1024 ** 3
+_PIN_RAM_ISSUER=object()
+
+
+@dataclasses.dataclass(frozen=True,slots=True)
+class _PinRAMRefusal:
+    issuer: object
+    owner: object
+    receipt: tuple
+
+
+def pin_ram_refusal(store):
+    """Only an actual accelerated bank's measured refusal can request retry."""
+    if type(store) is not ExpertStore:return None
+    marker=getattr(store,'_pin_ram_refusal',None)
+    if (type(marker) is not _PinRAMRefusal or marker.issuer is not _PIN_RAM_ISSUER
+            or type(marker.owner) is not weakref.ReferenceType or marker.owner() is not store
+            or type(marker.receipt) is not tuple or len(marker.receipt)!=6):
+        return None
+    receipt=dict(marker.receipt)
+    numeric=('physical_bytes','available_bytes','required_bytes','reserve_bytes','total_bytes')
+    if (type(receipt) is not dict or any(type(receipt.get(key)) is not int for key in numeric)
+            or type(receipt.get('bank')) is not str or not receipt['bank']
+            or receipt['physical_bytes']<=0 or receipt['total_bytes']<=0
+            or receipt['available_bytes']<0
+            or receipt['reserve_bytes']!=max(PIN_MIN_RESERVE,min(PIN_MAX_RESERVE,int(receipt['total_bytes']*.125)))
+            or receipt['required_bytes']!=2*receipt['physical_bytes']+receipt['reserve_bytes']
+            or receipt['available_bytes']>=receipt['required_bytes']):
+        return None
+    return dict(receipt)
 
 
 def _disable_pinning(store, reason):
@@ -50,6 +80,9 @@ def _disable_pinning(store, reason):
 def _pin_headroom(store, physical_bytes, label):
     if physical_bytes == 0:
         return True
+    if store is not None:
+        store._pin_ram_refusal=None
+        store.pin_ram_admission=None
     try:
         memory = psutil.virtual_memory()
         reserve = max(PIN_MIN_RESERVE, min(PIN_MAX_RESERVE, int(memory.total * .125)))
@@ -66,6 +99,14 @@ def _pin_headroom(store, physical_bytes, label):
                   f'available RAM {memory.available / 1024**3:.2f} GiB is below '
                   f'{required / 1024**3:.2f} GiB (source + pinned copy and '
                   f'{reserve} bytes / {reserve / 1024**3:.2f} GiB system reserve)')
+        if store is not None:
+            store.pin_ram_admission={'bank':label,'physical_bytes':int(physical_bytes),
+                'available_bytes':int(memory.available),'required_bytes':int(required),'reserve_bytes':int(reserve),
+                'total_bytes':int(memory.total)}
+            try:
+                store._pin_ram_refusal=_PinRAMRefusal(_PIN_RAM_ISSUER,weakref.ref(store),tuple(store.pin_ram_admission.items()))
+            except TypeError:
+                pass  # Non-weakref test/foreign objects cannot request recovery.
     except (OSError, RuntimeError, MemoryError) as exc:
         reason = f'{label}: cannot verify available RAM before pinning ({type(exc).__name__}: {exc})'
     _disable_pinning(store, reason)
@@ -420,6 +461,8 @@ class ExpertStore:
         self.pin_memory=pin_memory
         self.pin_requested=bool(pin_memory)
         self.pin_fallback_reason=None
+        self.pin_ram_admission=None
+        self._pin_ram_refusal=None
         self.pinned_bytes=0
         self.pin_checks=0
         self.pin_last_check=None
