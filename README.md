@@ -18,6 +18,19 @@ The white-and-pink Studio brings voices, scripts, takes and delivery into one lo
 
 DRAMA supports native reference-voice conditioning without training. Reference quality, transcription and delivery affect the result. For a new unreferenced voice, audition a take, save it as a voice reference and bind that version before continuing the character.
 
+## Silent-generation recovery
+
+Studio enables one automatic retry for silent repetition or empty output by default; you can disable it, and saved explicit project settings are preserved. Set `opening_retries=1` in ComfyUI to enable recovery, or `0` to disable it; existing workflow settings remain intact. A stalled opening or later segment can retry before audio is delivered, using the same prompt/references and the next seed, with attempt records retained. Scene stall windows reset at line separators. Already delivered live audio is never replayed automatically; an exhausted retry remains an error rather than an accepted partial take.
+
+## New in 0.3.3
+
+- **Updated official weights:** FP8, W4A8 and both text heads use Fish Audio's 2026-10-29 weights (`78e5ab7`). Keep the selected main model and heads from the same conversion. The Codec is unchanged, so existing encoded voice references remain usable.
+- **R2T2 CUDA compatibility:** Replaces the original `sm_120a`-only runtime with multiple SASS/PTX targets. A preflight checks the binary and device before calling incompatible native kernels that could terminate Studio.
+- **Windows loading stability:** avoid the large-weight storage boundary that can terminate Python; the low-RAM fallback remains lazy instead of copying the whole model.
+- **Silent-generation recovery:** Stall detection resets at line boundaries. Undelivered later failures can retry once with the same prompt and references, preserving attempt records. Live audio already delivered is not replayed.
+
+Code updates preserve Python, models and user data. Exit Studio before replacing the selected main model and both matching heads. Older bundles need the native-runtime repair asset for the CUDA fix; older ComfyUI installs should exit, back up `r2t2-runtime`, then run `install.py` again.
+
 ## New in 0.3.2
 
 - **Clear voice casting:** the middle panel offers mutually exclusive individual casting and saved cast groups. Select each voice/version from the library or use one fixed group, with reference playback. Named roles map to the actual script speaker IDs; conflicting voice assignments are rejected.
@@ -77,6 +90,8 @@ python -m pip install "transformers==4.57.1" "tokenizers==0.22.2" "huggingface-h
 ```
 
 `install.py` installs the separately verified Windows x64 / CUDA 12.8 R2T2 runtime, without weights. Set `DRAMA_SKIP_R2T2_INSTALL=1` to skip, or `DRAMA_R2T2_NATIVE_DIR` to use an existing runtime. Qwen ASR operates independently. Reference encoding with a manual transcript needs no ASR model.
+
+**Model version:** The current FP8/W4A8 conversions and matching heads use upstream [`78e5ab7` (2026-10-29)](https://huggingface.co/fishaudio/drama-3/tree/78e5ab79e49aa9a25abe8799eff2c4d73a1c3216). Conversion retains the native model structure; FP8 preserves source expert bytes and W4A8 is the smaller quantized option. Automatic code updates do not replace model weights.
 
 ## Models and custom paths
 

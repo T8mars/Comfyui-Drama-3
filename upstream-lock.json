@@ -26,7 +26,7 @@
   "asr_revision": "5eb144179a02acc5e5ba31e748d22b0cf3e303b0",
   "aligner_repo": "Qwen/Qwen3-ForcedAligner-0.6B",
   "aligner_revision": "c7cbfc2048c462b0d63a45797104fc9db3ad62b7",
-  "model_revision": "e0a9218aa48888270f06ef1ed9ea67622c0e17d2",
+  "model_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
   "runtime": {
     "python": "3.10.20",
     "torch": "2.8.0+cu128"
@@ -47,5 +47,10 @@
     "license": "Apache-2.0",
     "license_path": "licenses/QWEN3-ASR-1.7B/LICENSE",
     "notice_path": "licenses/QWEN3-ASR-1.7B/NOTICE"
+  },
+  "current_converted_models": {
+    "source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
+    "provenance": "https://huggingface.co/t8star/Drama-3-Comfy/blob/main/provenance/t8-native-20261029.json",
+    "code_version": "0.3.3"
   }
 }

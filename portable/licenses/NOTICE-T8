@@ -38,6 +38,9 @@ to the revision below.
 Bundled ComfyUI model engine originates from Comfy-Org/ComfyUI,
 commit e0a32bce84f4603f2b61b16b50f8958e68fd6171, under GPL-3.0.
 Fish Audio Drama 3 original weights and configuration originate from
-fishaudio/drama-3 at e0a9218aa48888270f06ef1ed9ea67622c0e17d2.
+fishaudio/drama-3. Earlier converted weights used
+e0a9218aa48888270f06ef1ed9ea67622c0e17d2; the 2026-10-29 weights and
+matching text heads use 78e5ab79e49aa9a25abe8799eff2c4d73a1c3216.
+Codec and tokenizer artifacts remain unchanged.
 
 This project is not affiliated with or endorsed by Fish Audio, Qwen or Comfy.

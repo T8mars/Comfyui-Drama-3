@@ -169,6 +169,32 @@ def test_real_cpu_tiny_fp8_quantization_preserves_dense_and_controls(tmp_path, m
                     source_revision='fixed-source-proof')
     save_file(values, str(source), metadata=metadata)
     source_before = source.read_bytes()
+    # Large Windows mmap storage can terminate Python before raising. Require
+    # owned per-read storage, and forbid materializing dense tensors just to
+    # discover their dtype while planning the output.
+    writing = False
+    original_open, original_write = module.safe_open, module.write_tensor_sources
+    class OwnedArchive:
+        def __init__(self, *args, **kwargs):
+            assert kwargs.get('backend') == 'pread'
+            self.archive = original_open(*args, **kwargs)
+        def __enter__(self):
+            self.archive.__enter__()
+            return self
+        def __exit__(self, *args):
+            return self.archive.__exit__(*args)
+        def __getattr__(self, name):
+            return getattr(self.archive, name)
+        def get_tensor(self, name):
+            if name in ('dense.weight', 'audio_head.weight'):
+                assert writing, 'Dense values must not be allocated during metadata planning'
+            return self.archive.get_tensor(name)
+    def write_owned(*args, **kwargs):
+        nonlocal writing
+        writing = True
+        return original_write(*args, **kwargs)
+    monkeypatch.setattr(module, 'safe_open', OwnedArchive)
+    monkeypatch.setattr(module, 'write_tensor_sources', write_owned)
     monkeypatch.setattr(sys, 'argv', ['convert_model.py', 'quantize', str(source), str(target),
         '--format', fmt, '--device', 'cpu'])
     with comfy_kitchen.use_backend('eager'):

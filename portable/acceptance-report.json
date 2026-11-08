@@ -1,137 +1,137 @@
 {
   "schema": "drama3.patch-release-acceptance.v1",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "status": "passed",
-  "validation_scope": "Studio casting, native director control, selected-source infill, Windows console lifetime and code-only updating; earlier full canvas qualification retained as baseline.",
-  "generated_at": "2026-10-30T15:18:23.691777+00:00",
+  "validation_scope": "New official model artifacts, Windows CPU loading, silent-repetition recovery and R2T2 CUDA runtime. Actual Studio UI and local SM12.0 inference; previous native canvas qualification retained as baseline.",
+  "generated_at": "2026-11-08T02:26:25.277315+00:00",
   "baseline": {
-    "version": "0.3.1",
-    "commit": "798ebac36792d4b3de0b700e17be7220b5eb87b8",
-    "report": "https://github.com/T8mars/Comfyui-Drama-3/blob/v0.3.1/portable/acceptance-report.json",
+    "version": "0.3.2",
+    "commit": "69104acf9d85149b0a513d288e6975ec224d8e25",
+    "report": "https://github.com/T8mars/Comfyui-Drama-3/blob/v0.3.2/portable/acceptance-report.json",
     "canvas_baseline": "https://github.com/T8mars/Comfyui-Drama-3/blob/v0.3.0/portable/acceptance-report.json"
   },
   "cpu_regressions": {
-    "passed": 461,
-    "skipped": 2,
-    "evidence": {
-      "id": "release032/cpu.xml",
-      "sha256": "d2aca56ff7201ca704aa1f51955f668dbd5e34cb725a41ba70c5bd9a17a1f0e6"
+    "conversion_and_runtime": {
+      "passed": 76,
+      "skipped": 0,
+      "evidence": {
+        "id": "model-update-20261107/pread-final.xml",
+        "sha256": "27caee73d1e7d787ffaf16ec1e05ed6312ee85933fe2056d0f671706fd9120df"
+      }
+    },
+    "reader_and_ownership": {
+      "passed": 90,
+      "skipped": 2,
+      "evidence": {
+        "id": "model-update-20261107/owned-mmap.xml",
+        "sha256": "90af8550dad5286446d50bea3fe218519a1f2f54aed7cd7d8b5725947b5ef39d"
+      }
+    },
+    "packaging_and_previous_installer": {
+      "passed": 83,
+      "skipped": 2,
+      "evidence": {
+        "id": "model-update-20261107/package-runtime.xml",
+        "sha256": "1662fdec60ec8ca954b136299eeae77974b83dc246d38e2f3fc6922abf373b34"
+      }
+    },
+    "note": "Groups overlap; do not add their counts. CUDA initialization was forbidden. Skips remain explicit."
+  },
+  "model_source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
+  "model_artifacts": {
+    "drama3-t8-fp8.safetensors": {
+      "bytes": 38578460824,
+      "sha256": "f661e7bafaf0bf4ccea25536ceb1c97e0784bfd01268d7e524b59f3c9885509a",
+      "source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
+      "tensor_count": 912
+    },
+    "drama3-t8-w4a8.safetensors": {
+      "bytes": 24603608136,
+      "sha256": "5efd3c43fca67f93ecb60cc20f7cce7a5a9e4909a23e114befff00f3145178a9",
+      "source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
+      "tensor_count": 1152
+    },
+    "drama3-text-head.safetensors": {
+      "bytes": 1033371848,
+      "sha256": "e55498a6fc2932b64762654bb8aa5d732e4bb1fdbc3aaf7dd0397bd34137abdc",
+      "source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
+      "tensor_count": 1
+    },
+    "drama3-line-head.safetensors": {
+      "bytes": 8464,
+      "sha256": "6ae73c78eea15b55df4bbc597ee30122f9835f674a5e46d21caea35e1744850e",
+      "source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
+      "tensor_count": 2
     }
   },
-  "packaging_supplement": {
-    "passed": 57,
-    "skipped": 2,
+  "model_integrity": {
+    "dense_tensors_identical_between_formats": 752,
+    "expert_banks": 80,
+    "matching_heads": true,
     "evidence": {
-      "id": "release032/packaging-final.xml",
-      "sha256": "e2d5a74faa82ef4641b55a018d9fa335db4d490c44c5b5c3f0e07c3ad5bc24cc"
-    }
-  },
-  "launcher_supplement": {
-    "passed": 19,
-    "skipped": 0,
-    "evidence": {
-      "id": "release032/launcher-sealed.xml",
-      "sha256": "e1557122b53bc46f95584482394d14e90bfbe3f978dec693e948371bce5ffee8"
-    }
-  },
-  "regression_note": "The packaging supplement overlaps the main group; counts are not added. CUDA initialization was forbidden. Two Windows symlink-permission skips remain explicit.",
-  "javascript_regressions": {
-    "passed": 9,
-    "evidence": {
-      "id": "release032/node-tests-final.txt",
-      "sha256": "621d9b80b7a1fe2cc9a91542e17a2e7ed482ea5134728b33ee8daf5d09d35f3d"
-    }
-  },
-  "windows_lifetime": {
-    "actual_console_close": true,
-    "exe_owner_forced_exit": true,
-    "normal_exit_helpers_reaped": true,
-    "cmd_fallback_real_python_tree": true,
-    "port_released": true,
-    "evidence": {
-      "id": "release032/real-console-close.json",
-      "sha256": "b5e1af057aa7cb7d9218929328fbad0d16d43b9e3eb700db5a4545808a0209b6"
+      "id": "model-update-20261107/model-artifacts.json",
+      "sha256": "cfba31be0f2389f5616405fe55f32e87bb11ca92423a2c88c9037c31f1b4abc7"
     }
   },
   "studio_model_checks": {
-    "director_revision": {
-      "status": "completed_and_played",
-      "format": "official Direction/Line; replace opening delivery controls",
-      "scope": "Actual UI and native generation, with independent ASR; no strict speed or subjective acting guarantee."
-    },
-    "scene": {
-      "status": "completed_and_played",
-      "source_mapping": {
-        "导演": 0,
-        "女主": 1,
-        "旁白": 2
-      },
-      "scope": "One corrected original scene. CAM++ nearest-reference check is not gender classification or MOS."
-    },
-    "infill": {
-      "status": "completed_and_played",
-      "duration_seconds": 6.812426303854875,
-      "selection_seconds": [
-        6.5,
-        6.7
-      ],
-      "prefix_suffix_sample_identical": true,
-      "scope": "One actual infill; reused the existing real alignment for the exact immutable take. No extra alignment/model matrix."
+    "formats": [
+      "w4a8",
+      "fp8"
+    ],
+    "submission": "actual UI clicks",
+    "playback_checked": true,
+    "finish": "EOS",
+    "r2t2_transcription_ui": true,
+    "studio_alive_after_transcription": true,
+    "private_server_unloaded_and_stopped": true,
+    "evidence": {
+      "id": "model-update-20261107/new-model-ui-receipt.json",
+      "sha256": "9fa00b81c3fde2b967847000beac9b3eca46ab9e85fc0839cd42b803a262f692"
     }
   },
-  "browser_only_checks": {
-    "exclusive_modes": "Independent voice choices and cast group are separate; only the active method is submitted.",
-    "pending_source": "Delayed preview is awaited once; late right-player metadata cannot replace the selected-source waveform; changed takes invalidate old identity.",
-    "scope": "Isolated routes have zero generation requests to the production server; these are not additional model passes."
+  "r2t2_runtime": {
+    "backend_sha256": "12d79cf0781df22761644ad0deb7d3ca5f08c0be5e719495157509388732c006",
+    "images": {
+      "sass": [
+        86,
+        89,
+        120
+      ],
+      "ptx": [
+        50,
+        61,
+        70,
+        75,
+        80,
+        90
+      ]
+    },
+    "physical_gpu": "RTX 5090 Laptop SM12.0",
+    "native_handle_released": true,
+    "evidence": {
+      "id": "model-update-20261107/r2t2-real-gpu.json",
+      "sha256": "35a79af1ca663b8ed469d8ff2d00497ad371fb72fdcd5e05a9f40c13b7f81540"
+    }
   },
-  "evidence": {
-    "director_revision": {
-      "id": "revision-preview-audit-r1/real-ui-receipt.json",
-      "sha256": "a0b1409d02a7aa07733d145e5472ac11ceb9b4788426cfd42d20ac2dc98be125"
-    },
-    "director_content_ASR": {
-      "id": "revision-preview-audit-r1/native-real/asr-receipt.json",
-      "sha256": "a205a2596c2bdfe2000fa029874662363bd484cdd99e7fd9cccc52a02e3ee583"
-    },
-    "scene_voice_mapping": {
-      "id": "scene-voice-binding-r1/real-ui-receipt.json",
-      "sha256": "c8e85284b664f4b4c083736e92c07f2ab9701c176497e108e4a0dbe0893bb336"
-    },
-    "scene_voice_similarity": {
-      "id": "scene-voice-binding-r1/voice-check.json",
-      "sha256": "eb711144b50f2f729bc68161b789f2ca10dcd73b215c815f852421927f04521d"
-    },
-    "exclusive_casting_modes": {
-      "id": "scene-voice-modes-r1/browser-receipt.json",
-      "sha256": "778b80e4a0d58c20f2653860663eb325c90bb9f986b67c44a85c5a7f93c72279"
-    },
-    "real_selected_source_infill": {
-      "id": "infill-source-state-r1/real-ui-receipt.json",
-      "sha256": "312fe11b2de1dba815fc388b0bf381eda09d376a82a1681bae7024f43f7678bb"
-    },
-    "infill_outside_selection_PCM": {
-      "id": "infill-source-state-r1/signal-check.json",
-      "sha256": "fe3301ae2a86e10a36ff7c4444b1bbe9408a44b557262b6b29cc37d3b925bf2e"
-    },
-    "pending_source_browser_fixture": {
-      "id": "infill-source-state-r1/pending-fixture.json",
-      "sha256": "351f2c9399d39b22257492848ac6cc59613e5865a6b0d7b5ff8de318ae215b4d"
-    },
-    "real_visible_console_close": {
-      "id": "release032/real-console-close.json",
-      "sha256": "b5e1af057aa7cb7d9218929328fbad0d16d43b9e3eb700db5a4545808a0209b6"
+  "large_windows_mapping": {
+    "status": "passed",
+    "sampled_tensors": 912,
+    "source_file_bytes": 38578460824,
+    "evidence": {
+      "id": "model-update-20261107/large-python-mmap.json",
+      "sha256": "38c5c7733e4d52552422b419a518e38a8b65783c4c98bbaa252ce4c1659b250d"
     }
   },
   "source_sha256": {
     "LICENSE": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db",
-    "README.md": "a32e9ba471d4083f5dd0913f391247bab39e88c068e27fdea025e59db2386a83",
-    "README.zh-CN.md": "7534c24c2af0a90367084a1b88e4ea3bac9a011491d90a4bece24ff47189e100",
+    "README.md": "ebb68eb5c119f00ab3697a058af2d2512894dbff963dc70ee728acdc05abfc88",
+    "README.zh-CN.md": "eaf9d94487f2086df12d62ea7e3d1e0e7c634e440868c8b367fbba016a087a52",
     "Start-Drama3.cmd": "b20f178aa60867dcbbc2a76103c2309b27bb10684cdb4c6f41bbc5ce3c1026b5",
     "Update-Drama3.cmd": "04ffb55ed48866119883a802f91f64181bcf4c5519600463d6258a7664bdb502",
     "acceleration-manifest.json": "8338e0a28494d6261840c0a6d4e8694af63a201a3c209340d1ad17e915d12a45",
     "acceleration-requirements.txt": "440811e0d471b8cf19e1b5f640ab2ffa20d2706c654592e0c920161894954b55",
     "app.py": "6bd78db1b0d2b48aa09cb223ec1b373870589bb5f0fde7a3ccaa874cdf44d604",
-    "drama3_t8/__init__.py": "d458c1a37d74454fcb1ca56a39e448932ec2b7f9f5ad92719d879c93bdcedc16",
+    "drama3_t8/__init__.py": "bc580d26f4468e67aadaea2fd52e05adf5cd004888a3f403cbe3cd5396579a41",
     "drama3_t8/alignment.py": "38603b9a4e35c944cecd84de9b048df5d9ef6360da5044111f8a3d00d83a4540",
     "drama3_t8/asr_language.py": "5f2a81aad1532c49f347d550739070fc33f095959070f27e7f5910c3b2f96be6",
     "drama3_t8/asr_reference.py": "c1d367f6ee45bb5c955e7894600968898b5505b085bd7cd71495164f2d8e206e",
@@ -141,6 +141,8 @@
     "drama3_t8/bootstrap.py": "60eb99dc36482924c9dfb73bc40df508a809c8d6a1a42d58c231924126441657",
     "drama3_t8/catalog_trash.py": "e546bb188579a33ecd0f2deac9e2cf7fa9718b7804b560406776e14b07a75f59",
     "drama3_t8/console_launcher.py": "96b24b7a314791f617ba09d5503d9ddb18ec75fede8c8587fc5cfd97dcb82d35",
+    "drama3_t8/conversion/__init__.py": "35054f40c9d4916601c2989544a6c7d1445274f99326c0d1166c03e1020170eb",
+    "drama3_t8/conversion/fp8.py": "5e57ea774e4080474a99e7a28fa9e8c1f07cfbf4731e6a4192cf576ffcd36bf0",
     "drama3_t8/creative_api.py": "c24aeed4a7918b8c90b6efc80c4d5adbf4055cda8f2f73ad911745ac51da240c",
     "drama3_t8/creative_audio.py": "fac6fb65c820cc653c252f110ac1cd7933aac84a62f15bb97451cd0f1d40660f",
     "drama3_t8/creative_benchmark.py": "a44bdfd1ffaf41abbcd511f18171dd5066f33cdefc8aa3300932f4c38c12aed3",
@@ -156,7 +158,7 @@
     "drama3_t8/dialogue.py": "0bbf13fa24955fca911801b6ba5b9ad07ad7c3cf9a9699f316d5d68b2c1ae6ae",
     "drama3_t8/editor.py": "e52faf7bb488f8c998afe64537bcb91fd31d23392cdcec164631fe8ba1bad9a8",
     "drama3_t8/editor_routes.py": "7681c7359265d3841a98d66d28a46be19cf1c92e0a4ae3b8cb77c622e2cb07b3",
-    "drama3_t8/engine.py": "c2e93df6fb2402ef22137033a7f8491b0006fce01b650fd4ce8b87fb10adc256",
+    "drama3_t8/engine.py": "fc2c7b44739c9acdb67b50e14159bf94a674f46d31d6fc24feaf5b0dfdee2573",
     "drama3_t8/library_tools.py": "5ee84e7463620038591eec2c02c7ac972aa969206308b2c414e53da60667889c",
     "drama3_t8/live_audio.py": "44b53c0d402613d6a345b83e9793515ecb67ba5d7241e73c801ceb4a181bd144",
     "drama3_t8/local_paths.py": "631995043a5213097a01fb5c4be222ced2fde7be0a020de301b3f9d1a8899dc9",
@@ -166,7 +168,7 @@
     "drama3_t8/native/acceleration.py": "35aaa81b021140d85f4551c7048baf35ebcc601781bc88d22efd2be7b384a241",
     "drama3_t8/native/cache.py": "3adcefb63fdb7ae5aae2e9dfec0a102e26cc0312dd7ae2351b9848abcf6dac62",
     "drama3_t8/native/checkpoint_ownership.py": "b296d8a5521e339c7eb08a09206424ac35f0705bdd4fac970da8bde595b59f39",
-    "drama3_t8/native/checkpoint_reader.py": "c7052c4a3e07b87c057d986cc00692e8fc201a02ffc5a057997a42b5143a37f9",
+    "drama3_t8/native/checkpoint_reader.py": "cb55968855980cea477d5345b4f430d5b228eba61d0ff8a81307829255f4cb39",
     "drama3_t8/native/chunking.py": "b6dd4eece292a61a0b6a1f8da4c3899f7822c837a96abd84c0c48073d3c7b9b3",
     "drama3_t8/native/codec.py": "27034be7da6a9362c69508eb12a14ad5af4f2e3c66089b59be67de7782ee2065",
     "drama3_t8/native/config.py": "af55abdc6371003022924cc7b17c10a60163c66d8207a6d9a7c4d3b1150de51b",
@@ -175,7 +177,7 @@
     "drama3_t8/native/delta_reference.py": "8b7822cceb6208271b10aae3a5530cd573fb8729867debb36762767cad4e1c8e",
     "drama3_t8/native/fish/config.json": "d8dafefbda2a1ff421004d8926a917eb5e1649964f097cff285a269deac869c6",
     "drama3_t8/native/fish/tokenizer.json": "2da260680bf5558e8167d407d7cc92fbb243deecc4e8f0d0ccd2a09f319205ca",
-    "drama3_t8/native/generate.py": "2f9ffdb58252f6368ea5a535ae7abe6945724c6b0a0356c72e10457c615e768e",
+    "drama3_t8/native/generate.py": "b96c67291bac879a6a995d6b3f27736958714ae57c0a35edcecfabd40862f69a",
     "drama3_t8/native/graphs.py": "55b34e3568376ca2eb38c7c9f43cb6451c1a37fd6b59befea60b8d915d2ea6ef",
     "drama3_t8/native/kernels.py": "fa7894201425cd0506982dae5c721a724c41cef83ef5c0286b3eae381e5f71d7",
     "drama3_t8/native/kitchen_compat.py": "ad089272fcf5849a4971e17dc705bca9b002552f6a12933828db83338e35e6d5",
@@ -187,7 +189,7 @@
     "drama3_t8/native/prompt.py": "721c9c39025410f8f215057b362316f88237cc1ae01c058cd878e2773a600537",
     "drama3_t8/native/resident.py": "fa0090a9951b00c72fc9db7f8f186b32dbf129e927dc0affea0071d4dcdb9564",
     "drama3_t8/native/scene_boundary.py": "61b03977c4242cfe9201ac1c3e3964934d384fbd4a1e09c39f22086eea9c7b9a",
-    "drama3_t8/nodes.py": "05960f30b324201c853c2e96287149a6f4ad1ad6d2a88efa559cc6bb166fc93c",
+    "drama3_t8/nodes.py": "473f29f79eac5fe49e55a3b6bd6946f0d4f547fa6c8da2a1567b2182f78d8d45",
     "drama3_t8/performance.py": "57b6fd3a992f5d341ae844cd0e2874239f36415958dff07fbd3a6767e4b8f6c8",
     "drama3_t8/prompts.py": "f95da7090702fb33ab2eada60f05b012337c717e2c9660554e93a89d5952981b",
     "drama3_t8/qwen3_asr/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -198,7 +200,8 @@
     "drama3_t8/r2t2/__init__.py": "9e2f95a60c0942a2b31d12464e83dc769734a5cc48015db438f0a5a2da03075f",
     "drama3_t8/r2t2/audio.py": "b71e37e79bd067c225c0b2bf151a76761be717aa389e949da1fc46cf862edebc",
     "drama3_t8/r2t2/hotwords.py": "0bff290b4656b37d184743ffede673c1627b46243fdf3a2ea94472a4415c8613",
-    "drama3_t8/r2t2/native.py": "e5835bf6b72ae2252032572b6967d037808f27710f1ccf7f4735c5a7657bcd72",
+    "drama3_t8/r2t2/native.py": "43d0a09adc41a1a3229f50c0f041ddcde9ab73c1e39f8498e5646030e9532c7d",
+    "drama3_t8/r2t2/runtime_compat.py": "165835b6a4f0a80fc2b59617e1c06452841a46a5dab5f3402fd00f655127021c",
     "drama3_t8/r2t2/segmented.py": "26e81734d97c11364505e6b7222e72bf5d8562eadf3d482deebf9c6c8881b4c3",
     "drama3_t8/r2t2/transcribe.py": "32d30758157f81184e20db80c1607d704d1357356a714aacf6256023ada0b197",
     "drama3_t8/r2t2/vad.py": "de2f963f8d3c3487f03205e8649d6d3c7575cb0396fab15edb838cfebbc0e2d9",
@@ -251,7 +254,7 @@
     "licenses/NOTICE-DRAMA3-EDITOR": "54ec8fb5d406e89d455de536b00caef37fcd897b1129c79ceb78d1a97c50e67f",
     "licenses/NOTICE-FFMPEG.md": "b67aa902aef27fa704d70c4b99ca86d22452db7337d84ba607bddd0016b3d18b",
     "licenses/NOTICE-R2T2.txt": "dcd036ab94d038df53a378a32e1397d752240b92c2cb5d42a8417f0ca7c2d25c",
-    "licenses/NOTICE-T8": "be1c380e5937a4403b38d95242e453cafdf8a7bb9ecf7eb8d8de9d4a8141bac2",
+    "licenses/NOTICE-T8": "3732280160b46afb94b139c486c283a6daa1ddd4280c6392560a845da0bed457",
     "licenses/NOTICE-UPSTREAM": "53bf9c6e71c7bce15b8faa13707278411fc75ac84537eb9a113a1e8f39baa4ee",
     "licenses/NVIDIA-CUDA-EULA.txt": "e2c71babfd18a8e69542dd7e9ca018f9caa438094001a58e6bc4d8c999bf0d07",
     "licenses/QWEN3-ASR-1.7B/LICENSE": "a54c8553df5d4313d293d1aef3bf2f13952bda8b7c7a1fdd729b2bbe27ee6015",
@@ -259,16 +262,16 @@
     "licenses/QWEN3-ASR/LICENSE-UPSTREAM": "a44a6081c73ad75f0255bb2bb5cab74ef1829565a895a24e53a4f11290ab7655",
     "licenses/QWEN3-ASR/NOTICE-UPSTREAM.md": "d3bc5205fa682adf6e19682629fae5170771c2dc8ea54f1cdd886096644bff9b",
     "requirements.txt": "2087c073bec22a312c5da1cbf7361202073e3cb44da00d1658243f2c9194bdc5",
-    "tools/StartDrama3.cs": "9dbed7b37be0fd1f1d54b4d353d6930032f48c948531131e0d8a78c6e56ef635",
+    "tools/StartDrama3.cs": "e313c96b02b2899265cfa6dfb07694e98b7edf119ce2e73bc6e40fa78ad04cb7",
     "tools/build_launcher.py": "401c03fc4b1545d739d50e8c9f3fb007b23199607c76b755a1720dfea55918ae",
-    "tools/build_public_release.py": "c4f56a7eb515e5f4ffb3b39472158e2058236f2cfe511a9ae874aad377934dad",
+    "tools/build_public_release.py": "749a2f0f8d5b3f550ffc32781a4d14f80e9915e2c78464cf5c54456bf6307080",
     "tools/check_runtime.py": "d0175269cff79ca56d6335f382d6c32349c41649b52a3d3c1bd68faf730309fd",
-    "tools/convert_model.py": "44a3308cb60bd6e764f1ec41e75fccd4a2b557e2b4c65fe45622186b9f1ad0eb",
+    "tools/convert_model.py": "29f3e42260bd548e741db6c6257756855f73175124bc034f12fb3673ae4007ad",
     "tools/download_models.py": "cad3f9b1149a1d8e4de525b6f2806027c41ca6b0148d4266f0efa4b6ee07281b",
     "tools/extract_text_head.py": "f559d66b2e395d2c37aaa11dc8daa5d33f96d08f44dfa5628761dafc1f8bf463",
     "tools/safetensors_stream.py": "574b33e227935eed15b88e9b8d09f50fa9a70647f97a3174641156409e3b7018",
     "tools/update_portable.py": "db5dc06f5117b42a474ba99a7603e07ba270013baffca29702c9ecd7532c58d5",
-    "upstream-lock.json": "2e8657c5bfce8fd5acdf7a43a812c4f1678c3edbc3ebc7acf653b6a95dab9b03",
+    "upstream-lock.json": "da1fc1e85de9e58872bdafb406c5c6e2fda3a1485d0f414d38f3c62c9a1dc315",
     "vendor/ComfyUI/AGENTS.md": "37f14417fd2fd8a62b7e49e8a58015dcb13a6f1a6698274134dcf66aa039a4ed",
     "vendor/ComfyUI/CONTRIBUTING.md": "72c9023339a107ba6449beae4cf5121e0bd28c8a0a897459979cbec45da9cef6",
     "vendor/ComfyUI/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
@@ -1448,12 +1451,13 @@
     "vendor/ComfyUI/utils/install_util.py": "138faf156cf71411e6a984877158ad03916cd9de3f992a610131605b367ea206",
     "vendor/ComfyUI/utils/json_util.py": "5782c2228070755b9ecbc1ecabba264f4dcad855405b627244f205a221fabd61",
     "vendor/ComfyUI/utils/mime_types.py": "79924df98bc7283d8688e4a8304b7f0780c1c77eb9b16f62f61bbb207d06fa18",
+    "vendor/r2t2_native/README.md": "59ac0fdf1bb0e42de3d7ed79219a0d25e5c3813a31ef8bfd67c014f87c72e53a",
     "web/app.js": "da42819c7fd2465152c63951effc94ac86fdb45ff2c8a0b35c88205e4cb7df16",
     "web/creative.css": "d4549e467a740c4ab604f33e215b74a378676368d97197145d5ec00c912a5332",
-    "web/creative.js": "b5732eba6567ef56acbd5603c9f84ca630fda119c2fd114c0eaa1956b7636f20",
+    "web/creative.js": "fa9bd875a997e827b0ef2a7b5073adf06d0ca8efe984b586b9124611ee7feb7f",
     "web/drama3_editor.js": "ac90c58eb6e261823d59e610a0f70d98a733db35ddca4b7190744e61a60b18ec",
     "web/editor_core.js": "31ccb27abfdd1e013ae342d1e8fb8b362a4991c58290fe53c1b1e21a49ae6bea",
-    "web/index.html": "471ae35ef104ed5e6f446da9a6fe54567fec60353af83f27c74fade241a46419",
+    "web/index.html": "2da13251a19e82be08c494d09752df686d0950d98651fba7b9c6d291afea1883",
     "web/infill-options.js": "9d542a464815763f51a88fef5e487879c854d3526e6537694c7f11918be02a22",
     "web/live.js": "80432b370ebedb3d6b1a56c3750463775a3690536725784b50149d1b5470e4b8",
     "web/reference-asr.js": "2c29c5c25697810268d24f86220e8d98bd2f1f53b8867ef8387ca5f3d8f932e4",
@@ -1471,9 +1475,11 @@
     "web/workspace-tools.js": "b5b84d6fd1aab3b1de49161c507a27c58880b2f6d55dadcfd92170a49fa559d1"
   },
   "limits": [
-    "No new canvas-model matrix or acceleration recommendation; earlier native canvas results remain baseline.",
-    "Models and Python dependencies are unchanged. Release code packages contain neither weights nor Python.",
-    "The EXE remains a separate manual replacement; code auto-updates preserve existing EXE and user data.",
-    "Final ZIP SHA/CRC, Git-index binding and exact previous-version installer are verified after packaging in the publication receipt, avoiding a report/archive hash cycle."
+    "Other GPUs have compiled-image and simulated compatibility coverage, not physical inference acceptance.",
+    "No new full canvas matrix, subjective voice/emotion score, dialect qualification or acceleration recommendation.",
+    "A model may still fail stochastically. Bounded recovery does not guarantee all seeds or recordings.",
+    "Release code ZIPs contain neither Python nor weights. Model and native-runtime updates are delivered separately.",
+    "The launcher behavior is unchanged from 0.3.2; its assembly version is 0.3.3.",
+    "ZIP/hash, previous-updater installation and Git-index binding are checked after packaging to avoid a hash cycle."
   ]
 }

@@ -34,10 +34,19 @@ def prepare(root, entries=None):
 
 
 def test_native_install_and_verified_reuse(tmp_path, monkeypatch):
-    payload, _ = prepare(tmp_path)
+    from drama3_t8.r2t2.runtime_compat import assert_runtime_compatible
+    cuda = b'test-only CUDA bytes; never loaded as a DLL'
+    compatibility = json.dumps({'schema':1,'backend_sha256':hashlib.sha256(cuda).hexdigest(),
+        'cuda_real_arches':[86,89,120],'cuda_virtual_arches':[75,80,90]}).encode()
+    payload, manifest = prepare(tmp_path, {'lib/drama_r2t2.dll':b'test-native-library',
+        'backends/ggml-cuda.dll':cuda,'lib/runtime-compat.json':compatibility})
+    manifest['version']='2'
+    (tmp_path/'r2t2-runtime.json').write_text(json.dumps(manifest),encoding='utf-8')
     monkeypatch.setattr(installer, 'urlopen', lambda *a, **kw: BytesIO(payload))
     installer.install(tmp_path)
     assert (tmp_path / 'r2t2-runtime/lib/drama_r2t2.dll').read_bytes() == b'test-native-library'
+    assert (tmp_path/'r2t2-runtime/lib/runtime-compat.json').read_bytes()==compatibility
+    assert assert_runtime_compatible(tmp_path/'r2t2-runtime',capability=(8,6))['device_capability']==[8,6]
     monkeypatch.setattr(installer, 'urlopen', lambda *a, **kw: pytest.fail('Verified runtime downloaded again'))
     installer.install(tmp_path)
 

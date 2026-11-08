@@ -14,7 +14,7 @@ import comfy.ops
 import comfy.utils
 
 from .native.codec import SAMPLE_RATE, FRAME_LENGTH, DECODE_WINDOW, DECODE_CONTEXT, DECODE_FRAME_BYTES
-from .native.generate import generate
+from .native.generate import generate, STALL_DISTINCT
 from .native.loader import load_drama3, load_codec
 from .native.chunking import split_text
 from .prompts import (
@@ -344,7 +344,7 @@ class DramaEngine:
             if sampling.opening_retries and not stream_committed:
                 pending.append(frame)
                 seen.add(int(frame[0]))
-                if len(pending)<54 or len(seen)<24:
+                if len(pending)<54 or len(seen)<=STALL_DISTINCT:
                     return
                 stream_committed=True
                 if on_codes is not None:
@@ -368,10 +368,15 @@ class DramaEngine:
                                   expected_segments=expected_segments,on_boundary=boundary_corrections.append)
                 count=int(((frames[:,0]>=drama.config.semantic_start_token_id)&
                            (frames[:,0]<=drama.config.semantic_end_token_id)).sum())
+                # A non-streaming take has not escaped to the caller, even if
+                # a later line stalls. Retry the complete unchanged prompt;
+                # never append the failed audio to history or duplicate a
+                # stream that the listener has already received.
                 retryable=(not count and not allow_empty and finish_reason=="eos" or
-                           finish_reason=="stalled" and count<54) and not stream_committed
+                           finish_reason=="stalled") and not stream_committed
                 record=dict(seed=effective_seed,finish_reason=finish_reason,audio_frames=count,
                     retry=bool(retryable and attempt<sampling.opening_retries),
+                    stream_committed=stream_committed,
                     boundary_corrections=list(boundary_corrections))
                 if record["retry"]:record["discarded_frames"]=frames.tolist()
                 attempts.append(record)
@@ -380,7 +385,13 @@ class DramaEngine:
             if head is not None and isinstance(head[0], _SpeechHeadSelection):
                 head[0].close()
         if finish_reason == "stalled":
-            raise SpeechGenerationError("The model entered a silent repetition; use another seed or a more accurate reference transcript",attempts)
+            if stream_committed:
+                recovery="Audio was already streamed; automatic replay was skipped to avoid duplicate speech. Try a new seed or generate without live preview"
+            elif not sampling.opening_retries:
+                recovery="Automatic retry is disabled; enable opening_retries=1 to try one new seed"
+            else:
+                recovery="The bounded retry also failed; try a different seed or a short clean voice reference with a matching transcript"
+            raise SpeechGenerationError(f"The model entered a silent repetition; {recovery}. No complete take was saved",attempts)
         if on_codes is not None:
             for item in pending:on_codes(item)
         duration = ((frames[:, 0] >= drama.config.semantic_start_token_id)

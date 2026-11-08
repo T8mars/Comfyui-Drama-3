@@ -1,17 +1,20 @@
 """DRAMA-local CPU checkpoint loading; no Comfy/Safetensors global changes.
 
 RAM-offloaded bodies prefer official per-tensor pread storage when its eager
-source allocation fits the existing RAM reserve. Lazy host mmap remains the
-compatibility path for small-memory hosts, aimdo and older Safetensors APIs.
+source allocation fits the existing RAM reserve. Large Windows fallbacks use
+Python-owned lazy mmap buffers to avoid Rust's large-storage slicing boundary;
+aimdo and smaller or non-Windows host loads keep the host's storage contract.
 """
 from dataclasses import dataclass
 import hashlib
 import inspect
 import json
 import math
+import mmap
 import os
 from pathlib import Path
 import struct
+import warnings
 
 import psutil
 import safetensors
@@ -19,6 +22,8 @@ import torch
 
 GiB = 1024 ** 3
 MIN_RESERVE, MAX_RESERVE = 4 * GiB, 8 * GiB
+_WINDOWS_MMAP = os.name == 'nt'
+_WINDOWS_MMAP_MIN_BYTES = 2 * GiB
 MAX_FINGERPRINT_HEADER_BYTES = 100_000_000  # Official Safetensors header limit.
 DTYPE_BITS = {
     'BOOL': 8, 'U8': 8, 'I8': 8, 'U16': 16, 'I16': 16,
@@ -164,7 +169,7 @@ def inspect_header(path, policy):
     # All eager source bytes plus the existing two-bank margin, and at least
     # one largest-tensor read workspace. This is deliberately conservative.
     transient = max(2 * max_bank, largest)
-    return dict(identity=identity, header_bytes=size,
+    return dict(identity=identity, header_bytes=size, metadata=metadata,
                 header_sha256=hashlib.sha256(raw).hexdigest(), tensors=tensors,
                 source_cpu_bytes=total, largest_tensor_bytes=largest,
                 maximum_physical_bank_bytes=max_bank, temporary_margin_bytes=transient)
@@ -238,6 +243,42 @@ def _budget(policy, remaining, margin, diagnostics, stage):
                                   f'(remaining source + temporary bank margin + unchanged reserve {reserve})')
 
 
+def _load_python_mmap(ckpt, host, policy, plan):
+    """Lazy Windows storage without Rust's large-storage slicing boundary.
+
+    torch.frombuffer retains the Python mmap until the last tensor/view dies.
+    This remains borrowed file storage, never an eager ownership certificate.
+    """
+    if 'tensors' not in plan:
+        plan = inspect_header(ckpt, policy)
+    state, mapping, tensor, success = {}, None, None, False
+    try:
+        with open(ckpt, 'rb') as stream:
+            mapping = mmap.mmap(stream.fileno(), 0, access=mmap.ACCESS_READ)
+        for name, descriptor in plan['tensors'].items():
+            _cancel(policy)
+            dtype = getattr(torch, TORCH_DTYPE_NAMES[descriptor['dtype']])
+            count = math.prod(descriptor['shape'])
+            if count:
+                offset = 8 + plan['header_bytes'] + descriptor['data_offsets'][0]
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore', message='The given buffer is not writable')
+                    tensor = torch.frombuffer(mapping, dtype=dtype, count=count, offset=offset)
+                state[name] = tensor.reshape(descriptor['shape'])
+                tensor = None
+            else:
+                state[name] = torch.empty(descriptor['shape'], dtype=dtype)
+        host.annotate_state_dict(state, ckpt)
+        success = True
+        return state, plan['metadata']
+    finally:
+        tensor = None
+        if not success:
+            state.clear()
+        # frombuffer's C++ storage deleter holds its own buffer reference.
+        mapping = None
+
+
 def _fallback(reason, ckpt, safe_load, device, return_metadata, host, policy, plan, audit):
     audit['fallback_reason'] = reason
     # Default host mmap/aimdo has no eager CPU source allocation. Applying a
@@ -251,7 +292,14 @@ def _fallback(reason, ckpt, safe_load, device, return_metadata, host, policy, pl
     audit['host_storage_mode'] = 'aimdo' if host.aimdo_enabled else 'eager_copy' if host.disable_mmap else 'mmap'
     result, success = None, False
     try:
-        result = host.load_host(ckpt, safe_load=safe_load, device=device, return_metadata=return_metadata)
+        if (_WINDOWS_MMAP and plan['source_cpu_bytes'] >= _WINDOWS_MMAP_MIN_BYTES
+                and not host.disable_mmap and not host.aimdo_enabled):
+            audit.update(actual_reader='python_owned_mmap', host_storage_mode='python_mmap')
+            state, metadata = _load_python_mmap(ckpt, host, policy, plan)
+            result = (state, metadata) if return_metadata else state
+            state = None
+        else:
+            result = host.load_host(ckpt, safe_load=safe_load, device=device, return_metadata=return_metadata)
         _cancel(policy)
         _verify_source(ckpt, plan, policy, 'during CPU read')
         _cancel(policy)

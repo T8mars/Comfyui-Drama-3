@@ -66,3 +66,34 @@ def test_boundary_recovery_cannot_extend_the_total_frame_budget(monkeypatch):
     rows=generate(drama,torch.zeros(2,11,dtype=torch.long),2,.7,1,1.,47,
         expected_segments=2,on_finish=finished.append)
     assert rows[:,0].tolist()==[248100,198] and finished==['length']
+
+
+def test_short_repetitive_segments_cannot_be_combined_into_one_silent_window(monkeypatch):
+    tokens=[248100]*48+[252196]+[248101]*48+[248046]
+    drama,_=scripted_drama(monkeypatch,tokens.copy())
+    drama.config.text.max_position_embeddings=512
+    finished=[]
+    rows=generate(drama,torch.zeros(2,11,dtype=torch.long),120,.7,1,1.,25,
+        expected_segments=2,on_finish=finished.append)
+    assert finished==['eos'] and rows[:,0].tolist()==tokens[:-1]
+
+
+def test_real_stall_in_second_segment_keeps_the_completed_first_segment(monkeypatch):
+    tokens=[248100]*60+[252196]+[248101]*96+[248046]
+    drama,_=scripted_drama(monkeypatch,tokens)
+    drama.config.text.max_position_embeddings=512
+    finished=[]
+    rows=generate(drama,torch.zeros(2,11,dtype=torch.long),180,.7,1,1.,25,
+        expected_segments=2,on_finish=finished.append)
+    assert finished==['stalled']
+    assert rows[:,0].tolist()==[248100]*60+[252196]+[248101]*10
+
+
+def test_stall_trim_uses_audio_positions_when_text_controls_interleave(monkeypatch):
+    tokens=[248100]*5+[198]*3+[248100]*91+[248046]
+    drama,_=scripted_drama(monkeypatch,tokens)
+    drama.config.text.max_position_embeddings=512
+    finished=[]
+    rows=generate(drama,torch.zeros(2,11,dtype=torch.long),120,.7,1,1.,25,on_finish=finished.append)
+    assert finished==['stalled']
+    assert rows[:,0].tolist()==[248100]*5+[198]*3+[248100]*5

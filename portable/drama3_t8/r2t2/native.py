@@ -67,6 +67,8 @@ def _load_library():
     with _LOAD_LOCK:
         if directory in _LIBRARIES:
             return _LIBRARIES[directory]
+        from .runtime_compat import assert_runtime_compatible
+        assert_runtime_compatible(directory)
         folders = [directory / "lib", directory / "backends"]
         torch_spec = find_spec("torch")
         if torch_spec and torch_spec.origin:

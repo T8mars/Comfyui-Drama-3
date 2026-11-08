@@ -586,6 +586,13 @@ def test_native_asset_rebuilds_changed_contents_and_keeps_an_unchanged_release_p
         assert archive.read('lib/drama_r2t2.dll') == b'new'
         assert not any(name.endswith(('.exe','.safetensors')) for name in archive.namelist())
     assert '/v' + public.__version__ + '/' in json.loads(descriptor.read_text(encoding='utf-8'))['url']
+    compatibility = put(root, 'runtime/r2t2-native/lib/runtime-compat.json', b'{"schema":1}')
+    public.native_asset()
+    current = json.loads(descriptor.read_text(encoding='utf-8'))
+    assert current['version'] == '2'
+    assert current['files']['lib/runtime-compat.json']['sha256'] == hashlib.sha256(compatibility.read_bytes()).hexdigest()
+    with zipfile.ZipFile(output / 'Drama3-R2T2-native-win64-cu128.zip') as archive:
+        assert archive.read('lib/runtime-compat.json') == compatibility.read_bytes()
 
 
 def test_interrupted_archive_write_retains_old_release_and_cleans_partial(tmp_path, monkeypatch):

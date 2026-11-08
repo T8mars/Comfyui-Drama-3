@@ -83,6 +83,8 @@ def test_native_loader_adds_cuda_when_host_already_registered_cpu(tmp_path, monk
         "r2t2_create", "r2t2_destroy", "r2t2_generate", "r2t2_last_error", "r2t2_last_truncated")})
     api.r2t2_api_version = FakeFunction(lambda: 1)
     monkeypatch.setattr(native, "runtime_directory", lambda: tmp_path)
+    import drama3_t8.r2t2.runtime_compat as compatibility
+    monkeypatch.setattr(compatibility,'assert_runtime_compatible',lambda directory:None)
     monkeypatch.setattr(native, "find_spec", lambda name: None)
     monkeypatch.setattr(native, "_HANDLES", [])
     monkeypatch.setattr(native, "_LIBRARIES", {})

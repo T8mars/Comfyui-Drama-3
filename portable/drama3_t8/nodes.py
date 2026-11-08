@@ -154,7 +154,7 @@ class T8DramaGenerate(io.ComfyNode):
                 io.Float.Input("top_p", default=.7, min=.01, max=1, step=.05),
                 io.Int.Input("top_k", default=30, min=0, tooltip="0 保留全部候选，其余值限制候选数量"),
                 io.Int.Input("max_frames", default=600, min=1, max=8192), exact_seed_input(),
-                io.Int.Input("opening_retries",default=0,min=0,max=1,optional=True),
+                io.Int.Input("opening_retries",default=0,min=0,max=1,optional=True,tooltip="0 关闭；1 在静音重复或空白失败后换种子重试一次。已输出的流式音频不重播"),
                 io.Combo.Input("sampling_preset",options=["custom","stable","expressive"],default="custom",optional=True),
                 io.Boolean.Input("replace_delivery_tags",default=False,optional=True,tooltip="导演修改时覆盖原台词开头的情绪和语速标签，保留角色、方言及行中事件")],
             outputs=[SessionType.Output()])
@@ -196,7 +196,7 @@ class T8DramaScene(io.ComfyNode):
                 io.Float.Input('temperature',default=.7,min=.01,max=2,step=.05,optional=True),
                 io.Float.Input('top_p',default=.7,min=.01,max=1,step=.05,optional=True),
                 io.Int.Input('top_k',default=30,min=0,optional=True,tooltip="0 保留全部候选，其余值限制候选数量"),
-                io.Int.Input('opening_retries',default=0,min=0,max=1,optional=True),
+                io.Int.Input('opening_retries',default=0,min=0,max=1,optional=True,tooltip='0 关闭；1 在静音重复或空白失败后换种子重试一次。已输出的流式音频不重播'),
                 io.Combo.Input('sampling_preset',options=['custom','stable','expressive'],default='custom',optional=True),
                 SessionType.Input('session',optional=True)],
             outputs=[SessionType.Output()])

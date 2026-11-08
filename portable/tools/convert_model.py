@@ -35,7 +35,7 @@ from drama3_t8.bootstrap import standalone_engine
 standalone_engine()
 from drama3_t8.native.config import AUDIO_HEAD_KEY  # noqa: E402
 from tokenizers import Tokenizer
-from safetensors_stream import write_tensors, TensorSource, write_tensor_sources
+from safetensors_stream import write_tensors, TensorSource, write_tensor_sources, DTYPES
 
 CONVROT_GROUP_SIZE = 256
 W4A8_GROUP_SIZE = 16
@@ -118,15 +118,32 @@ class Checkpoint:
         self.dir = Path(hf_dir)
         self.index = json.loads((self.dir / "model.safetensors.index.json").read_text())["weight_map"]
         self.handles = {}
+        self.headers = {}
+
+    def describe(self, name):
+        import struct
+        shard = self.index[name]
+        if shard not in self.headers:
+            with (self.dir / shard).open('rb') as stream:
+                size = struct.unpack('<Q', stream.read(8))[0]
+                self.headers[shard] = json.loads(stream.read(size))
+        spec = self.headers[shard][name]
+        return tuple(spec['shape']), {value:key for key,value in DTYPES.items()}[spec['dtype']]
+
+    def begin_tensor(self):
+        pass
 
     def get(self, name):
         shard = self.index[name]
         if shard not in self.handles:
-            self.handles[shard] = safe_open(self.dir / shard, framework="pt", device="cpu")
+            self.handles[shard] = safe_open(self.dir / shard, framework="pt", device="cpu", backend="pread")
         return self.handles[shard].get_tensor(name)
 
 
 def convert_model(args):
+    if args.format == 'fp8' and args.dense == 'bf16':
+        from drama3_t8.conversion.fp8 import convert_fp8_streamed
+        return convert_fp8_streamed(args)
     config = json.loads((Path(args.src) / "config.json").read_text())
     tokenizer = Tokenizer.from_file(str(Path(args.src) / "tokenizer.json"))
     controls = [tokenizer.token_to_id(t) for t in ("<|audio_separator|>", "<|endofturn|>")]
@@ -226,7 +243,7 @@ def convert_model(args):
         print(f"layer {layer}: experts done, {time.time() - started:.0f}s, rel error {errors[-1]:.4f}", flush=True)
 
     metadata = {"drama3_format": args.format, "drama3_dense": args.dense, "drama3_config": json.dumps(config),
-                "drama3_t8_format_version": "2", "source_revision": "e0a9218aa48888270f06ef1ed9ea67622c0e17d2"}
+                "drama3_t8_format_version": "2", "source_revision": source_revision(args)}
     if errors:
         metadata["expert_rel_error_mean"] = f"{sum(errors) / len(errors):.5f}"
     write(out, args.out, metadata)
@@ -292,6 +309,19 @@ def write(tensors, path, metadata):
     print(f"wrote {path}: {len(tensors)} tensors, {size / 1e9:.2f} GB", flush=True)
 
 
+def source_revision(args):
+    explicit = getattr(args,'source_revision',None)
+    record = Path(args.src) / 'download-revision.json'
+    value = explicit
+    if value is None and record.is_file():
+        value = json.loads(record.read_text('utf-8'))['revision']
+    if value is None:return 'unknown'
+    import re
+    if type(value) is not str or not re.fullmatch('[0-9a-f]{40}',value):
+        raise ValueError('Source revision must be a full commit hash')
+    return value
+
+
 def convert_quantized(args):
     """Quantize converted FP8 experts; preserve dense tensors and control rows."""
     if args.src.resolve()==args.out.resolve():raise ValueError('Output must differ from the source checkpoint')
@@ -299,7 +329,12 @@ def convert_quantized(args):
     args.out.parent.mkdir(parents=True,exist_ok=True)
     device=torch.device(args.device)
     started=time.time()
-    with safe_open(str(args.src),framework='pt',device='cpu') as archive,torch.inference_mode():
+    # A large Windows mmap-backed PyTorch storage can fault during get_tensor
+    # before Python can raise an exception. Pread gives each requested tensor
+    # or expert slice independent owned storage, with bounded conversion RAM.
+    from drama3_t8.native.checkpoint_reader import inspect_header,ReaderPolicy,TORCH_DTYPE_NAMES
+    header=inspect_header(args.src,ReaderPolicy())
+    with safe_open(str(args.src),framework='pt',device='cpu',backend='pread') as archive,torch.inference_mode():
         metadata=archive.metadata()
         if not metadata or metadata.get('drama3_format')!='fp8':raise ValueError('Input must be a converted FP8 DRAMA checkpoint')
         keys=list(archive.keys())
@@ -310,7 +345,7 @@ def convert_quantized(args):
         for name in keys:
             if name in omitted:continue
             view=archive.get_slice(name)
-            dtype=archive.get_tensor(name).dtype
+            dtype=getattr(torch,TORCH_DTYPE_NAMES[header['tensors'][name]['dtype']])
             sources[name]=TensorSource(tuple(view.get_shape()),dtype,lambda name=name:archive.get_tensor(name))
         for bank in banks:
             shape=archive.get_slice(bank+'_weight').get_shape()
@@ -372,6 +407,7 @@ def main(argv=None):
                         help="every linear but the routed experts (attention, DeltaNet, shared expert, tower): the checkpoint's "
                              "bf16 (5.3 GB, fastest at one frame per step) or int8 ConvRot (2.7 GB)")
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--source-revision", help="Exact source-model commit; otherwise use download-revision.json")
     args = parser.parse_args(argv)
     if args.kind == "quantize":
         if args.format == "fp8":

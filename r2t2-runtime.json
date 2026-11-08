@@ -1,16 +1,16 @@
 {
-  "version": "1",
-  "url": "https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.3.0/Drama3-R2T2-native-win64-cu128.zip",
-  "bytes": 610460680,
-  "sha256": "c075593eefe24c96977246e0815c52163d7b9d5df297766df242b5a2bcf3bccd",
+  "version": "2",
+  "url": "https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.3.3/Drama3-R2T2-native-win64-cu128.zip",
+  "bytes": 720825840,
+  "sha256": "35f039b9d6fba8d0cd187f81821cc8eeb9b88eabc1a0fdcb74919953053c2b0e",
   "files": {
     "backends/ggml-cpu.dll": {
       "bytes": 943616,
       "sha256": "e6316f1856a20aa70f209de060b98c648d42078bb23df5f2f8f739b82e2d267a"
     },
     "backends/ggml-cuda.dll": {
-      "bytes": 53183488,
-      "sha256": "8a8474fa53f9b764570bde609963c1185cf80c0593be14db90f1f2f02e94d439"
+      "bytes": 164218880,
+      "sha256": "12d79cf0781df22761644ad0deb7d3ca5f08c0be5e719495157509388732c006"
     },
     "lib/cublas64_12.dll": {
       "bytes": 113716224,
@@ -43,6 +43,10 @@
     "lib/mtmd.dll": {
       "bytes": 1262592,
       "sha256": "e03c7e8c9c276afff7f816859f72b66fd5673d037dabee4720eb9cff506d221c"
+    },
+    "lib/runtime-compat.json": {
+      "bytes": 447,
+      "sha256": "f8fbd9aa9a443fb67213a617b4d84f34c89d7278e71e9bd7af116925ce066077"
     },
     "licenses/CONFUCIUS-MODEL_LICENSE": {
       "bytes": 11132,
@@ -117,8 +121,8 @@
       "sha256": "dcd036ab94d038df53a378a32e1397d752240b92c2cb5d42a8417f0ca7c2d25c"
     },
     "licenses/NOTICE-T8": {
-      "bytes": 2300,
-      "sha256": "be1c380e5937a4403b38d95242e453cafdf8a7bb9ecf7eb8d8de9d4a8141bac2"
+      "bytes": 2470,
+      "sha256": "3732280160b46afb94b139c486c283a6daa1ddd4280c6392560a845da0bed457"
     },
     "licenses/NOTICE-UPSTREAM": {
       "bytes": 2391,

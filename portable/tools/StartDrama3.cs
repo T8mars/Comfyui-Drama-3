@@ -12,7 +12,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Drama-3 T8 Launcher")]
-[assembly: AssemblyVersion("0.3.2.0")]
+[assembly: AssemblyVersion("0.3.3.0")]
 
 internal static class StartDrama3
 {

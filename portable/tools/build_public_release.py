@@ -124,6 +124,8 @@ def native_asset():
     archive = OUT / 'Drama3-R2T2-native-win64-cu128.zip'
     paths = {p.relative_to(source).as_posix(): p for p in sorted(files(source))
         if p.suffix.lower() == '.dll' and p.relative_to(source).parts[0] in {'lib', 'backends'}}
+    compatibility=source/'lib/runtime-compat.json'
+    if compatibility.is_file():paths['lib/runtime-compat.json']=compatibility
     if 'lib/drama_r2t2.dll' not in paths:
         raise ValueError('Native runtime asset is missing lib/drama_r2t2.dll')
     paths.update({f'licenses/{p.name}': p for p in files(ROOT / 'licenses')
@@ -145,7 +147,7 @@ def native_asset():
         assert z.testzip() is None
         for name, p in paths.items():
             assert member_sha(z, name) == sha(p), f'Stale native asset: {name}'
-    data = {'version': '1', 'url': f'https://github.com/T8mars/Comfyui-Drama-3/releases/download/v{__version__}/{archive.name}',
+    data = {'version': '2' if compatibility.is_file() else '1', 'url': f'https://github.com/T8mars/Comfyui-Drama-3/releases/download/v{__version__}/{archive.name}',
             **record(archive), 'files': {name: record(p) for name, p in sorted(paths.items())}}
     previous_path = NODE / 'r2t2-runtime.json'
     if previous_path.exists():

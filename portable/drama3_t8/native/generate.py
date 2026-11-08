@@ -2,6 +2,7 @@
 head, the other codes from the tower, and run the backbone on the new frame."""
 import contextlib
 import logging
+from collections import deque
 
 import torch
 
@@ -97,7 +98,10 @@ def generate(drama3, prompt, max_frames, temperature, top_k, top_p, seed, on_fra
         finite_residual_heads.append(torch.isfinite(logits).all())
         return sample_top_k_top_p(logits, temperature, top_k, top_p, generator, check_finite=False)
 
-    frames, codes = [], []
+    frames = []
+    # Keep real row positions: scene controls are rows too, but are not audio.
+    # Only one contiguous scene segment may contribute to the stall window.
+    codes = deque(maxlen=STALL_WINDOW)
     finish_reason = "length"
     if hasattr(drama3,'session'):
         session=drama3.session(cpu_decode=first==last,extra_patchers=extra_patchers)
@@ -159,7 +163,7 @@ def generate(drama3, prompt, max_frames, temperature, top_k, top_p, seed, on_fra
                         finite=torch.stack(finite_residual_heads).all() if finite_residual_heads else torch.ones((),dtype=torch.bool,device=last)
                     if not finite.item():
                         raise FloatingPointError("Drama 3 produced non-finite residual code logits")
-                    codes.append(frame[0, 1].item())
+                    codes.append((frame[0, 1].item(),len(frames)))
                     if on_audio is not None:
                         on_audio(frame[0, 1:].detach().cpu())
                 else:
@@ -168,11 +172,13 @@ def generate(drama3, prompt, max_frames, temperature, top_k, top_p, seed, on_fra
                     next_frame[0, 0] = main
                     tower.run(hidden, next_frame, frame, context, tower_caches)
                     frame = next_frame
+                    if main_id == separator_id:
+                        codes.clear()
                 frames.append(frame)
-                if len(codes) >= STALL_WINDOW and len(set(codes[-STALL_WINDOW:])) <= STALL_DISTINCT:
+                if len(codes) == STALL_WINDOW and len({code for code,_ in codes}) <= STALL_DISTINCT:
                     logging.warning("Drama 3: the take went silent without ending after %.1f s; its silent tail was cut. "
                                     "Another seed or a voice reference usually fixes this.", len(frames) / 21.5)
-                    del frames[len(frames) - STALL_WINDOW + STALL_TAIL:]
+                    del frames[codes[STALL_TAIL][1]:]
                     finish_reason = "stalled"
                     break
                 history = torch.cat((history[1:], frame[:, 0]))
