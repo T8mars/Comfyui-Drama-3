@@ -58,9 +58,17 @@ def register_creative_routes(app, root, store_upload):
     def restore_trash(request: Request, payload: dict):
         return checked(desk(request).catalog_trash_item, payload.get("kind"), payload.get("id"), payload, restore=True)
 
+    @router.post("/trash/clear")
+    def clear_trash(request: Request, payload: dict):
+        return checked(desk(request).clear_trash, payload)
+
     @router.get("/configuration")
     def configuration(request: Request):
         return checked(desk(request).configuration)
+
+    @router.delete("/performance/{report_id}")
+    def delete_performance_report(report_id: str, request: Request):
+        return checked(desk(request).delete_performance_report, report_id)
 
     @router.post("/configuration")
     def configure(request: Request, payload: dict):

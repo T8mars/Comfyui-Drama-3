@@ -550,6 +550,8 @@ class CreativeWorkspace:
                         if line["selected_candidate_id"] == candidate_id:
                             line["selected_candidate_id"] = None
             if restore:
+                if item.get("trash_cleared_at"):
+                    raise ValueError("此回收站记录已清除，无法恢复")
                 item.pop("deleted_at", None)
             else:
                 item["deleted_at"] = _now()
@@ -564,15 +566,24 @@ class CreativeWorkspace:
                 continue
             project = self._read(directory.name, include_deleted=True)
             if project.get("deleted_at"):
-                result.append(dict(kind="project", id=directory.name, project_id=directory.name,
-                                   label=project["name"], deleted_at=project["deleted_at"]))
+                if not project.get("trash_cleared_at"):
+                    result.append(dict(kind="project", id=directory.name, project_id=directory.name,
+                                       label=project["name"], deleted_at=project["deleted_at"]))
                 continue
             for key, candidate in project["candidates"].items():
-                if candidate.get("deleted_at"):
+                if candidate.get("deleted_at") and not candidate.get("trash_cleared_at"):
                     result.append(dict(kind="candidate", id=key, project_id=directory.name,
                                        label=project["name"] + " · " + candidate.get("transcript", key)[:80],
                                        deleted_at=candidate["deleted_at"]))
         return result
+
+    def clear_trash_item(self, project_id, candidate_id=None):
+        with self._operation(project_id, include_deleted=True) as project:
+            item = project if candidate_id is None else project["candidates"].get(candidate_id)
+            if item is None or not item.get("deleted_at"):
+                raise ValueError("此记录已不在回收站，请刷新")
+            item["trash_cleared_at"] = _now()
+            self._save(project)
 
     def update_project(self, project_id, patch, expected_revision=None, *, before_commit=None):
         patch = _object(patch, "工程修改")

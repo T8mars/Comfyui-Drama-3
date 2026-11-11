@@ -1,137 +1,77 @@
 {
   "schema": "drama3.patch-release-acceptance.v1",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "status": "passed",
-  "validation_scope": "New official model artifacts, Windows CPU loading, silent-repetition recovery and R2T2 CUDA runtime. Actual Studio UI and local SM12.0 inference; previous native canvas qualification retained as baseline.",
-  "generated_at": "2026-11-08T02:26:25.277315+00:00",
+  "generated_at": "2026-11-11T10:12:49.911047+00:00",
+  "validation_scope": "Trash record cleanup, deletion UI, persistent hidden state and console startup fixes; CPU fixtures and real headless browser clicks. No new inference or canvas qualification.",
   "baseline": {
-    "version": "0.3.2",
-    "commit": "69104acf9d85149b0a513d288e6975ec224d8e25",
-    "report": "https://github.com/T8mars/Comfyui-Drama-3/blob/v0.3.2/portable/acceptance-report.json",
-    "canvas_baseline": "https://github.com/T8mars/Comfyui-Drama-3/blob/v0.3.0/portable/acceptance-report.json"
+    "version": "0.3.3",
+    "commit": "0c57de542e5d1b6c55485cfaa97e13e1d536a823",
+    "report": "https://github.com/T8mars/Comfyui-Drama-3/blob/v0.3.3/portable/acceptance-report.json"
   },
   "cpu_regressions": {
-    "conversion_and_runtime": {
-      "passed": 76,
+    "trash_and_api": {
+      "passed": 15,
       "skipped": 0,
       "evidence": {
-        "id": "model-update-20261107/pread-final.xml",
-        "sha256": "27caee73d1e7d787ffaf16ec1e05ed6312ee85933fe2056d0f671706fd9120df"
+        "id": "deletion-controls-20261111/trash-tests.xml",
+        "sha256": "276c28c7dd0e96d02320801037fc83e2a721bee8b38ff602a7fdc44dbfd32b07"
       }
     },
-    "reader_and_ownership": {
-      "passed": 90,
-      "skipped": 2,
+    "workspace_api_library_launcher": {
+      "passed": 190,
+      "skipped": 0,
       "evidence": {
-        "id": "model-update-20261107/owned-mmap.xml",
-        "sha256": "90af8550dad5286446d50bea3fe218519a1f2f54aed7cd7d8b5725947b5ef39d"
+        "id": "deletion-controls-20261111/regressions.xml",
+        "sha256": "a4a709cfd5355cdb11d651ee8b09fad5851a035ed86c6cd3674ecf93a1879a5e"
       }
-    },
-    "packaging_and_previous_installer": {
-      "passed": 83,
-      "skipped": 2,
-      "evidence": {
-        "id": "model-update-20261107/package-runtime.xml",
-        "sha256": "1662fdec60ec8ca954b136299eeae77974b83dc246d38e2f3fc6922abf373b34"
-      }
-    },
-    "note": "Groups overlap; do not add their counts. CUDA initialization was forbidden. Skips remain explicit."
-  },
-  "model_source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
-  "model_artifacts": {
-    "drama3-t8-fp8.safetensors": {
-      "bytes": 38578460824,
-      "sha256": "f661e7bafaf0bf4ccea25536ceb1c97e0784bfd01268d7e524b59f3c9885509a",
-      "source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
-      "tensor_count": 912
-    },
-    "drama3-t8-w4a8.safetensors": {
-      "bytes": 24603608136,
-      "sha256": "5efd3c43fca67f93ecb60cc20f7cce7a5a9e4909a23e114befff00f3145178a9",
-      "source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
-      "tensor_count": 1152
-    },
-    "drama3-text-head.safetensors": {
-      "bytes": 1033371848,
-      "sha256": "e55498a6fc2932b64762654bb8aa5d732e4bb1fdbc3aaf7dd0397bd34137abdc",
-      "source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
-      "tensor_count": 1
-    },
-    "drama3-line-head.safetensors": {
-      "bytes": 8464,
-      "sha256": "6ae73c78eea15b55df4bbc597ee30122f9835f674a5e46d21caea35e1744850e",
-      "source_revision": "78e5ab79e49aa9a25abe8799eff2c4d73a1c3216",
-      "tensor_count": 2
     }
   },
-  "model_integrity": {
-    "dense_tensors_identical_between_formats": 752,
-    "expert_banks": 80,
-    "matching_heads": true,
-    "evidence": {
-      "id": "model-update-20261107/model-artifacts.json",
-      "sha256": "cfba31be0f2389f5616405fe55f32e87bb11ca92423a2c88c9037c31f1b4abc7"
-    }
-  },
-  "studio_model_checks": {
-    "formats": [
-      "w4a8",
-      "fp8"
-    ],
-    "submission": "actual UI clicks",
-    "playback_checked": true,
-    "finish": "EOS",
-    "r2t2_transcription_ui": true,
-    "studio_alive_after_transcription": true,
-    "private_server_unloaded_and_stopped": true,
-    "evidence": {
-      "id": "model-update-20261107/new-model-ui-receipt.json",
-      "sha256": "9fa00b81c3fde2b967847000beac9b3eca46ab9e85fc0839cd42b803a262f692"
-    }
-  },
-  "r2t2_runtime": {
-    "backend_sha256": "12d79cf0781df22761644ad0deb7d3ca5f08c0be5e719495157509388732c006",
-    "images": {
-      "sass": [
-        86,
-        89,
-        120
-      ],
-      "ptx": [
-        50,
-        61,
-        70,
-        75,
-        80,
-        90
-      ]
-    },
-    "physical_gpu": "RTX 5090 Laptop SM12.0",
-    "native_handle_released": true,
-    "evidence": {
-      "id": "model-update-20261107/r2t2-real-gpu.json",
-      "sha256": "35a79af1ca663b8ed469d8ff2d00497ad371fb72fdcd5e05a9f40c13b7f81540"
-    }
-  },
-  "large_windows_mapping": {
+  "studio_ui": {
     "status": "passed",
-    "sampled_tensors": 912,
-    "source_file_bytes": 38578460824,
+    "submission": "headless browser UI clicks; synthetic CPU-only fixture",
+    "checks": [
+      "cancel keeps creative job visible",
+      "single clear and cancel",
+      "selected batch and disabled state",
+      "clear all survives refresh without resurrecting voices",
+      "record segment removal persists and indices match",
+      "empty segment state and reload original",
+      "recording history delete and restore",
+      "measurement delete"
+    ],
     "evidence": {
-      "id": "model-update-20261107/large-python-mmap.json",
-      "sha256": "38c5c7733e4d52552422b419a518e38a8b65783c4c98bbaa252ce4c1659b250d"
-    }
+      "id": "deletion-controls-20261111/ui-receipt.json",
+      "sha256": "8b33f961ccad06ad34a8d3fd5891a3d13401d2bb7345d8eef5ca6e7fc2391d2e"
+    },
+    "screenshots_visually_reviewed": true
+  },
+  "deletion_semantics": {
+    "clear_single_selected_all": true,
+    "cleared_records_stay_hidden_after_reopen": true,
+    "cleared_records_not_restorable_from_ui": true,
+    "media_and_pinned_references_retained": true,
+    "shared_session_ownership_tested": true,
+    "active_project_protection_tested": true,
+    "frees_disk_space": false
+  },
+  "launcher": {
+    "console_backpressure_regression": "included in CPU suite",
+    "quick_edit_disabled": true,
+    "source_build_checked": true,
+    "separate_exe_update_required": true,
+    "prior_actual_boot_evidence": "startup-console-20261109/final-receipt.json"
   },
   "source_sha256": {
     "LICENSE": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db",
-    "README.md": "ebb68eb5c119f00ab3697a058af2d2512894dbff963dc70ee728acdc05abfc88",
-    "README.zh-CN.md": "eaf9d94487f2086df12d62ea7e3d1e0e7c634e440868c8b367fbba016a087a52",
+    "README.md": "d1463344de6e66214b81c901a2d3ee88bdb6c0e613f3703173cb132b86735ef4",
+    "README.zh-CN.md": "5d0aaec717cb84f91827ed61347b482690cca0b24c9879f701fe91b431779ee2",
     "Start-Drama3.cmd": "b20f178aa60867dcbbc2a76103c2309b27bb10684cdb4c6f41bbc5ce3c1026b5",
     "Update-Drama3.cmd": "04ffb55ed48866119883a802f91f64181bcf4c5519600463d6258a7664bdb502",
     "acceleration-manifest.json": "8338e0a28494d6261840c0a6d4e8694af63a201a3c209340d1ad17e915d12a45",
     "acceleration-requirements.txt": "440811e0d471b8cf19e1b5f640ab2ffa20d2706c654592e0c920161894954b55",
-    "app.py": "6bd78db1b0d2b48aa09cb223ec1b373870589bb5f0fde7a3ccaa874cdf44d604",
-    "drama3_t8/__init__.py": "bc580d26f4468e67aadaea2fd52e05adf5cd004888a3f403cbe3cd5396579a41",
+    "app.py": "65a61f283da764bde0dc2a5c2b9aa9d130753e5bad97ec90a91b130544be2d5a",
+    "drama3_t8/__init__.py": "75bf4c7ac0ecd4f00cc341cb6b1e314c61647f547f86c438626004ca7eaa3ae0",
     "drama3_t8/alignment.py": "38603b9a4e35c944cecd84de9b048df5d9ef6360da5044111f8a3d00d83a4540",
     "drama3_t8/asr_language.py": "5f2a81aad1532c49f347d550739070fc33f095959070f27e7f5910c3b2f96be6",
     "drama3_t8/asr_reference.py": "c1d367f6ee45bb5c955e7894600968898b5505b085bd7cd71495164f2d8e206e",
@@ -139,11 +79,11 @@
     "drama3_t8/audio_processing.py": "eb498e750306a45539ee38e319a22b690437d088b59b4010c39b1cdb57a32570",
     "drama3_t8/batch.py": "a0715a8ed3e65737a9f754675b90c90381902c6b18a468e4c8d21f22ba52dbc2",
     "drama3_t8/bootstrap.py": "60eb99dc36482924c9dfb73bc40df508a809c8d6a1a42d58c231924126441657",
-    "drama3_t8/catalog_trash.py": "e546bb188579a33ecd0f2deac9e2cf7fa9718b7804b560406776e14b07a75f59",
-    "drama3_t8/console_launcher.py": "96b24b7a314791f617ba09d5503d9ddb18ec75fede8c8587fc5cfd97dcb82d35",
+    "drama3_t8/catalog_trash.py": "f6e75fcd244212af2c3d6012007e81feaef04b9f33190de695a8e440bf364cae",
+    "drama3_t8/console_launcher.py": "316560899dda3d5b15e606812d7cbb3b06c3d8a407cd6ed7418e3465508bb5cc",
     "drama3_t8/conversion/__init__.py": "35054f40c9d4916601c2989544a6c7d1445274f99326c0d1166c03e1020170eb",
     "drama3_t8/conversion/fp8.py": "5e57ea774e4080474a99e7a28fa9e8c1f07cfbf4731e6a4192cf576ffcd36bf0",
-    "drama3_t8/creative_api.py": "c24aeed4a7918b8c90b6efc80c4d5adbf4055cda8f2f73ad911745ac51da240c",
+    "drama3_t8/creative_api.py": "c7f622bb7091522c8e3427df337acda27a325c554695ef2ae6c49414ffaaf704",
     "drama3_t8/creative_audio.py": "fac6fb65c820cc653c252f110ac1cd7933aac84a62f15bb97451cd0f1d40660f",
     "drama3_t8/creative_benchmark.py": "a44bdfd1ffaf41abbcd511f18171dd5066f33cdefc8aa3300932f4c38c12aed3",
     "drama3_t8/creative_bundle.py": "cc3572aa063ecef20f416b544fa4aee215c19ce2c1c77b3b63ca5f64d98f90d3",
@@ -152,9 +92,9 @@
     "drama3_t8/creative_nodes.py": "0c3e197c7589badbf6634e5dce215bbe0dac183ada91e29eacc0ddccbd931a24",
     "drama3_t8/creative_progress.py": "a5e2974d4cda10a6de7a7eec3b10394f7e1402a3ce47df3608188e5cdf2746f8",
     "drama3_t8/creative_quality.py": "2f10864e2e0a798de7f9ba39b943e4dd700ee88b82b417cdd4e6c1388f645283",
-    "drama3_t8/creative_studio.py": "305221b77d7214dc82ebe604e3ec27a6042e758d4fd548c6a28efb6a06b91490",
+    "drama3_t8/creative_studio.py": "e07e75a815ad16a13f1986cd0b192cb3d55927a1666d38f0402c244c7a65b9bf",
     "drama3_t8/creative_transcript.py": "3fcc14cacb10a7782b009629d8ab3bff963d7a2b96f12c8f7c2d09a5920449d8",
-    "drama3_t8/creative_workspace.py": "bebecc529d2d27bfa60716554013dc72b8158beb89fc928440f10d0e8805c50b",
+    "drama3_t8/creative_workspace.py": "c0b9ba22a9329babceef1e75d44238fe41a59d176d5d54958d8c0fc2ae79e935",
     "drama3_t8/dialogue.py": "0bbf13fa24955fca911801b6ba5b9ad07ad7c3cf9a9699f316d5d68b2c1ae6ae",
     "drama3_t8/editor.py": "e52faf7bb488f8c998afe64537bcb91fd31d23392cdcec164631fe8ba1bad9a8",
     "drama3_t8/editor_routes.py": "7681c7359265d3841a98d66d28a46be19cf1c92e0a4ae3b8cb77c622e2cb07b3",
@@ -214,7 +154,7 @@
     "drama3_t8/scene_voice_bindings.py": "ffd6d68859f9f317dff68f4174cab861a9bb1004be3788030587c9d421cb01ed",
     "drama3_t8/source_identity.py": "d5558ab7d6905fe90cae7d52191dc3db63a7713b226db40cc149282eeff04f4c",
     "drama3_t8/state.py": "9c4ceba7a5bf1e1d6d3d067e1308e5e35f1ff4bdf0714c533287c593d538cf25",
-    "drama3_t8/studio.py": "0bf1b3b4d6fdd8712c0a5e64a1ee37bf13de8aadb2fcc37aacae1130e27f6e1d",
+    "drama3_t8/studio.py": "ac6064ea7da5391fe614743ccc50759f62bed9407899277792b31bb7b9261ac5",
     "drama3_t8/studio_editor.py": "9715698ecdb49167aee8dbc95253a722fa944f9015baeb788b2f63589782be6c",
     "drama3_t8/subtitles.py": "94f3ebffee710f682c131cbae2507feceb72783b1f7e68dbca51319055c83d64",
     "drama3_t8/transcript.py": "54c6e0b1d3e57bfa53c971e252338c422dd3538533c122353adeb1d6932d01af",
@@ -234,7 +174,7 @@
     "drama3_t8/vendor_qwen/inference/qwen3_asr.py": "5c485b53ede6cb78ebae3e5163e30d9015ce4b67f84e71a7754c44431c24042b",
     "drama3_t8/vendor_qwen/inference/qwen3_forced_aligner.py": "a5cecd2994a7742be145408088f3608e48fc0870e3a22744df0b21f98af1bb04",
     "drama3_t8/vendor_qwen/inference/utils.py": "db89e24f94c803a49fe83ad9960660cdcfc18d91defcf20a7264f79facaf2d47",
-    "drama3_t8/voice_library.py": "06e7edf3e480ceba2fbb9f34d2a233f0e9f06455c9e21b3f6f8c4b3c98a3d220",
+    "drama3_t8/voice_library.py": "b82d5aceed0142ded0d482111e5a3f2d03d2b5424affd1fd09ca5e6f08533586",
     "drama3_t8/workspace_lock.py": "8ed7521639b9dc7db458b1e38e0f90b98a0d133e45a10923ce61473877e05d5c",
     "licenses/CONFUCIUS-MODEL_LICENSE": "064483c5ba1dc20907038108da4f45d5b37cd0a41a351c8a8bb98ba1af48c505",
     "licenses/CONFUCIUS-MODEL_LICENSE_zh": "6ed2e9946bd0b0185a6c690565cf2f8de23044a513be6e1ec7c97e6995ce241b",
@@ -262,7 +202,7 @@
     "licenses/QWEN3-ASR/LICENSE-UPSTREAM": "a44a6081c73ad75f0255bb2bb5cab74ef1829565a895a24e53a4f11290ab7655",
     "licenses/QWEN3-ASR/NOTICE-UPSTREAM.md": "d3bc5205fa682adf6e19682629fae5170771c2dc8ea54f1cdd886096644bff9b",
     "requirements.txt": "2087c073bec22a312c5da1cbf7361202073e3cb44da00d1658243f2c9194bdc5",
-    "tools/StartDrama3.cs": "e313c96b02b2899265cfa6dfb07694e98b7edf119ce2e73bc6e40fa78ad04cb7",
+    "tools/StartDrama3.cs": "64bbb9a167db891c91fde9a624f7641d188cc3db39ff0f999692f42fca2ac1b1",
     "tools/build_launcher.py": "401c03fc4b1545d739d50e8c9f3fb007b23199607c76b755a1720dfea55918ae",
     "tools/build_public_release.py": "749a2f0f8d5b3f550ffc32781a4d14f80e9915e2c78464cf5c54456bf6307080",
     "tools/check_runtime.py": "d0175269cff79ca56d6335f382d6c32349c41649b52a3d3c1bd68faf730309fd",
@@ -723,7 +663,7 @@
     "vendor/ComfyUI/comfy/patcher_extension.py": "9edb6977dceb88c3a205bc3765e6765f2d6caf719614e3451395cbf9eb9aa51b",
     "vendor/ComfyUI/comfy/pinned_memory.py": "d229957d279cb9044f374d148b9c87f62d42e4b7ef37e4af5f381974c954068e",
     "vendor/ComfyUI/comfy/pixel_space_convert.py": "44338e14976bf7a3aad6b21d7f0cfa3ee1023479cad2928369ee5fa50ab44587",
-    "vendor/ComfyUI/comfy/quant_ops.py": "8e094d4f29226d50ceb2014f3c0cfe5cabe85a1ed9ce70f0adfe5d943e0ef587",
+    "vendor/ComfyUI/comfy/quant_ops.py": "793917e293a5531ba48857945bd54e2d70e34636dedc9df4ff00ad66a678e677",
     "vendor/ComfyUI/comfy/rmsnorm.py": "7a0d184a4e050c42e82e5db6e817e2c10d474d051116d7c944c3429efe4d8ad6",
     "vendor/ComfyUI/comfy/sample.py": "d19263c4aa14262bf6f2462ca0256c038396640ee3d88c9a4a5c0c2c219311ee",
     "vendor/ComfyUI/comfy/sampler_helpers.py": "ac5b2be3f21e1fd8c7070b155146294692f35408db69db6a5c5e7384d199f377",
@@ -1451,13 +1391,12 @@
     "vendor/ComfyUI/utils/install_util.py": "138faf156cf71411e6a984877158ad03916cd9de3f992a610131605b367ea206",
     "vendor/ComfyUI/utils/json_util.py": "5782c2228070755b9ecbc1ecabba264f4dcad855405b627244f205a221fabd61",
     "vendor/ComfyUI/utils/mime_types.py": "79924df98bc7283d8688e4a8304b7f0780c1c77eb9b16f62f61bbb207d06fa18",
-    "vendor/r2t2_native/README.md": "59ac0fdf1bb0e42de3d7ed79219a0d25e5c3813a31ef8bfd67c014f87c72e53a",
     "web/app.js": "da42819c7fd2465152c63951effc94ac86fdb45ff2c8a0b35c88205e4cb7df16",
-    "web/creative.css": "d4549e467a740c4ab604f33e215b74a378676368d97197145d5ec00c912a5332",
-    "web/creative.js": "fa9bd875a997e827b0ef2a7b5073adf06d0ca8efe984b586b9124611ee7feb7f",
+    "web/creative.css": "a393e94a1179ba88c0e890faa9dd9e06aa06a90a4bd4784aa163031480859f49",
+    "web/creative.js": "46aeb676ac341852717e063ad36d3b7b7a9fad851c5d8cfe2783edaa15727e03",
     "web/drama3_editor.js": "ac90c58eb6e261823d59e610a0f70d98a733db35ddca4b7190744e61a60b18ec",
     "web/editor_core.js": "31ccb27abfdd1e013ae342d1e8fb8b362a4991c58290fe53c1b1e21a49ae6bea",
-    "web/index.html": "2da13251a19e82be08c494d09752df686d0950d98651fba7b9c6d291afea1883",
+    "web/index.html": "7179f9ee2c569d9e6674a5ae9e7d84ea554b4c956d74f2bacbafd8c73382b82d",
     "web/infill-options.js": "9d542a464815763f51a88fef5e487879c854d3526e6537694c7f11918be02a22",
     "web/live.js": "80432b370ebedb3d6b1a56c3750463775a3690536725784b50149d1b5470e4b8",
     "web/reference-asr.js": "2c29c5c25697810268d24f86220e8d98bd2f1f53b8867ef8387ca5f3d8f932e4",
@@ -1475,11 +1414,10 @@
     "web/workspace-tools.js": "b5b84d6fd1aab3b1de49161c507a27c58880b2f6d55dadcfd92170a49fa559d1"
   },
   "limits": [
-    "Other GPUs have compiled-image and simulated compatibility coverage, not physical inference acceptance.",
-    "No new full canvas matrix, subjective voice/emotion score, dialect qualification or acceleration recommendation.",
-    "A model may still fail stochastically. Bounded recovery does not guarantee all seeds or recordings.",
-    "Release code ZIPs contain neither Python nor weights. Model and native-runtime updates are delivered separately.",
-    "The launcher behavior is unchanged from 0.3.2; its assembly version is 0.3.3.",
-    "ZIP/hash, previous-updater installation and Git-index binding are checked after packaging to avoid a hash cycle."
+    "No new model, GPU audio-quality or canvas matrix; v0.3.3 inference baseline retained.",
+    "The UI checks use isolated synthetic data; real user records were not cleared.",
+    "Clearing Trash removes recovery access, keeps hidden state and retains referenced media; it does not reclaim disk space.",
+    "Code updates preserve Python, weights, native libraries, user data and the existing EXE; the new EXE is a separate asset.",
+    "Package hashes, previous-updater installation, Git binding and installed-bundle boot are verified after packaging."
   ]
 }

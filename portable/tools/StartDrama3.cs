@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -12,11 +13,20 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Drama-3 T8 Launcher")]
-[assembly: AssemblyVersion("0.3.3.0")]
+[assembly: AssemblyVersion("0.3.4.0")]
 
 internal static class StartDrama3
 {
     private static readonly object LogGate = new object();
+    private sealed class ConsoleLine
+    {
+        public string Message; public bool Error;
+        public ConsoleLine(string message, bool error) { Message = message; Error = error; }
+    }
+    private static readonly BlockingCollection<ConsoleLine> ConsoleLines = new BlockingCollection<ConsoleLine>(1024);
+    private static readonly object WriterGate = new object();
+    private static Thread consoleWriter;
+    private static long consoleQueued, consoleCompleted;
     private static string logPath;
     private static string statePath;
     private static int port = 7863;
@@ -30,9 +40,66 @@ internal static class StartDrama3
     [DllImport("kernel32.dll")] private static extern IntPtr GetConsoleWindow();
     [DllImport("kernel32.dll", SetLastError=true)] private static extern bool AllocConsole();
     [DllImport("kernel32.dll")] private static extern bool FreeConsole();
+    [DllImport("kernel32.dll")] private static extern IntPtr GetStdHandle(int kind);
+    [DllImport("kernel32.dll", SetLastError=true)] private static extern bool GetConsoleMode(IntPtr handle, out uint mode);
+    [DllImport("kernel32.dll", SetLastError=true)] private static extern bool SetConsoleMode(IntPtr handle, uint mode);
+    [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)] private static extern IntPtr CreateFile(string name, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
+    [DllImport("kernel32.dll", EntryPoint="CloseHandle")] private static extern bool CloseConsoleHandle(IntPtr handle);
     [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr window);
     [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr window, int command);
     [DllImport("user32.dll", CharSet=CharSet.Unicode)] private static extern int GetClassName(IntPtr window, StringBuilder name, int maximum);
+
+    private static void ConfigureConsoleInput()
+    {
+        // Quick Edit mouse selection suspends console writes. Preserve Ctrl+C
+        // and every other input flag; the output relay also handles manual Mark.
+        IntPtr handle = GetStdHandle(-10), opened = IntPtr.Zero;
+        uint mode;
+        try
+        {
+            if (!GetConsoleMode(handle, out mode))
+            {
+                opened = CreateFile("CONIN$", 0xC0000000u, 3, IntPtr.Zero, 3, 0, IntPtr.Zero);
+                if (opened == new IntPtr(-1) || opened == IntPtr.Zero || !GetConsoleMode(opened, out mode)) return;
+                handle = opened;
+            }
+            SetConsoleMode(handle, (mode | 0x0080u) & ~0x0040u);
+        }
+        finally { if (opened != IntPtr.Zero && opened != new IntPtr(-1)) CloseConsoleHandle(opened); }
+    }
+
+    private static void Echo(string message, bool error)
+    {
+        lock (WriterGate)
+        {
+            if (consoleWriter == null)
+            {
+                consoleWriter = new Thread(delegate()
+                {
+                    foreach (ConsoleLine line in ConsoleLines.GetConsumingEnumerable())
+                    {
+                        try { if (line.Error) Console.Error.WriteLine(line.Message); else Console.WriteLine(line.Message); }
+                        catch (IOException) { }
+                        catch (InvalidOperationException) { }
+                        finally { Interlocked.Increment(ref consoleCompleted); }
+                    }
+                });
+                consoleWriter.IsBackground = true; consoleWriter.Name = "Drama console output";
+                consoleWriter.Start();
+            }
+        }
+        Interlocked.Increment(ref consoleQueued);
+        if (!ConsoleLines.TryAdd(new ConsoleLine(message, error))) Interlocked.Decrement(ref consoleQueued);
+        // Full console queues may omit display lines; the complete durable log
+        // was already written. Never stop draining the Python stdout pipes.
+    }
+
+    private static void FlushConsole()
+    {
+        Stopwatch timer = Stopwatch.StartNew();
+        while (Interlocked.Read(ref consoleCompleted) < Interlocked.Read(ref consoleQueued) && timer.ElapsedMilliseconds < 750)
+            Thread.Sleep(5);
+    }
 
     private static bool EnsureVisibleConsole(string[] arguments)
     {
@@ -173,7 +240,6 @@ internal static class StartDrama3
 
     private static void Log(string message, bool error)
     {
-        if (error) Console.Error.WriteLine(message); else Console.WriteLine(message);
         try
         {
             lock (LogGate) File.AppendAllText(logPath,
@@ -181,17 +247,19 @@ internal static class StartDrama3
                 new UTF8Encoding(false));
         }
         catch (Exception) { } // A read-only log folder must not prevent startup.
+        Echo(message, error);
     }
 
     private static int Failure(int code, string message)
     {
         Log(message, true);
-        if (!String.IsNullOrEmpty(logPath)) Console.Error.WriteLine("启动日志：" + logPath);
+        if (!String.IsNullOrEmpty(logPath)) Echo("启动日志：" + logPath, true);
         try
         {
             if (Environment.UserInteractive && !Console.IsInputRedirected && !Console.IsOutputRedirected)
             {
-                Console.Error.WriteLine("请查看上方错误。按回车关闭此窗口……");
+                Echo("请查看上方错误。按回车关闭此窗口……", true);
+                FlushConsole();
                 Console.ReadLine();
             }
         }
@@ -288,11 +356,13 @@ internal static class StartDrama3
         info.RedirectStandardError = true;
         info.StandardOutputEncoding = Encoding.UTF8;
         info.StandardErrorEncoding = Encoding.UTF8;
+        using (ManualResetEvent outputClosed = new ManualResetEvent(false))
+        using (ManualResetEvent errorClosed = new ManualResetEvent(false))
         using (Process child = Process.Start(info))
         {
             if (child == null) throw new IOException("无法启动整合包内的 Python。");
-            child.OutputDataReceived += delegate(object sender, DataReceivedEventArgs args) { if (args.Data != null) Log(args.Data, false); };
-            child.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs args) { if (args.Data != null) Log(args.Data, true); };
+            child.OutputDataReceived += delegate(object sender, DataReceivedEventArgs args) { if (args.Data != null) Log(args.Data, false); else try { outputClosed.Set(); } catch (ObjectDisposedException) { } };
+            child.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs args) { if (args.Data != null) Log(args.Data, true); else try { errorClosed.Set(); } catch (ObjectDisposedException) { } };
             child.BeginOutputReadLine(); child.BeginErrorReadLine();
             if (appProcess)
             {
@@ -303,6 +373,9 @@ internal static class StartDrama3
             // A parameterless wait can hang on inherited stdout handles even
             // after the app exits. Process disposal closes the async readers.
             while (!child.WaitForExit(250)) { }
+            // Drain buffered tail lines, but inherited helper handles must never
+            // turn normal shutdown into an unbounded EOF wait.
+            outputClosed.WaitOne(200); errorClosed.WaitOne(200);
             return child.ExitCode;
         }
     }
@@ -325,20 +398,27 @@ internal static class StartDrama3
         {
             if (!File.Exists(file))
             {
-                Console.Error.WriteLine("缺少文件：" + file);
+                Echo("缺少文件：" + file, true);
                 valid = false;
             }
         }
-        if (valid) Console.WriteLine("DRAMA3_LAUNCHER_CHECK: OK · " + root);
-        else Console.Error.WriteLine("请将启动程序放在完整整合包根目录，保留 runtime、tools 和 app.py。");
+        if (valid) Echo("DRAMA3_LAUNCHER_CHECK: OK · " + root, false);
+        else Echo("请将启动程序放在完整整合包根目录，保留 runtime、tools 和 app.py。", true);
         return valid;
     }
 
     private static int Main(string[] arguments)
     {
+        try { return MainCore(arguments); }
+        finally { FlushConsole(); }
+    }
+
+    private static int MainCore(string[] arguments)
+    {
         bool check = arguments.Length == 1 && arguments[0] == "--check";
         if (!check && Environment.GetEnvironmentVariable("DRAMA_LAUNCHER_HEADLESS") != "1")
             if (!EnsureVisibleConsole(arguments)) return 0;
+        ConfigureConsoleInput();
         try { Console.OutputEncoding = new UTF8Encoding(false); }
         catch (IOException) { }
         try { Console.Title = "Drama-3 T8 · 关闭窗口停止服务"; } catch (Exception) { }
@@ -406,6 +486,7 @@ internal static class StartDrama3
                     }
                     List<string> start = new List<string>(new string[] { "-X", "utf8", app });
                     start.AddRange(arguments);
+                    Log("正在初始化本地 Studio，请稍候……", false);
                     int finished = Run(python, root, start, true);
                     if (finished != 0) return Failure(finished, "Drama-3 已退出。退出码：" + finished);
                     return finished;

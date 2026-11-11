@@ -22,6 +22,14 @@ DRAMA supports native reference-voice conditioning without training. Reference q
 
 Studio enables one automatic retry for silent repetition or empty output by default; you can disable it, and saved explicit project settings are preserved. Set `opening_retries=1` in ComfyUI to enable recovery, or `0` to disable it; existing workflow settings remain intact. A stalled opening or later segment can retry before audio is delivered, using the same prompt/references and the next seed, with attempt records retained. Scene stall windows reset at line separators. Already delivered live audio is never replayed automatically; an exhausted retry remains an error rather than an accepted partial take.
 
+## New in 0.3.4
+
+- **Trash management:** Clear one entry, selected entries or the entire visible list, with record counts. Cleared items stay hidden and cannot be restored from Trash. Audio and pinned project references remain intact; clearing records does not free disk space.
+- **Delete where you work:** Delete and restore recent recording analyses, remove transcript segments or reload the original analysis, and delete performance measurements. Cancelling a delete confirmation now keeps the task row visible.
+- **Reliable startup:** EXE/CMD consoles remain visible; closing the window stops their owned service and children. Fixes console text selection blocking the server and clarifies the optional CUDA 13 quantization backend message for the matched CUDA 12.8 environment.
+
+No model, Python or dependency update is required. Close Studio and run `Update-Drama3.cmd` for the code update. Download this release's `Start-Drama3.exe` separately to replace the old launcher; the complete bundle includes both updates.
+
 ## New in 0.3.3
 
 - **Updated official weights:** FP8, W4A8 and both text heads use Fish Audio's 2026-10-29 weights (`78e5ab7`). Keep the selected main model and heads from the same conversion. The Codec is unchanged, so existing encoded voice references remain usable.
@@ -127,7 +135,7 @@ GitHub's `Drama3-T8-Portable-<version>-code.zip` contains **code only: no Python
 
 The full bundle provides `Start-Drama3.exe`; `Start-Drama3.cmd` remains available. Both check stable GitHub Releases before starting. The code-only update ZIP does not install or replace the EXE launcher. Close Studio before running `Update-Drama3.cmd` manually. The updater verifies size/SHA-256, backs up replaced files and rolls back failed transactions. Models, Python, `userdata`, outputs, libraries/workspaces and custom paths are preserved. Updates do not run pip; a dependency change requires a compatible full environment. Offline checks allow the installed version to start. Manually extracting a code ZIP directly overwrites files and does not run the updater's SHA verification or transaction rollback; prefer `Update-Drama3.cmd`.
 
-For the console/cleanup fix, close all Studio launcher windows and replace the bundle's `Start-Drama3.exe` with the [0.3.2 launcher](https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.3.2/Start-Drama3.exe). Keep its console open; closing it stops that bundle's service and helpers. It requires the existing complete bundle and is not a standalone Studio installer.
+For the console/cleanup fix, close all Studio launcher windows and replace the bundle's `Start-Drama3.exe` with the [0.3.4 launcher](https://github.com/T8mars/Comfyui-Drama-3/releases/download/v0.3.4/Start-Drama3.exe). Keep its console open; closing it stops that bundle's service and helpers. It requires the existing complete bundle and is not a standalone Studio installer.
 
 ## Sources and licenses
 

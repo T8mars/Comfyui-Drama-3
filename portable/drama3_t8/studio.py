@@ -336,6 +336,13 @@ class Studio:
         with self.connect() as db:
             return [row for row in entries(db) if row["kind"] == "job"]
 
+    def clear_trash_item(self, kind, item_id):
+        from .catalog_trash import clear
+        if kind != "job":
+            raise ValueError("不支持的历史资料类型")
+        with self._activity_lock, self.connect() as db:
+            clear(db, kind, item_id)
+
     def get_job(self, job_id):
         with self._activity_lock:
             cached = self._job_records.get(job_id)

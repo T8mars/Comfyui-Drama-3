@@ -38,6 +38,12 @@ internal static class Stub {
         foreach(string arg in args) line+="\t"+Encode(arg);
         File.AppendAllText(Environment.GetEnvironmentVariable("DRAMA_LAUNCHER_TEST_LOG"),line+"\n",new UTF8Encoding(false));
         if(update)return Number("DRAMA_LAUNCHER_UPDATE_EXIT");
+        int flood=Number("DRAMA_LAUNCHER_FLOOD_LINES");
+        for(int i=0;i<flood;i++) Console.WriteLine("FLOOD:"+i+":"+new String('x',256));
+        if(flood>0) {
+            Console.Out.Flush();
+            File.WriteAllText(Environment.GetEnvironmentVariable("DRAMA_LAUNCHER_FLOOD_DONE"),"done");
+        }
         if(Number("DRAMA_LAUNCHER_SPAWN_HELPER")!=0) {
             ProcessStartInfo helper=new ProcessStartInfo(Process.GetCurrentProcess().MainModule.FileName,"--helper");
             helper.UseShellExecute=false;helper.CreateNoWindow=true;Process.Start(helper);
@@ -54,7 +60,8 @@ def compiled(tmp_path_factory):
     spec=importlib.util.spec_from_file_location('tested_build_launcher',ROOT/'tools/build_launcher.py')
     helper=importlib.util.module_from_spec(spec);spec.loader.exec_module(helper)
     root=tmp_path_factory.mktemp('launcher-compiler')
-    launcher=helper.build_launcher(root/'Start-Drama3.exe')
+    source_override=os.environ.get('DRAMA_LAUNCHER_TEST_SOURCE')
+    launcher=helper.build_launcher(root/'Start-Drama3.exe',source=Path(source_override) if source_override else None)
     source=root/'stub.cs';source.write_text(STUB,encoding='utf-8')
     stub=root/'python.exe'
     result=subprocess.run([str(CSC),'/nologo','/target:winexe','/platform:x64','/optimize+',
@@ -200,6 +207,30 @@ def test_real_failure_is_durable_and_noninteractive_execution_never_hangs(tmp_pa
     assert result.returncode==17 and '启动日志' in result.stderr
     logs=list((folder/'userdata/logs').glob('launcher-*.log'))
     assert len(logs)==1 and '退出码：17' in logs[0].read_text(encoding='utf-8')
+
+
+def test_blocked_console_does_not_stall_child_or_lose_durable_logs(tmp_path,compiled):
+    # An unread stdout pipe reproduces the same backpressure as console Mark/
+    # Quick Edit, without clicking or stealing focus from the user's desktop.
+    folder,env=package(tmp_path,compiled)
+    marker=folder/'flood-finished.txt'
+    env.update(DRAMA_LAUNCHER_FLOOD_LINES='2048',DRAMA_LAUNCHER_FLOOD_DONE=str(marker))
+    owner=subprocess.Popen([str(folder/'Start-Drama3.exe'),'--no-browser'],env=env,
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,creationflags=FLAGS)
+    try:
+        deadline=time.monotonic()+12
+        while not marker.exists() and owner.poll() is None and time.monotonic()<deadline:time.sleep(.025)
+        assert marker.exists(),'Console backpressure blocked the app while writing logs'
+        # A blocked display thread must not keep the launcher alive after app exit.
+        assert owner.wait(timeout=6)==0
+        logs=list((folder/'userdata/logs').glob('launcher-*.log'))
+        assert len(logs)==1
+        recorded=logs[0].read_text(encoding='utf-8')
+        assert recorded.count('FLOOD:')==2048
+        assert 'FLOOD:2047:' in recorded
+    finally:
+        if owner.poll() is None:owner.terminate();owner.wait(timeout=5)
+        owner.communicate(timeout=5)
 
 
 def test_failed_compile_preserves_existing_launcher_and_cleans_only_own_temporary(tmp_path,compiled):

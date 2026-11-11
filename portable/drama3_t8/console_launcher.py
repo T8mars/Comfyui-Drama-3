@@ -9,6 +9,23 @@ import sys
 import time
 
 
+def configure_console_input():
+    """Avoid Quick Edit pausing the inherited CMD console's output."""
+    if os.name != 'nt':
+        return
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.GetStdHandle.argtypes = [wintypes.DWORD]
+    kernel.GetStdHandle.restype = wintypes.HANDLE
+    kernel.GetConsoleMode.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+    kernel.GetConsoleMode.restype = wintypes.BOOL
+    kernel.SetConsoleMode.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel.SetConsoleMode.restype = wintypes.BOOL
+    mode = wintypes.DWORD()
+    handle = kernel.GetStdHandle(-10)
+    if kernel.GetConsoleMode(handle, ctypes.byref(mode)):
+        kernel.SetConsoleMode(handle, (mode.value | 0x0080) & ~0x0040)
+
+
 class ProcessFamily:
     """The owner joins before spawning; closing its handle reaps descendants."""
 
@@ -99,6 +116,7 @@ def main(argv=None):
     expected = Path(__file__).resolve().parents[1] / 'app.py'
     if not arguments or Path(arguments[0]).resolve() != expected or not expected.is_file():
         raise ValueError('CMD supervisor requires this package\'s app.py')
+    configure_console_input()
     print('Drama-3 T8 · 保持此窗口运行，关闭窗口将停止服务并释放模型内存。', flush=True)
     with ProcessFamily() if os.name == 'nt' else nullcontext():
         try:

@@ -418,6 +418,53 @@ class CreativeStudio:
             return float(value) if isinstance(value, (int, float)) else datetime.fromisoformat(value).timestamp()
         return sorted(rows, key=stamp, reverse=True)
 
+    def clear_trash(self, payload):
+        """Dismiss trash records while retaining media and immutable references."""
+        import re
+        from .workspace_lock import WorkspaceBusy
+        if set(payload) - {"items", "all"} or type(payload.get("all", False)) is not bool:
+            raise ValueError("清除选项无效")
+        if payload.get("all") and "items" in payload:
+            raise ValueError("请选择清空或指定记录")
+        with self.studio._activity_lock:
+            visible = self.trash_view()
+            items = visible if payload.get("all") else payload.get("items")
+            if not isinstance(items, list) or len(items) > 10000:
+                raise ValueError("请选择要清除的回收站记录（每次最多 10000 条）")
+            unique = {}
+            def key(row):
+                return (row["kind"], row["id"], row.get("project_id") if row["kind"] == "candidate" else None)
+            for row in items:
+                if not isinstance(row, dict) or row.get("kind") not in {"voice", "version", "cast", "job", "project", "candidate"}:
+                    raise ValueError("不支持的回收站类型")
+                if not isinstance(row.get("id"), str) or not re.fullmatch(r"[0-9a-f]{32}", row["id"]):
+                    raise ValueError("无效资料编号")
+                if row["kind"] == "candidate" and (not isinstance(row.get("project_id"), str) or not re.fullmatch(r"[0-9a-f]{32}", row["project_id"])):
+                    raise ValueError("无效工程编号")
+                unique[key(row)] = row
+            current = {key(row): row for row in visible}
+            cleared, errors = 0, []
+            for identity, row in unique.items():
+                try:
+                    present = current.get(identity)
+                    if present is None or ("deleted_at" in row and row["deleted_at"] != present["deleted_at"]):
+                        raise ValueError("此记录已变化或不在回收站，请刷新")
+                    kind, item_id = row["kind"], row["id"]
+                    if kind in {"project", "candidate"}:
+                        project_id = item_id if kind == "project" else row["project_id"]
+                        self.assert_project_idle(project_id)
+                        if any(job["status"] in {"queued", "running"} and job["payload"].get("project_id") == project_id for job in self.studio.jobs()):
+                            raise WorkspaceBusy("该工程还有排队或运行任务，请等待完成或先取消")
+                        self.workspace.clear_trash_item(project_id, item_id if kind == "candidate" else None)
+                    elif kind == "job":
+                        self.studio.clear_trash_item(kind, item_id)
+                    else:
+                        self.voices.clear_trash_item(kind, item_id)
+                    cleared += 1
+                except (ValueError, FileNotFoundError, WorkspaceBusy) as exc:
+                    errors.append({"kind": row["kind"], "id": row["id"], "error": str(exc)})
+            return {"cleared": cleared, "errors": errors}
+
     def export_voices(self, payload):
         target = self.downloads / f"voices-{uuid.uuid4().hex}.zip"
         result = self.voices.export_bundle(target, **{key: payload[key] for key in ("voice_ids", "cast_ids", "include_sources") if key in payload})
@@ -1139,6 +1186,7 @@ class CreativeStudio:
             except (OSError, ValueError):
                 continue
             if isinstance(report, dict) and report.get("schema") == SCHEMA:
+                report["report_id"] = path.stem
                 reports.append(report)
                 if len(reports) == 20:
                     break
@@ -1159,6 +1207,18 @@ class CreativeStudio:
         return {"resources": ResourceProbe()(), "reports": reports, "comparison": comparison,
                 "profile": profile, "profile_error": profile_error,
                 "last_idle_unload": self.last_unload, "configuration": self.configuration()}
+
+    def delete_performance_report(self, report_id):
+        if not isinstance(report_id, str) or not re.fullmatch(r"(?:batch-)?[0-9a-f]{32}", report_id):
+            raise ValueError("无效测量记录编号")
+        path = self.reports / f"{report_id}.json"
+        with self.studio._activity_lock:
+            if report_id.startswith("batch-") and any(job["id"] == report_id[6:] and job["status"] in {"queued", "running"} for job in self.studio.jobs()):
+                raise ValueError("请等待测量任务结束后再删除记录")
+            if path.is_symlink() or not path.resolve().is_relative_to(self.reports.resolve()):
+                raise ValueError("测量记录路径无效")
+            path.unlink()
+        return {"deleted": report_id}
 
     def maybe_unload(self):
         with self.studio._activity_lock:

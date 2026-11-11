@@ -480,6 +480,13 @@ class VoiceLibrary:
         with self._db() as db:
             return entries(db)
 
+    def clear_trash_item(self, kind, item_id):
+        from .catalog_trash import clear
+        if kind not in {"voice", "version", "cast"}:
+            raise ValueError("不支持的音色资料类型")
+        with self._db() as db:
+            clear(db, kind, _id(item_id))
+
     def _reference_groups(self, groups, voice_id):
         if not isinstance(groups, dict) or len(groups) > 32:
             raise ValueError("Reference groups must be an object with at most 32 named groups")

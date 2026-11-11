@@ -25,7 +25,10 @@ try:
         cuda_version = tuple(map(int, str(torch.version.cuda).split('.')))
         if cuda_version < (13,):
             ck.registry.disable("cuda")
-            logging.warning("WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.\nWARNING WARNING WARNING\nIf you are on nvidia 20 series and above it is required that you update your pytorch to cu130 or higher.\n")
+            if getattr(args, "drama_standalone_engine", False):
+                logging.info("DRAMA standalone: optional ComfyKitchen CUDA quantization is disabled on CUDA < 13; the matched DRAMA native CUDA/SDPA runtime remains available.")
+            else:
+                logging.warning("WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.\nWARNING WARNING WARNING\nIf you are on nvidia 20 series and above it is required that you update your pytorch to cu130 or higher.\n")
 
     # comfy-kitchen picks its accelerated backend on import: the HIP backend registers
     # itself on a supported AMD device and takes dispatch priority there, CUDA on NVIDIA.

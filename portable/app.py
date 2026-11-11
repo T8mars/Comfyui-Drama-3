@@ -273,6 +273,7 @@ def main():
     parser.add_argument("--port", type=int, default=7863)
     parser.add_argument("--no-browser", action="store_true")
     args = parser.parse_args()
+    print(f"配套推理环境：PyTorch {torch.__version__} / CUDA {torch.version.cuda or 'CPU'}", flush=True)
     url = f"http://127.0.0.1:{args.port}"
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
         if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):

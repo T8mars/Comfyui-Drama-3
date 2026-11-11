@@ -106,3 +106,48 @@ def test_completed_job_delete_restore_and_cached_records(tmp_path):
     s.trash_item('job',jid,restore=True);assert s.jobs()[0]['id']==jid;assert s.sessions()[0]['id']==sid
     with s.connect() as db:db.execute('UPDATE jobs SET status=? WHERE id=?',('running',jid))
     with pytest.raises(ValueError,match='尚未结束'):s.trash_item('job',jid)
+
+
+def test_cleared_catalog_records_stay_hidden_after_reopening(tmp_path):
+    lib = VoiceLibrary(tmp_path / 'voices')
+    voice = lib.create_voice('保持隐藏')
+    lib.trash_item('voice', voice['id'])
+    lib.clear_trash_item('voice', voice['id'])
+    reopened = VoiceLibrary(tmp_path / 'voices')
+    assert reopened.trash_items() == [] and reopened.list_voices() == []
+    assert reopened.get_voice(voice['id'])['name'] == '保持隐藏'
+    with pytest.raises(ValueError, match='已清除'):
+        reopened.trash_item('voice', voice['id'], restore=True)
+
+
+def test_cleared_candidate_and_parent_never_reappear_or_erase_media(tmp_path):
+    w, p = made(tmp_path)
+    pid, cid = p['project_id'], p['lines'][0]['selected_candidate_id']
+    raw = w._read(pid)
+    paths = {a['path']: (w._directory(pid) / a['path']).read_bytes() for a in raw['candidates'][cid]['artifacts']}
+    w.trash_item(pid, cid)
+    w.clear_trash_item(pid, cid)
+    assert not w.trash_items() and cid not in w.get_project(pid)['candidates']
+    with pytest.raises(ValueError, match='已清除'):
+        w.trash_item(pid, cid, restore=True)
+    other = w.get_project(pid)['lines'][1]['selected_candidate_id']
+    w.trash_item(pid, other)
+    w.trash_item(pid)
+    assert len(w.trash_items()) == 1
+    w.clear_trash_item(pid)
+    w = CreativeWorkspace(tmp_path / 'workspace')
+    assert not w.trash_items() and not w.list_projects()
+    with pytest.raises(ValueError, match='已清除'):
+        w.trash_item(pid, restore=True)
+    assert all((w._directory(pid) / name).read_bytes() == data for name, data in paths.items())
+
+
+def test_old_catalog_database_migrates_without_losing_tombstones(tmp_path):
+    from drama3_t8.catalog_trash import initialize, clear, entries, hidden
+    with sqlite3.connect(tmp_path / 'old.db') as db:
+        db.execute('CREATE TABLE catalog_trash(kind TEXT,item_id TEXT,label TEXT,deleted_at REAL,PRIMARY KEY(kind,item_id))')
+        db.execute('INSERT INTO catalog_trash VALUES(?,?,?,?)', ('cast', 'a'*32, '旧选角', 1))
+        initialize(db)
+        assert len(entries(db)) == 1
+        clear(db, 'cast', 'a'*32)
+        assert not entries(db) and hidden(db, 'cast') == {'a'*32}
